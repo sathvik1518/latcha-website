@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>LATCHA Owner</title>
+<style>
+:root{--blush:#fff5f8;--ink:#4a2433;--mute:#8b6575;--berry:#b5456a;--rose:#f6bfd0;--line:#f6d3df;--ok:#5b8a1f;--bad:#b5303a}
+*{box-sizing:border-box}body{margin:0;background:var(--blush);color:var(--ink);font:16px/1.5 system-ui,sans-serif;padding:16px}
+main{max-width:900px;margin:0 auto}h1{font-size:26px;margin:8px 0 16px}
+button,input,select{font:inherit}input,select{padding:10px 12px;border:1.5px solid var(--rose);border-radius:12px;background:#fff;color:var(--ink);min-height:44px}
+button{min-height:44px;padding:0 16px;border-radius:99px;border:0;background:var(--berry);color:#fff;font-weight:700;cursor:pointer}
+button.o{background:#fff;color:var(--berry);border:1.5px solid var(--rose)}button.d{background:var(--bad)}
+.card{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.tabs{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}.tabs button.on{background:var(--ink)}
+.mute{color:var(--mute);font-size:14px}.err{color:var(--bad);font-weight:700;min-height:22px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>LATCHA owner</h1>
+<form id="login" class="card" style="display:grid;gap:10px;max-width:360px">
+  <input id="u" placeholder="Username" autocomplete="username" required>
+  <input id="p" type="password" placeholder="Password" autocomplete="current-password" required>
+  <button>Log in</button><div class="err" id="lerr" role="alert"></div>
+</form>
+<section id="app" hidden>
+  <div class="row"><div class="tabs" id="tabs">
+    <button data-t="orders" class="on">Orders</button><button data-t="reviews" class="o">Reviews</button><button data-t="menu" class="o">Menu</button>
+  </div><button class="o" id="out">Log out</button></div>
+  <div class="err" id="err" role="alert"></div>
+  <div id="list"></div>
+</section>
+</main>
+<script>
+var T="";try{T=sessionStorage.getItem("tk")||""}catch(e){}
+var tab="orders",$=function(i){return document.getElementById(i)};
+function el(tag,attrs,kids){var e=document.createElement(tag);for(var k in attrs||{}){if(k==="text")e.textContent=attrs[k];else if(k.slice(0,2)==="on")e[k]=attrs[k];else e.setAttribute(k,attrs[k])}(kids||[]).forEach(function(c){e.appendChild(typeof c==="string"?document.createTextNode(c):c)});return e}
+function api(m,u,b){return fetch(u,{method:m,headers:Object.assign({"Content-Type":"application/json"},T?{Authorization:"Bearer "+T}:{}),body:b?JSON.stringify(b):undefined}).then(function(r){
+  if(r.status===401&&T){out();throw new Error("Session ended. Log in again.")}
+  if(r.status===204)return null;return r.json().then(function(j){if(!r.ok)throw new Error(typeof j.detail==="string"?j.detail:"Request failed");return j})})}
+function show(){$("login").hidden=!!T;$("app").hidden=!T;if(T)load()}
+function out(){T="";try{sessionStorage.removeItem("tk")}catch(e){}show()}
+$("out").onclick=out;
+$("login").onsubmit=function(e){e.preventDefault();$("lerr").textContent="";
+  api("POST","/api/admin/login",{username:$("u").value,password:$("p").value}).then(function(r){T=r.access_token;try{sessionStorage.setItem("tk",T)}catch(e){}$("p").value="";show()}).catch(function(er){$("lerr").textContent=er.message})};
+$("tabs").onclick=function(e){var b=e.target.closest("button");if(!b)return;tab=b.dataset.t;[].forEach.call($("tabs").children,function(x){x.className=x===b?"on":"o"});load()};
+function load(){$("err").textContent="";var l=$("list");l.textContent="Loading…";
+  var path={orders:"/api/admin/orders?limit=100",reviews:"/api/admin/reviews",menu:"/api/admin/menu"}[tab];
+  api("GET",path).then(function(d){l.textContent="";if(!d.length)l.appendChild(el("p",{class:"mute",text:"Nothing here yet."}));d.forEach(function(x){l.appendChild(tab==="orders"?orderCard(x):tab==="reviews"?reviewCard(x):menuCard(x))})}).catch(function(er){l.textContent="";$("err").textContent=er.message})}
+function fail(er){$("err").textContent=er.message}
+function orderCard(o){
+  var sel=el("select",{"aria-label":"Status"},["new","confirmed","delivered","cancelled"].map(function(s){var op=el("option",{value:s,text:s});if(s===o.status)op.selected=true;return op}));
+  sel.onchange=function(){api("PATCH","/api/admin/orders/"+o.id,{status:sel.value}).catch(fail)};
+  return el("div",{class:"card"},[
+    el("div",{class:"row"},[el("b",{text:"#"+o.id+" · "+o.customer_name}),sel]),
+    el("div",{text:o.phone+" · "+o.city}),el("div",{class:"mute",text:o.address}),
+    el("ul",{},o.lines.map(function(l){return el("li",{text:l.quantity+" × "+l.item_name})})),
+    o.notes?el("div",{class:"mute",text:"Note: "+o.notes}):"",
+    el("div",{class:"mute",text:new Date(o.created_at).toLocaleString()})])}
+function reviewCard(r){
+  var box=el("div",{class:"card"},[el("div",{class:"row"},[el("b",{text:"★".repeat(r.rating)+" · "+r.author}),el("span",{class:"mute",text:r.approved?"Approved":"Waiting"})]),el("p",{text:r.text})]);
+  var row=el("div",{class:"row",style:"justify-content:flex-start"});
+  if(!r.approved)row.appendChild(el("button",{text:"Approve",onclick:function(){api("POST","/api/admin/reviews/"+r.id+"/approve").then(load).catch(fail)}}));
+  row.appendChild(el("button",{class:"d",text:"Delete",onclick:function(){if(confirm("Delete this review?"))api("DELETE","/api/admin/reviews/"+r.id).then(load).catch(fail)}}));
+  box.appendChild(row);return box}
+function menuCard(i){
+  var av=el("input",{type:"checkbox"});av.checked=i.available;av.onchange=function(){api("PATCH","/api/admin/menu/"+i.id,{available:av.checked}).catch(function(er){av.checked=!av.checked;fail(er)})};
+  var bs=el("input",{type:"checkbox"});bs.checked=i.best_seller;bs.onchange=function(){api("PATCH","/api/admin/menu/"+i.id,{best_seller:bs.checked}).catch(function(er){bs.checked=!bs.checked;fail(er)})};
+  return el("div",{class:"card"},[el("div",{class:"row"},[el("b",{text:i.category+" · "+i.name}),el("span",{class:"mute",text:i.calories!=null?i.calories+" kcal":""})]),
+    el("div",{class:"row",style:"justify-content:flex-start;gap:18px"},[el("label",{},[av," On the menu"]),el("label",{},[bs," Best seller"])])])}
+show();
+</script>
+</body>
+</html>

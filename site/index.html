@@ -321,6 +321,36 @@ footer.site .chip{margin:0 10px 0 0}
   .logo.lg img{height:56px}
   .links{display:none}nav{justify-content:space-between}.grid{gap:8px}.tile{border-radius:14px}.bag{min-width:0}#nudge{display:none}}
 @media(prefers-reduced-motion:reduce){.marq .t,.orb,.sp,#ring,#ring i,.wave,.badge svg,.glass::after,#cb svg,#cb::before,#cb::after,.stagebox .fimg{animation:none}.rv{opacity:1;transform:none;filter:none;transition:none}html{scroll-behavior:auto}}
+
+/* ---------- backend features: order drawer + reviews ---------- */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:36px}
+.rc{background:#fff;border:1.5px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+.rc{overflow-wrap:anywhere}.rc b{color:var(--berry);letter-spacing:.12em}.rc p{margin:8px 0 10px;line-height:1.55}.rc small{color:var(--mute);font-weight:700}
+.rnone{color:var(--mute);margin-bottom:28px}
+.fm{max-width:640px;padding:24px;border-radius:24px;display:grid;gap:12px}
+.fm h3{font-family:var(--serif);font-weight:400;font-size:26px}
+.fm label{display:grid;gap:6px;font-size:13px;font-weight:700;color:var(--ink)}
+.fm input,.fm select,.fm textarea{font:inherit;font-weight:400;color:var(--ink);background:#fff;border:1.5px solid var(--rose);border-radius:14px;padding:11px 14px;min-height:44px;width:100%}
+.fm textarea{min-height:90px;resize:vertical}
+.fm input:focus,.fm select:focus,.fm textarea:focus{outline:2px solid var(--berry);outline-offset:1px}
+.fm .chip{margin:6px 0 0;justify-content:center}.fm .chip[disabled]{opacity:.5;cursor:not-allowed}
+.fm .msg{font-size:14px;font-weight:700;min-height:20px}.msg.ok{color:var(--matcha)}.msg.bad{color:var(--crimson)}
+.hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}
+.ordwrap{position:fixed;inset:0;z-index:90;background:rgba(74,36,51,.45);display:flex;justify-content:center;align-items:flex-end;padding:0}
+.ordwrap[hidden]{display:none}
+body.ordopen #chat{display:none}
+.ordbox{background:var(--blush);width:min(720px,100%);max-height:92dvh;overflow:auto;border-radius:26px 26px 0 0;padding:22px clamp(16px,4vw,32px) 28px;position:relative}
+@media(min-width:760px){.ordwrap{align-items:center;padding:24px}.ordbox{border-radius:26px}}
+.ordbox h2{font-family:var(--serif);font-weight:400;font-size:30px;margin-right:48px}
+.ordbox .x{position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--rose);background:#fff;color:var(--ink);font-size:20px}
+.og{margin:18px 0 6px;font-weight:700;color:var(--berry);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+.orow{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line)}
+.orow span{flex:1;font-size:15px}
+.stp{display:flex;align-items:center;gap:6px}
+.stp button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--rose);background:#fff;color:var(--ink);font-size:18px;font-weight:700}
+.stp output{min-width:22px;text-align:center;font-weight:700}
+.osum{margin:16px 0 4px;font-weight:700}
+.ofields{display:grid;gap:12px;margin-top:14px}
 </style>
 </head>
 <body class="nojs">
@@ -463,12 +493,47 @@ footer.site .chip{margin:0 10px 0 0}
   </div>
 </section>
 
+<section class="sec" id="reviews" aria-labelledby="revh">
+  <div class="eyebrow rv">Love notes</div>
+  <h2 class="h1 rv" id="revh">What the <span class="sc">fam</span> says</h2>
+  <p class="lead rv">Reviews from people who have sipped at LATCHA. Yours appears here once we have read it.</p>
+  <div class="rgrid" id="rgrid" aria-live="polite"></div>
+  <form class="fm glass rv" id="rform" novalidate>
+    <h3>Leave a review</h3>
+    <label>Your name<input name="author" maxlength="60" autocomplete="name" required></label>
+    <label>Rating<select name="rating"><option value="5">★★★★★ Loved it</option><option value="4">★★★★ Great</option><option value="3">★★★ Good</option><option value="2">★★ Okay</option><option value="1">★ Not for me</option></select></label>
+    <label>Your review<textarea name="text" minlength="10" maxlength="600" required></textarea></label>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <button class="chip" type="submit">Send review</button>
+    <div class="msg" id="rmsg" role="status"></div>
+  </form>
+</section>
+
 <footer class="site" id="footer">
   <div class="brand"><a class="logo lg" href="#top" aria-label="LATCHA"><img src="assets/logo.png" alt="LATCHA"></a><p class="founder"><small>Founder</small><b>Rajasree Yarlagadda</b></p></div>
   <p>Speciality Matcha &amp; Premium Soft Serve<br>Your sign to slow down at Latcha.</p>
   <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Zomato &amp; Swiggy</button></div>
   <p style="width:100%;font-size:12px">© LATCHA™</p>
 </footer>
+
+<div class="ordwrap" id="ord" hidden>
+  <div class="ordbox" role="dialog" aria-modal="true" aria-labelledby="ordh">
+    <button type="button" class="x" id="ordx" aria-label="Close order form">✕</button>
+    <h2 id="ordh">Order request</h2>
+    <p style="color:var(--mute);margin-top:6px;line-height:1.5">Choose your drinks and leave your details. LATCHA will call you to confirm. No payment is taken here.</p>
+    <div id="ordlist"></div>
+    <div class="osum" id="osum">Nothing selected yet</div>
+    <form class="fm ofields" id="oform" novalidate style="padding:0;max-width:none;background:none;border:0">
+      <label>Your name<input name="customer_name" maxlength="80" autocomplete="name" required></label>
+      <label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>
+      <label>City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
+      <label>Delivery address<textarea name="address" maxlength="300" autocomplete="street-address" required></textarea></label>
+      <label>Notes (optional)<input name="notes" maxlength="300" placeholder="Oat milk, less sweet, gate code"></label>
+      <button class="chip" type="submit" id="osub" disabled>Send order request</button>
+      <div class="msg" id="omsg" role="status"></div>
+    </form>
+  </div>
+</div>
 
 <div id="chat">
   <div id="nudge" class="glass" role="status">Hi! Ask me anything about the menu ✨</div>
@@ -548,22 +613,25 @@ var CLOUD=[["Banana Pudding Cloud","Creamy banana, biscuit bliss",364,4,1],["Coo
 var SOFT=[["Vanilla Silk","Silky smooth vanilla"],["Strawberry Crush","Creamy strawberry swirl"],["Vanilla & Strawberry","Classic vanilla strawberry swirl"],["Uji Matcha","Smooth, umami matcha"],["Filipino Ube","Nutty & creamy Filipino ube"],["Matcha & Ube","Dreamy matcha ube swirl"],["Matcha Swirl","Umami-rich creamy matcha swirl"],["Ube Swirl","Mix matcha with nutty ube"]];
 var FLOAT=[["Vanilla Silk Float","Classic iced matcha latte + our Vanilla Silk"],["Strawberry Crush Float","Classic iced matcha latte + Strawberry Crush"],["Signature Swirl Float","Classic iced matcha latte + Signature Swirl"],["Matcha Swirl Float","Classic iced matcha latte + Matcha Swirl"],["Ube Swirl Float","Classic iced matcha latte + Ube Swirl"],["Uji Matcha Float","Classic iced matcha latte + Uji Matcha"],["Filipino Ube Float","Classic iced matcha latte + Filipino Ube"],["Matcha Ube Float","Classic iced matcha latte + Matcha Ube"]];
 function dots(n){var s="";for(var i=0;i<5;i++)s+='<i class="'+(i<n?"on":"")+'"></i>';return '<span class="dots" aria-label="Sweetness '+n+' of 5">'+s+'</span>'}
-function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+'</div>'}
+function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+'</div>'}
 var LOGO='<span class="logo"><img src="assets/logo.png" alt="LATCHA"></span>';
 function board(title,sub,html,strip,note){return '<article class="board rv"><div class="bh">'+LOGO+'<span class="t2">Speciality Matcha | Soft Serves | Floats</span></div><div class="pillt">'+title+(sub?'<small>'+sub+'</small>':'')+'</div><div class="items">'+html+'</div>'+(note?'<div class="note">'+note+'</div>':'')+(strip?'<div class="strip">'+strip+'</div>':'')+'<div class="addon">MATCHA ADD ON · 1G · 2G · 3G · 4G</div></article>'}
+function renderBoards(){
 var h="";
-h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],img:"menu/classic-"+(i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],img:"menu/cloud-"+(i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],img:"menu/soft-"+(i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
-h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],img:"menu/float-"+(i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],img:"menu/classic-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],img:"menu/cloud-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],img:"menu/soft-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],img:"menu/float-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
 $("#boards").innerHTML=h;
+}
+renderBoards();
 
 /* ---------- float builder ---------- */
 var SOFT2FLOAT=[0,1,2,5,6,7,3,4];
 var sel={l:0,s:0,a:0},ADD=["No extra","+1G","+2G","+3G","+4G"];
 function chipRow(id,arr,key,fn){var el=$(id);el.innerHTML=arr.map(function(n,i){return '<button type="button" data-i="'+i+'" aria-pressed="'+(sel[key]===i)+'">'+n+'</button>'}).join("");
-  el.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;sel[key]=+b.dataset.i;$$(id+" button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});fn()})}
-function upd(){var f=SOFT2FLOAT[sel.s],im=$("#fimg");im.style.opacity=0;setTimeout(function(){im.src=BASE+"menu/float-"+(f+1)+".png";im.alt=SOFT[sel.s][0]+" float";im.style.opacity=1},160);
+  el.onclick=function(e){var b=e.target.closest("button");if(!b)return;sel[key]=+b.dataset.i;$$(id+" button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});fn()}}
+function upd(){var f=SOFT2FLOAT[(SOFT[sel.s].pos||sel.s+1)-1]||0,im=$("#fimg");im.style.opacity=0;setTimeout(function(){im.src=BASE+"menu/float-"+(f+1)+".png";im.alt=SOFT[sel.s][0]+" float";im.style.opacity=1},160);
   $("#fname").textContent=CLASSIC[sel.l][0]+" + "+SOFT[sel.s][0];
   $("#fsub").textContent=CLASSIC[sel.l][2]+" kcal latte · sweetness "+CLASSIC[sel.l][3]+"/5 · "+ADD[sel.a].toLowerCase()+" matcha"}
 chipRow("#pl",CLASSIC.map(function(r){return r[0]}),"l",upd);chipRow("#ps",SOFT.map(function(r){return r[0]}),"s",upd);chipRow("#pa",ADD,"a",upd);upd();
@@ -589,7 +657,7 @@ function closeChat(){var was=panel.classList.contains("open"),inside=panel.conta
 cb.addEventListener("click",function(){panel.classList.contains("open")?closeChat():openChat()});$("#cx").addEventListener("click",closeChat);
 document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeChat();setNav(false)}});
 setTimeout(function(){if(!opened)nudge.classList.add("on")},3500);setTimeout(function(){nudge.classList.remove("on")},13000);
-function esc(t){return t.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function esc(t){return String(t).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]})}
 function say(t,user){var d=document.createElement("div");d.className="m "+(user?"u":"b");d.innerHTML=user?esc(t):t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight}
 function reply(t,chips){var ty=document.createElement("div");ty.className="m b typing";ty.innerHTML="<i></i><i></i><i></i>";msgs.appendChild(ty);msgs.scrollTop=msgs.scrollHeight;
   setTimeout(function(){ty.remove();say(t);if(chips)setQR(chips)},reduce?0:650)}
@@ -597,8 +665,9 @@ function setQR(a){$("#qr").innerHTML=a.map(function(x){return '<button type="but
 $("#qr").addEventListener("click",function(e){var b=e.target.closest("button");if(b)ask(b.textContent)});
 $("#cf").addEventListener("submit",function(e){e.preventDefault();var v=$("#ci").value.trim();if(v){$("#ci").value="";ask(v)}});
 var ALL=[];
-CLASSIC.forEach(function(r){ALL.push({n:r[0],d:r[1],k:r[2],s:r[3],bs:r[4]})});
-CLOUD.forEach(function(r){ALL.push({n:r[0],d:r[1],k:r[2],s:r[3],bs:r[4]})});
+function buildAll(){ALL.length=0;CLASSIC.forEach(function(r){ALL.push({n:r[0],d:r[1],k:r[2],s:r[3],bs:r[4]})});
+CLOUD.forEach(function(r){ALL.push({n:r[0],d:r[1],k:r[2],s:r[3],bs:r[4]})})}
+buildAll();
 function list(a){return a.map(function(x){return x.n}).join(", ")}
 function wb(q,k){return new RegExp("(?:^|[^a-z0-9])"+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).test(q)}
 var NOSWEET=/(?:^|[^a-z])(?:not|no|less|low|without|dont)(?:\s+\w+){0,3}\s+(?:sweet|sugar)|n't(?:\s+\w+){0,3}\s+(?:sweet|sugar)/;
@@ -640,7 +709,7 @@ mnav.addEventListener("click",function(e){if(e.target.closest("a"))setNav(false)
 document.addEventListener("click",function(e){if(!e.target.closest("#mnav,#burger"))setNav(false)});
 addEventListener("resize",function(){if(innerWidth>900)setNav(false)});
 function askOrder(){var wasG=greeted;openChat();setTimeout(function(){ask("Delivery")},wasG?300:1300)}
-$("#orderbtn").addEventListener("click",askOrder);$("#orderbtn2").addEventListener("click",askOrder);
+$("#orderbtn").addEventListener("click",function(){openOrder()});$("#orderbtn2").addEventListener("click",askOrder);
 
 /* ---------- math ---------- */
 var clamp=function(v){return v<0?0:v>1?1:v};
@@ -736,6 +805,69 @@ function frame(now){
   render(t,now);requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
+
+/* ---------- backend: menu, orders, reviews (same address: /api) ---------- */
+var API="",ORDER_OK=false;
+function jreq(u,o){return fetch(API+u,o).then(function(r){return r.json().catch(function(){return {}}).then(function(b){if(!r.ok){var e=new Error("http");e.status=r.status;e.body=b;throw e}return b})})}
+function applyMenu(items){
+  var G={classic:CLASSIC,cloud:CLOUD,soft:SOFT,float:FLOAT},fresh={classic:[],cloud:[],soft:[],float:[]},k;
+  items.forEach(function(it){var g=fresh[it.category];if(!g)return;var r=[it.name,it.description];
+    if(it.category==="classic"||it.category==="cloud"){r.push(it.calories||0,it.sweetness||0);if(it.best_seller)r.push(1)}
+    r.id=it.id;r.pos=it.position;g.push(r)});
+  for(k in G){if(!fresh[k].length)return false}   /* keep the built-in menu if the database menu is incomplete */
+  for(k in G){G[k].length=0;fresh[k].forEach(function(r){G[k].push(r)})}
+  sel.l=0;sel.s=0;renderBoards();buildAll();
+  chipRow("#pl",CLASSIC.map(function(r){return r[0]}),"l",upd);chipRow("#ps",SOFT.map(function(r){return r[0]}),"s",upd);upd();
+  $$("#boards .rv").forEach(function(x){x.classList.add("in")});
+  ORDER_OK=true;return true}
+function loadMenu(){return jreq("/api/menu").then(applyMenu)}
+
+/* order drawer */
+var ord=$("#ord"),cart={},ordFrom=null;
+function ordRender(){
+  var G=[["Classic iced matcha lattes",CLASSIC],["Cloud lattes",CLOUD],["Soft serves",SOFT],["Matcha floats",FLOAT]],h="";
+  G.forEach(function(g){h+='<div class="og">'+g[0]+'</div>';g[1].forEach(function(r){if(!r.id)return;
+    h+='<div class="orow"><span>'+esc(r[0])+'</span><div class="stp"><button type="button" data-id="'+r.id+'" data-d="-1" aria-label="Fewer '+esc(r[0])+'">−</button><output id="q'+r.id+'">'+(cart[r.id]||0)+'</output><button type="button" data-id="'+r.id+'" data-d="1" aria-label="More '+esc(r[0])+'">+</button></div></div>'})});
+  $("#ordlist").innerHTML=h;ordSum()}
+function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});
+  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected":"Nothing selected yet";$("#osub").disabled=!n}
+$("#ordlist").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=b.dataset.id,q=Math.max(0,Math.min(20,(cart[id]||0)+(+b.dataset.d)));
+  if(q)cart[id]=q;else delete cart[id];$("#q"+id).textContent=q;ordSum()});
+function showOrder(){ordFrom=document.activeElement;$("#omsg").textContent="";$("#omsg").className="msg";ordRender();ord.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";$("#ordx").focus()}
+function openOrder(){if(ORDER_OK)return showOrder();loadMenu().then(function(ok){ok?showOrder():askOrder()},function(){askOrder()})}
+function closeOrder(){if(ord.hidden)return;ord.hidden=true;document.body.classList.remove("ordopen");document.body.style.overflow="";if(ordFrom&&ordFrom.focus)ordFrom.focus()}
+$("#ordx").addEventListener("click",closeOrder);
+ord.addEventListener("click",function(e){if(e.target===ord)closeOrder()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeOrder()});
+function errText(e){var b=e.body||{},d=b.detail;
+  if(e.status===429)return typeof d==="string"?d:"Too many requests. Please try again later.";
+  if(e.status===422){if(Array.isArray(d)&&d[0]){var f=(d[0].loc||[]).slice(-1)[0],m=d[0].msg||"";m=m.replace(/^Value error, /,"");
+    var nice={phone:"Enter a valid 10 digit mobile number.",customer_name:"Please enter your name.",address:"Please enter your full address."};return nice[f]||m||"Please check the form."}
+    return typeof d==="string"?d:"Please check the form."}
+  return "We could not send that. Please try again, or ask Latchi."}
+$("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#omsg"),btn=$("#osub");
+  var lines=Object.keys(cart).map(function(i){return {item_id:+i,quantity:cart[i]}});if(!lines.length)return;
+  btn.disabled=true;msg.className="msg";msg.textContent="Sending…";
+  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,lines:lines})})
+  .then(function(r){cart={};ordRender();f.reset();msg.className="msg ok";msg.textContent="Order request #"+r.id+" received. LATCHA will call to confirm. 💗";btn.disabled=true})
+  .catch(function(er){msg.className="msg bad";msg.textContent=errText(er);ordSum()})});
+
+/* reviews */
+function stars(n){return "★★★★★".slice(0,n)}
+function showReviews(list){var g=$("#rgrid");
+  g.innerHTML=list.length?list.map(function(r){return '<article class="rc"><b aria-label="'+r.rating+' out of 5">'+stars(r.rating)+'</b><p>“'+esc(r.text)+'”</p><small>'+esc(r.author)+'</small></article>'}).join(""):'<p class="rnone">No reviews yet. Be the first to share one below.</p>';
+  if(list.length>=3)revEls.forEach(function(el,i){var r=list[i];el.innerHTML='<i style="background:'+REVS[i][1]+'" aria-hidden="true">'+esc(r.author.charAt(0).toUpperCase())+'</i><div><h3>'+stars(r.rating)+'</h3><em>'+esc(r.author)+'</em><p>“'+esc(r.text)+'”</p></div>'})}
+function loadReviews(){return jreq("/api/reviews?limit=12").then(showReviews)}
+$("#rform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#rmsg");
+  if(f.author.value.trim().length<2||f.text.value.trim().length<10){msg.className="msg bad";msg.textContent="Please add your name and a review of at least 10 characters.";return}
+  msg.className="msg";msg.textContent="Sending…";
+  jreq("/api/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({author:f.author.value,rating:+f.rating.value,text:f.text.value,website:f.website.value})})
+  .then(function(){f.reset();msg.className="msg ok";msg.textContent="Thank you! Your review will appear after we approve it. 💗"})
+  .catch(function(er){msg.className="msg bad";msg.textContent=errText(er)})});
+
+/* start: the page works on its own; the database only improves it */
+loadMenu().catch(function(){});
+loadReviews().catch(function(){$("#rgrid").innerHTML='<p class="rnone">Reviews will show here soon.</p>'});
 })();
 </script>
 </body>

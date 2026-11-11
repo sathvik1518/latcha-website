@@ -1,22 +1,21 @@
 <div align="center">
 
-<img src="assets/logo.png" alt="LATCHA logo" width="150">
+<img src="site/assets/logo.png" alt="LATCHA logo" width="150">
 
 # LATCHA
 
-### Speciality matcha, cloud lattes and premium soft serve.<br>One cup. One scroll. One very pink website.
+### Speciality matcha, cloud lattes and premium soft serve.<br>One scroll to browse. One form to order. One link for everything.
 
 <br>
 
-![HTML5](https://img.shields.io/badge/HTML5-e58aa6?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-b5456a?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-5b8a1f?style=for-the-badge&logo=javascript&logoColor=white)
-![No build step](https://img.shields.io/badge/Build_step-none-4a2433?style=for-the-badge)
-![Any static host](https://img.shields.io/badge/Hosting-any_static_host-f6bfd0?style=for-the-badge&labelColor=4a2433)
+![HTML5](https://img.shields.io/badge/Frontend-HTML_CSS_JS-e58aa6?style=for-the-badge)
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI-5b8a1f?style=for-the-badge&logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-b5456a?style=for-the-badge&logo=postgresql&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-4a2433?style=for-the-badge&logo=vercel&logoColor=white)
 
 <br>
 
-<img src="docs/preview-desktop.jpg" alt="LATCHA website on desktop: the hero with the LATCHA lettering and an Ube Cloud cup, and the final matcha table scene" width="100%">
+<img src="docs/preview-desktop.jpg" alt="LATCHA website on desktop" width="100%">
 
 </div>
 
@@ -28,231 +27,170 @@
 
 ## ✨ What it is
 
-A single-page website for **LATCHA**, a speciality matcha and soft-serve café. One cup travels through four scenes as you scroll. After that, the page opens into the menu, a float builder and a small chat helper called **Latchi**.
+The LATCHA website and its backend in **one project**. One deploy gives one link: the site is at `/`, the API is at `/api`, the owner screen is at `/admin.html`.
 
-It is one `index.html` file. No framework, no install, no build step.
+| For customers | For the owner |
+|---|---|
+| A scroll story, the full menu, a float builder and the Latchi chat helper | Edit what is on the menu |
+| **Order request** form (name, phone, address, drinks) | See every order and set its status |
+| **Reviews**: read approved ones, write your own | Approve or delete reviews before the public sees them |
+
+**The site never breaks if the backend is down.** It starts with the built-in menu, then swaps in the database menu when the API answers.
 
 <br>
 
-## 🍵 What is on the page
+## 🧱 How the pieces fit
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### The scroll story
-| Scene | What you see |
-|---|---|
-| **1 · Hero** | The curtain lifts, the LATCHA lettering rises letter by letter, and an Ube Cloud cup floats above a glass plinth. |
-| **2 · Ingredients** | Five badges pop in around a matcha and vanilla swirl. |
-| **3 · Reviews** | Three frosted-glass review cards beside three LATCHA drinks. |
-| **4 · The matcha table** | An open tin, a scoop, and a cup that fills with matcha as you scroll. |
-
-</td>
-<td width="50%" valign="top">
-
-### After the story
-| Section | What it does |
-|---|---|
-| **Pour video** | A full-width pour clip with a turning badge. |
-| **Latcha Fam** | An Instagram-style profile card and photo grid. |
-| **Menu** | 33 items in 4 boards, with calories and sweetness. |
-| **Build your float** | Pick a latte, a soft serve and extra matcha. |
-| **Latcha 3.0** | The new cups, in a pink arch. |
-| **Latchi** | A chat helper that answers menu questions. |
-
-</td>
-</tr>
-</table>
-
-**The menu**
-
-| Board | Items |
-|---|---|
-| Classic Iced Matcha Lattes | 11 |
-| Cloud Lattes | 6 |
-| Premium Soft Serves | 8 |
-| Make-your-own Matcha Floats | 8 |
-
-Prices are left out on purpose. Every latte shows its calories and a sweetness score from 0 to 5.
-
-<br>
-
-## 📱 Made for phones too
-
-<div align="center">
-<img src="docs/preview-phone.jpg" alt="LATCHA on a phone: the ingredients scene, the reviews scene, the matcha table scene and the open menu" width="100%">
-</div>
-
-- **Two layouts.** The scroll story switches to a tall layout on phones and on tablets held upright, so nothing is cut off at the edges.
-- **Menu button.** Below 900 px wide, the links move into a menu button. It closes when you tap a link or press `Esc`.
-- **Nothing hides under the top bar.** The story keeps its text and badges clear of the fixed navigation bar.
-- **Calmer motion.** If a device asks for reduced motion, the animations tone down.
-
-<br>
-
-## 🚀 Run it on your computer
-
-You need Python, which is already on most computers. Open a terminal **inside this folder** and run:
-
-```bash
-# Windows
-python -m http.server 8000
-
-# Mac or Linux
-python3 -m http.server 8000
+```
+Browser ──▶  /              the website            (site/index.html)
+        ──▶  /api/...       FastAPI + SQLAlchemy   (app/)
+        ──▶  /admin.html    owner screen           (site/admin.html)
+                                  │
+                                  ▼
+                           Neon PostgreSQL  (menu_items, orders, order_lines, reviews)
 ```
 
-Then open **http://localhost:8000** in your browser.
+<br>
 
-> **Tip:** type `localhost:8000` yourself. If your editor opens `http://[::]:8000`, it will show an error. That address is not a page.
->
-> Always run it through a server. Some browsers block the videos when you double-click `index.html`.
+## 🔌 The API
 
-Another way: in VS Code, install the **Live Server** extension, right-click `index.html` and choose **Open with Live Server**.
+| Endpoint | Who | What |
+|---|---|---|
+| `GET /api/menu` | public | Menu items that are switched on |
+| `POST /api/orders` | public | Order request. No prices or payment: LATCHA confirms by phone |
+| `GET /api/reviews` | public | Approved reviews only |
+| `POST /api/reviews` | public | Goes to the owner's queue, hidden until approved |
+| `POST /api/admin/login` | owner | Gives a token that lasts 2 hours |
+| `/api/admin/menu`, `/orders`, `/reviews` | owner | Switch dishes on or off, change order status, approve or delete reviews |
+| `GET /api/health` | anyone | Checks the database answers |
 
-The page loads its fonts from Google Fonts, so it needs an internet connection to look its best.
+Try everything in the browser at **`/docs`**.
+
+**Safety built in**
+- Passwords are stored as salted hashes, never as plain text.
+- Orders are checked (Indian mobile number, 1 to 20 of each drink, Bengaluru or Hyderabad only), and the drink name is saved at order time. Maximum 5 orders per phone per hour.
+- Reviews stay hidden until approved. A hidden field catches simple spam bots. The waiting queue is capped.
+- Review and order text is always shown as plain text, so nobody can inject code into the site or the owner screen.
+- Database rules (rating 1 to 5, sweetness 0 to 5, quantity 1 to 20) are enforced in the database too.
 
 <br>
 
-## 🌐 Put it online
+## 🚀 Try it on your computer
 
-It is a static site, so any static host works. On **Vercel**:
+You need **Python 3.11 or newer**. Open a terminal **inside this folder**:
 
-1. Push this folder to a GitHub repository.
-2. On [vercel.com](https://vercel.com), choose **Add New → Project** and import the repository.
-3. Set **Framework Preset** to **Other**. Leave the build and output settings empty.
-4. Click **Deploy**. Every push to `main` deploys again on its own.
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements-dev.txt
+python scripts/init_db.py
+python -m uvicorn app.main:app --port 8000 --reload
+```
 
-Netlify, Cloudflare Pages and GitHub Pages work the same way.
+Open **http://localhost:8000**. This uses a small local file database (`dev.db`), so you do not need Neon yet.
+
+To try the owner screen locally, copy `.env.example` to `.env`, then fill in `ADMIN_PASSWORD_HASH` and `JWT_SECRET` (steps in the next section) and restart.
+
+Run the tests any time: `python -m pytest -q`
+
+<br>
+
+## 🗄 Connect Neon (the real database)
+
+1. On [neon.com](https://neon.com) create a project. Copy the **pooled** connection string (the host contains `-pooler`).
+2. Make your owner password hash and a secret:
+   ```powershell
+   python scripts/make_admin_hash.py
+   python -c "import secrets;print(secrets.token_urlsafe(48))"
+   ```
+3. Put the three values in `.env` (this file is never uploaded to GitHub):
+   ```
+   DATABASE_URL=postgresql://...-pooler.../neondb?sslmode=require
+   ADMIN_PASSWORD_HASH=pbkdf2$...
+   JWT_SECRET=the-long-random-text
+   ```
+4. Create the tables and load the menu in Neon: `python scripts/init_db.py` (safe to run twice).
+
+<br>
+
+## 🌐 Put it online with Vercel (one project, one link)
+
+1. **Push to GitHub.** In your project folder, delete the old files (keep the hidden `.git` folder), copy these new files in, then:
+   ```powershell
+   git add -A
+   git commit -m "Add backend, order form and reviews"
+   git push
+   ```
+2. **Vercel:** delete the old project (Settings, General, Delete Project), then **Add New, Project** and import the repo again.
+3. Leave **Framework Preset** on **FastAPI** (or auto-detected). Leave Build and Output settings empty.
+4. Before the first deploy open **Environment Variables** and add: `DATABASE_URL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH`, `JWT_SECRET`. (`CORS_ORIGINS` is only needed if another website calls the API.)
+5. Deploy. Then check, in this order:
+   - `/api/health` shows `{"ok": true}`
+   - `/` shows the site and the menu loads
+   - `/admin.html` lets you log in
+
+Neon's free plan puts the database to sleep after 5 minutes idle, so the first request after a quiet spell is slower. The menu is cached for a minute so most visitors never feel it.
 
 <br>
 
 ## 🗂 What is in the folder
 
 ```
-index.html            the whole site: HTML, CSS and JavaScript in one file
-README.md             this file
-assets/
-├── logo.png          logo badge
-├── logo-sq.png       square logo for the profile card
-├── logo-word.png     transparent LATCHA lettering for the hero
-├── plinth.svg        the glass plinth under the hero cup
-├── cup-*.png         cut-out cups: hero, swirl, trio
-├── tin-open.png      the open matcha tin
-├── menu/             33 menu pictures: classic, cloud, soft, float
-├── gen-*.jpg         generated scene pictures
-├── photo-*.jpg       photos from LATCHA's Instagram and café
-├── pour.mp4          pour video for the section after the story
-├── pourcup-opaque.mp4   cup-filling clip used in the last scene
-└── pourcup-static.png   still picture used if that clip cannot play
-docs/                 screenshots used in this README
-tools/cutout.swift    background remover for new photos (macOS only)
-```
-
-<br>
-
-## ⚙️ How it works
-
-- **One animation loop.** A single `requestAnimationFrame` loop runs the whole story. Your scroll position becomes a timeline, and each scene is a window of time on it.
-- **A stage that fits every screen.** The scene lives in a box that measures itself, and everything inside uses height and width units. The cups land in the same place at any size.
-- **Safe areas.** The script measures the navigation bar and the screen edges, then keeps badges and cards inside the visible part.
-- **See-through video on every browser.** The pouring clip has a flat green backdrop. The page draws each frame on a canvas and removes the green on the fly, because some phones ignore transparent video. If autoplay is blocked, a **Tap to play** button appears.
-- **Latchi** is a set of keyword rules, not an AI model. It matches whole words, so "tube" does not trigger "ube". It never quotes prices.
-
-<br>
-
-## 🎨 Make it yours
-
-**Change the menu.** Edit the four lists near the top of the script in `index.html`:
-
-| List | Each entry |
-|---|---|
-| `CLASSIC` and `CLOUD` | `[name, description, calories, sweetness, bestSeller?]` |
-| `SOFT` and `FLOAT` | `[name, description]` |
-
-The matching picture is `assets/menu/<group>-<number>.png`.
-
-**Teach Latchi something new.** Add a line in the `ask()` function. Put specific questions above general ones.
-
-**Link the Order buttons.** The **Order** button and the footer's **Zomato & Swiggy** chip open Latchi's delivery answer. To send people to your Zomato or Swiggy page instead, find `askOrder` in the script and replace it with a link.
-
-**Swap a picture.** Replace a file in `assets/` with one of the same name. The page picks it up.
-
-| File | Used for |
-|---|---|
-| `cup-ube.png` | Hero cup (transparent PNG, about 600 × 1100) |
-| `cup-matchaswirl.png` | Ingredients scene |
-| `cups-trio.png` | Reviews scene |
-| `tin-open.png` | Matcha table scene |
-| `pourcup-opaque.mp4` | Cup being filled (keep a flat green backdrop, about `#41bd46`) |
-| `gen-setup.jpg` | Blurred backdrop and the table scene (16:9) |
-| `menu/*.png` | Menu pictures |
-| `logo.png`, `logo-sq.png`, `logo-word.png` | Logo |
-
-**Make new cut-outs (macOS 14 or newer):**
-
-```bash
-swift tools/cutout.swift cup-photo.png 1 1 1 assets/cup-new 1100
-swift tools/cutout.swift menu-sheet.png 4 3 11 assets/menu/classic 420
+site/                   the website, served at /
+├── index.html          the whole site (HTML, CSS, JavaScript)
+├── admin.html          owner screen: orders, reviews, menu on/off
+└── assets/             pictures and videos
+app/                    the backend
+├── main.py             starts the app, serves the site, security headers
+├── routes.py           all API endpoints
+├── models.py           database tables
+├── schemas.py          what each request must look like
+├── security.py         password hashing and login tokens
+├── db.py, config.py    database connection and settings
+scripts/
+├── init_db.py          create tables, load the 33 menu items
+└── make_admin_hash.py  make the owner password hash
+tests/                  19 automated tests
+index.py                the file Vercel looks for (loads app/main.py)
+requirements.txt        Python packages
+.env.example            the settings you need (copy to .env)
+docs/, tools/           README pictures, and a macOS cut-out helper
 ```
 
 <br>
 
 ## ✅ How it was tested
 
-Checked in Chromium (the engine behind Chrome and Edge) at widths from 320 px to 1920 px, on phone, tablet and desktop sizes.
-
 | Check | Result |
 |---|---|
-| Console errors and missing files | None |
-| Sideways scrolling | None at any size |
-| Text, cards and badges hidden under the top bar | None |
-| Keyboard: closed chat window and menu cannot be tabbed into | Pass |
-| Chat answers: calories, sweetness, hours, delivery, oat milk | Pass |
-| Float builder: every soft serve shows the right picture | Pass |
+| 19 automated API tests (orders, reviews, login, limits, cache, site serving) | Pass on SQLite and on PostgreSQL 16 |
+| Browser run with Chromium: menu from the database, hidden dish removed, order, bad phone message, review, owner approval, scripts in reviews do not run | Pass |
+| Site with the backend switched off (built-in menu, calm messages, Order opens Latchi) | Pass |
+| Sideways scrolling on a 390 px phone | None |
+| **Neon itself** and **a live Vercel deploy** | **Not tested yet.** Check `/api/health` after your first deploy |
 | Safari, iPhone and Android | **Not tested yet** |
 
 <br>
 
 ## 📝 Before launch
 
-These items need LATCHA's answer or a decision.
-
-- [ ] **Order links.** Add the real Zomato and Swiggy links.
-- [ ] **Reviews.** The three review cards are sample text. Replace them with LATCHA's own customer reviews.
-- [ ] **Instagram numbers.** The post and follower counts are typed into the page. Update them to the live numbers.
+- [ ] **Order links.** The footer button **Zomato & Swiggy** still opens Latchi's delivery answer. Add real links if you want it to leave the site.
+- [ ] **Who gets the orders.** Orders only appear in `/admin.html`. There is no email, SMS or WhatsApp alert yet, so someone must check it.
+- [ ] **Story reviews.** The three review cards in the scroll story are sample text until three real reviews are approved.
+- [ ] **Instagram numbers.** The post and follower counts are typed into the page.
 - [ ] **Opening hours.** Latchi says "Bengaluru till 1 AM, Hyderabad till 12 AM". Confirm this.
-- [ ] **Menu spelling.** "Caramel Toffe" is probably "Caramel Toffee". Check it against the printed menu.
-- [ ] **Photos.** Most pictures in `assets/` are AI-generated stand-ins. Replace them with LATCHA's own photography.
-- [ ] **Page weight.** The first load is about 12 MB, mostly PNG pictures. Converting them to WebP would make the site much lighter on mobile data.
-- [ ] **Float picture.** The float builder changes its picture only when you change the soft serve, not the latte or the extra matcha.
-
-<br>
-
-## 🕒 Changelog
-
-**v1.1**
-- Added the missing `plinth.svg`. The hero no longer asks for a file that does not exist.
-- Fixed the scroll story on tablets and tall windows. Cards and badges are no longer cut off.
-- Keeps text and badges clear of the top navigation bar.
-- Latchi now understands calorie and sweetness questions for each drink, "not sweet" in all its forms, and whole words only. The **Opening hours** button stays visible.
-- The closed chat window can no longer be reached with the `Tab` key.
-- New menu button for phones and tablets. The dead cart link became an **Order** button.
-- Tidied the Instagram highlights, the favourites grid, the tin position on phones and the **Scroll** hint.
-
-**v1.0**
-- First version: scroll story, menu, float builder and Latchi.
+- [ ] **Menu spelling.** "Caramel Toffe" is probably "Caramel Toffee".
+- [ ] **Photos.** Most pictures are AI-generated stand-ins. Replace them with LATCHA's own.
+- [ ] **Page weight.** The first load is about 12 MB. WebP versions of the pictures would help on mobile data.
+- [ ] **New dishes need a picture.** Add `site/assets/menu/<category>-<number>.png`, where the number matches the dish's `position`. Without one, the card shows without a picture.
 
 <br>
 
 ## ⚖️ Content and rights
 
 - The **LATCHA** name, logo, menu and copy belong to LATCHA. Please do not reuse them without the owner's permission.
-- Pictures in `photo-*.jpg`, the logo, the three-cup picture and the swirl-cup picture are LATCHA's own images or photos taken at LATCHA. They are here for this website only.
-- Most other pictures in `assets/` are AI-generated stand-ins.
-- No open-source licence is attached to this code. Please ask before you reuse it.
-- Fonts: Bagel Fat One, Gloock, Nunito Sans and Pinyon Script, from Google Fonts under open licences.
+- Most other pictures are AI-generated stand-ins. No open-source licence is attached to this code, so please ask before you reuse it.
+- Fonts: Bagel Fat One, Gloock, Nunito Sans and Pinyon Script, from Google Fonts.
 
 <br>
 

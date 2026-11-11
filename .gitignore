@@ -1,4 +1,6 @@
-.DS_Store
-*.heic
-*.HEIC
-node_modules/
+.env
+__pycache__/
+.venv/
+*.db
+.pytest_cache/
+.vercel
