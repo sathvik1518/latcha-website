@@ -50,7 +50,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 @keyframes tw{0%,100%{opacity:.25;transform:scale(.6) rotate(0)}50%{opacity:1;transform:scale(1.1) rotate(45deg)}}
 .bg{left:0;top:0;width:100%;height:100%;object-fit:cover;transform-origin:50% 0;user-select:none;-webkit-user-drag:none}
 #lake{transform:scale(1.214)}
-.wm{left:8cqw;right:8cqw;top:8cqh;pointer-events:none}
+.wm{left:8cqw;right:8cqw;top:max(8cqh,calc(var(--safe,0)*1cqh + 1.5cqh));pointer-events:none}
 .wm .lw{position:relative;width:100%;aspect-ratio:877/205}
 .wm img{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;filter:drop-shadow(0 0 .3cqh #fff) drop-shadow(0 .9cqh 0 #e58aa6) drop-shadow(0 2.2cqh 3cqh rgba(181,69,106,.3))}
 #ings{left:0;top:0;width:100%;height:100%;pointer-events:none}
@@ -58,7 +58,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .ing img{width:10cqh;height:10cqh;border-radius:50%;object-fit:contain;background:#fff;padding:.5cqh;margin:0 auto 1cqh;box-shadow:0 1cqh 2.4cqh rgba(229,138,166,.45);border:.6cqh solid #fff}
 .ing b{display:block;font-size:1.55cqh;font-weight:700;line-height:1.25}
 .ing small{display:block;font-size:1.3cqh;color:var(--mute);margin-top:.3cqh;line-height:1.3}
-#revs{left:11.5cqw;top:17cqh;width:29cqw;display:flex;flex-direction:column;gap:3cqh}
+#revs{left:max(11.5cqw,calc(var(--vl,0)*1cqw + 3cqw));top:max(17cqh,calc(var(--safe,0)*1cqh + 3cqh));width:29cqw;display:flex;flex-direction:column;gap:3cqh}
 .rev{display:flex;gap:2cqh;opacity:0;border-radius:2.6cqh;padding:2cqh 2.4cqh;box-shadow:0 1.6cqh 4cqh rgba(181,69,106,.18)}
 .rev i{flex:none;width:5.2cqh;height:5.2cqh;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 2.2cqh var(--ui);font-style:normal}
 .rev h3{font-family:var(--serif);font-weight:400;font-size:3.2cqh;line-height:1.1}
@@ -66,7 +66,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .rev p{font-size:1.7cqh;line-height:1.5}
 #ped{left:0;top:0;width:100%;height:100%;clip-path:inset(100% 0 0 0);background:url(assets/gen-setup.jpg) 50% 50%/cover no-repeat,var(--petal)}
 #ped .g{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,235,242,.28),rgba(255,235,242,0) 45%)}
-#fin{left:0;right:0;top:5cqh;text-align:center;opacity:0;color:var(--ink);pointer-events:none}
+#fin{left:0;right:0;top:calc(var(--safe,0)*1cqh + 3cqh);text-align:center;opacity:0;color:var(--ink);pointer-events:none}
 #fin .gl{display:inline-block;padding:3.4cqh 7cqh 3.6cqh;border-radius:4.4cqh;box-shadow:0 2cqh 6cqh rgba(122,46,69,.2)}
 #fin .eb{font-size:1.6cqh;font-weight:700;text-transform:uppercase;letter-spacing:.24em;color:var(--berry);margin-bottom:2cqh}
 #fin h2{font-family:var(--serif);font-weight:400;font-size:7.2cqh;line-height:1.04;margin-bottom:3cqh}
@@ -90,16 +90,25 @@ button{font:inherit;cursor:pointer;color:inherit}
 @keyframes tw2{0%,100%{opacity:.35;scale:.5}50%{opacity:1;scale:1.2}}
 #curtain{position:absolute;inset:0;background:var(--petal);z-index:40;pointer-events:none;display:grid;place-items:center}
 #curtain .logo img{height:clamp(70px,16vw,190px);border-radius:clamp(10px,2vw,28px);box-shadow:0 20px 50px rgba(181,48,58,.35)}
-.sfoot{position:absolute;left:0;right:0;bottom:0;height:64px;z-index:30;display:flex;align-items:center;justify-content:flex-end;padding:0 clamp(16px,3.4vw,44px);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.sfoot{position:absolute;left:0;right:0;bottom:0;height:64px;z-index:30;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:opacity .3s;padding:0 clamp(16px,3.4vw,44px);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 
 /* ---------- nav ---------- */
 nav{position:fixed;top:0;left:0;right:0;height:76px;z-index:60;display:flex;align-items:center;padding:0 clamp(16px,3.4vw,44px);color:var(--ink);background:rgba(255,245,248,.5);-webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);box-shadow:0 1px 0 rgba(255,255,255,.7);transition:background .3s,box-shadow .3s}
 nav.solid{background:rgba(255,245,248,.9);box-shadow:0 1px 0 var(--line)}
 nav .logo img{height:38px}
-.links{flex:1;max-width:900px;margin:0 auto;display:flex;justify-content:space-between;font-size:13px;font-weight:600;letter-spacing:.04em}
+.links{flex:1;max-width:900px;margin:0 auto;padding:0 clamp(12px,2.5vw,36px);display:flex;justify-content:space-between;font-size:13px;font-weight:600;letter-spacing:.04em}
 .links a{padding:10px 4px;position:relative}.links a:hover{color:var(--berry)}
 .links a::after{content:"";position:absolute;left:0;right:0;bottom:4px;height:2px;border-radius:2px;background:var(--rose-deep);transform:scaleX(0);transition:transform .3s}.links a:hover::after{transform:scaleX(1)}
-.bag{font-size:13px;font-weight:700;min-width:140px;text-align:right}
+.bag{font-size:13px;font-weight:700;min-width:140px;text-align:right;background:none;border:0;padding:10px 4px;min-height:44px}
+.burger{display:none;width:44px;height:44px;margin-left:4px;border:0;background:none;border-radius:12px;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.burger i{display:block;width:22px;height:2px;border-radius:2px;background:var(--ink);transition:transform .25s,opacity .2s}
+.burger.x i:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.burger.x i:nth-child(2){opacity:0}
+.burger.x i:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+#mnav{position:fixed;top:76px;left:0;right:0;z-index:59;display:grid;padding:8px clamp(16px,3.4vw,44px) 16px;background:rgba(255,245,248,.97);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 30px rgba(122,46,69,.16);border-bottom:1px solid var(--line);visibility:hidden;opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s,visibility 0s linear .25s}
+#mnav.open{visibility:visible;opacity:1;transform:none;transition-delay:0s}
+#mnav a{display:flex;align-items:center;min-height:48px;padding:0 6px;font-weight:700;font-size:16px;border-bottom:1px solid var(--line)}
+#mnav a:last-child{border-bottom:0}
 
 /* ---------- shared ---------- */
 .sec{position:relative;padding:11vh clamp(16px,5vw,72px)}
@@ -153,9 +162,9 @@ nav .logo img{height:38px}
 .btn-f{background:var(--berry);color:#fff}.btn-m{background:var(--petal);color:var(--berry)}
 .del{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
 .del span{padding:8px 14px;border-radius:99px;background:var(--leaf-soft);color:#3d5f14;font-weight:700;font-size:13px}
-.hl{display:flex;gap:16px;margin-top:22px;flex-wrap:wrap}
-.hl a{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;width:64px;text-align:center}
-.hl i{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--blush);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--rose);color:var(--berry);transition:transform .2s}
+.hl{display:flex;justify-content:space-between;gap:8px;margin-top:22px}
+.hl a{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;font-weight:600;flex:1 1 0;min-width:0;max-width:64px;text-align:center;overflow-wrap:anywhere}
+.hl i{width:min(60px,100%);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:var(--blush);box-shadow:0 0 0 2px #fff,0 0 0 4px var(--rose);color:var(--berry);transition:transform .2s}
 .hl a:hover i{transform:scale(1.08) rotate(-6deg)}
 .hl svg{width:26px;height:26px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
@@ -250,8 +259,8 @@ footer.site .chip{margin:0 10px 0 0}
 #cb .dot{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#ff4d6d;border:2px solid #fff;font:700 10px/14px var(--ui);color:#fff;text-align:center}
 #nudge{position:absolute;right:86px;bottom:14px;white-space:nowrap;padding:12px 16px;border-radius:18px 18px 4px 18px;font-weight:700;font-size:14px;box-shadow:0 12px 28px rgba(122,46,69,.2);opacity:0;transform:translateX(10px) scale(.9);transform-origin:right bottom;transition:all .4s cubic-bezier(.2,.8,.2,1);pointer-events:none}
 #nudge.on{opacity:1;transform:none;pointer-events:auto}
-#panel{position:absolute;right:0;bottom:92px;width:min(372px,calc(100vw - 28px));height:min(540px,calc(100vh - 140px));display:flex;flex-direction:column;border-radius:28px;box-shadow:0 30px 70px rgba(122,46,69,.32);opacity:0;transform:translateY(16px) scale(.94);transform-origin:right bottom;pointer-events:none;transition:all .35s cubic-bezier(.2,.8,.2,1);background:rgba(255,245,248,.8)}
-#panel.open{opacity:1;transform:none;pointer-events:auto}
+#panel{position:absolute;right:0;bottom:92px;width:min(372px,calc(100vw - 28px));height:min(540px,calc(100vh - 140px));display:flex;flex-direction:column;border-radius:28px;box-shadow:0 30px 70px rgba(122,46,69,.32);opacity:0;transform:translateY(16px) scale(.94);transform-origin:right bottom;pointer-events:none;visibility:hidden;transition:opacity .35s cubic-bezier(.2,.8,.2,1),transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s linear .35s;background:rgba(255,245,248,.8)}
+#panel.open{opacity:1;transform:none;pointer-events:auto;visibility:visible;transition-delay:0s}
 #panel header{display:flex;align-items:center;gap:12px;padding:16px 18px;background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff}
 #panel header .av2{width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none}
 #panel header .av2 svg{width:28px;height:32px}
@@ -277,20 +286,25 @@ footer.site .chip{margin:0 10px 0 0}
 @keyframes spk{to{transform:translateY(24px) scale(0) rotate(120deg);opacity:0}}
 
 @media(max-width:1100px){.igwrap{grid-template-columns:1fr}.ig{position:static}}
-@media(max-width:980px){.fav{grid-template-columns:1fr 1fr}.boards,#sig,.bld{grid-template-columns:1fr}.arch{max-width:420px}.badge{display:none}}
-@media(max-width:760px){
+@media(max-width:980px){.fav{grid-template-columns:1fr 1fr}.fav figure:last-child:nth-child(odd){grid-column:1/-1;aspect-ratio:16/10}.boards,#sig,.bld{grid-template-columns:1fr}.arch{max-width:420px}.badge{display:none}}
+@media(max-width:900px){nav{justify-content:space-between}.links{display:none}.burger{display:inline-flex}.bag{min-width:0;margin-left:auto}}
+@media(max-width:600px){.fav{grid-template-columns:1fr}.fav figure,.fav figure:last-child:nth-child(odd){aspect-ratio:1;grid-column:auto}}
+@media(max-width:760px),(max-aspect-ratio:6/5){
   .stage{left:0;top:0;transform:none;width:100%;height:100%;aspect-ratio:auto}
   .wm{left:5cqw;right:5cqw;top:13cqh}
-  #revs{left:4cqw;top:9cqh;width:92cqw;gap:1.6cqh}
+  #revs{left:4cqw;top:max(9cqh,calc(var(--safe,0)*1cqh + 2cqh));width:92cqw;gap:1.6cqh}
   .rev{padding:1.5cqh 2.4cqh;gap:1.6cqh;border-radius:2cqh}
   .rev i{width:4.4cqh;height:4.4cqh;font-size:1.9cqh}
   .rev h3{font-size:2.5cqh}.rev em{font-size:1.2cqh;margin:.2cqh 0 .5cqh}.rev p{font-size:1.5cqh;line-height:1.4}
   .ing{width:15cqh}.ing img{width:9.4cqh;height:9.4cqh}.ing b{font-size:1.45cqh}.ing small{font-size:1.2cqh}
-  #fin{top:7cqh}#fin .gl{padding:3cqh 6cqw 3.2cqh;border-radius:3cqh;max-width:92cqw}
+  #fin{top:calc(var(--safe,0)*1cqh + 2cqh)}#fin .gl{padding:3cqh 6cqw 3.2cqh;border-radius:3cqh;max-width:92cqw}
   #fin .eb{font-size:1.3cqh;letter-spacing:.16em;margin-bottom:1.4cqh}
   #fin h2{font-size:5cqh;margin-bottom:2cqh}
   #fin .pill{height:5cqh;padding:0 4cqh;font-size:1.6cqh}
   .sfoot{height:48px;font-size:11px}
+}
+@media(max-width:760px){
+  #mnav{top:64px}
   nav{height:64px}nav .logo img{height:32px}
   .chat-pad{display:none}
   #chat{right:12px;bottom:12px}#cb{width:62px;height:62px}#cb svg{width:42px;height:48px}
@@ -314,8 +328,10 @@ footer.site .chip{margin:0 10px 0 0}
 <nav id="nav">
   <a class="logo" href="#top" aria-label="LATCHA home"><img src="assets/logo.png" alt="LATCHA"></a>
   <div class="links"><a href="#top">Home</a><a href="#menu">Menu</a><a href="#builder">Build a float</a><a href="#fam">Latcha Fam</a><a href="#footer">Contact</a></div>
-  <a class="bag" href="#menu">Cart (0)</a>
+  <button type="button" class="bag" id="orderbtn">Order</button>
+  <button type="button" class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i><i></i></button>
 </nav>
+<div id="mnav" inert><a href="#top">Home</a><a href="#menu">Menu</a><a href="#builder">Build a float</a><a href="#fam">Latcha Fam</a><a href="#footer">Contact</a></div>
 
 <div id="track">
  <div class="view" id="view">
@@ -323,7 +339,7 @@ footer.site .chip{margin:0 10px 0 0}
   <div class="stage" id="stage">
     <div id="bgblur" aria-hidden="true"></div><div id="wash" aria-hidden="true"></div>
     <div id="orbs" aria-hidden="true"></div>
-    <img class="bg" id="lake" data-a="plinth.png" alt="A frosted glass plinth floating over the softly blurred matcha station">
+    <img class="bg" id="lake" data-a="plinth.svg" alt="A frosted glass plinth floating over the softly blurred matcha station">
     <div class="wm" id="wm" aria-hidden="true"></div>
     <div id="ings"></div>
     <div id="revs"></div>
@@ -450,13 +466,13 @@ footer.site .chip{margin:0 10px 0 0}
 <footer class="site" id="footer">
   <div class="brand"><a class="logo lg" href="#top" aria-label="LATCHA"><img src="assets/logo.png" alt="LATCHA"></a><p class="founder"><small>Founder</small><b>Rajasree Yarlagadda</b></p></div>
   <p>Speciality Matcha &amp; Premium Soft Serve<br>Your sign to slow down at Latcha.</p>
-  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><a class="chip o" href="#menu">Zomato &amp; Swiggy</a></div>
+  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Zomato &amp; Swiggy</button></div>
   <p style="width:100%;font-size:12px">© LATCHA™</p>
 </footer>
 
 <div id="chat">
   <div id="nudge" class="glass" role="status">Hi! Ask me anything about the menu ✨</div>
-  <section id="panel" class="glass" role="dialog" aria-label="Chat with Latchi" aria-hidden="true">
+  <section id="panel" class="glass" role="dialog" aria-label="Chat with Latchi" aria-hidden="true" inert>
     <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b>Latchi</b><small>Latcha’s matcha helper · online</small></div><button id="cx" type="button" aria-label="Close chat">×</button></header>
     <div id="msgs" aria-live="polite"></div>
     <div id="qr"></div>
@@ -491,7 +507,7 @@ var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").mat
 
 /* ---------- placeholder art (only if a file is missing) ---------- */
 var ART={
-"plinth.png":svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1456 813"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".3" stop-color="#fff" stop-opacity=".62"/><stop offset=".6" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fde3ec" stop-opacity=".5"/></linearGradient><linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fde3ec" stop-opacity=".6"/></linearGradient><radialGradient id="r" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><ellipse cx="728" cy="676" rx="300" ry="30" fill="url(#r)"/><path d="M558 534V640C558 662 640 676 728 676C816 676 898 662 898 640V534Z" fill="url(#b)" stroke="#fff" stroke-opacity=".85" stroke-width="2.500"/><path d="M596 548V650M640 556V664" stroke="#fff" stroke-opacity=".55" stroke-width="10" stroke-linecap="round"/><ellipse cx="728" cy="534" rx="170" ry="26" fill="url(#t)" stroke="#fff" stroke-opacity=".9" stroke-width="2.500"/><ellipse cx="728" cy="530" rx="116" ry="12" fill="#fff" opacity=".5"/></svg>'),
+"plinth.svg":svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1456 813"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".3" stop-color="#fff" stop-opacity=".62"/><stop offset=".6" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fde3ec" stop-opacity=".5"/></linearGradient><linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fde3ec" stop-opacity=".6"/></linearGradient><radialGradient id="r" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><ellipse cx="728" cy="676" rx="300" ry="30" fill="url(#r)"/><path d="M558 534V640C558 662 640 676 728 676C816 676 898 662 898 640V534Z" fill="url(#b)" stroke="#fff" stroke-opacity=".85" stroke-width="2.500"/><path d="M596 548V650M640 556V664" stroke="#fff" stroke-opacity=".55" stroke-width="10" stroke-linecap="round"/><ellipse cx="728" cy="534" rx="170" ry="26" fill="url(#t)" stroke="#fff" stroke-opacity=".9" stroke-width="2.500"/><ellipse cx="728" cy="530" rx="116" ry="12" fill="#fff" opacity=".5"/></svg>'),
 };
 function load(img,name){img.onerror=function(){img.onerror=null;if(ART[name])img.src=ART[name];else img.style.visibility="hidden"};img.src=BASE+name}
 $$("img[data-a]").forEach(function(i){load(i,i.getAttribute("data-a"))});
@@ -551,7 +567,7 @@ function upd(){var f=SOFT2FLOAT[sel.s],im=$("#fimg");im.style.opacity=0;setTimeo
   $("#fname").textContent=CLASSIC[sel.l][0]+" + "+SOFT[sel.s][0];
   $("#fsub").textContent=CLASSIC[sel.l][2]+" kcal latte · sweetness "+CLASSIC[sel.l][3]+"/5 · "+ADD[sel.a].toLowerCase()+" matcha"}
 chipRow("#pl",CLASSIC.map(function(r){return r[0]}),"l",upd);chipRow("#ps",SOFT.map(function(r){return r[0]}),"s",upd);chipRow("#pa",ADD,"a",upd);upd();
-$("#bsend").addEventListener("click",function(){openChat();setTimeout(function(){say("I'd like a "+CLASSIC[sel.l][0]+" latte with "+SOFT[sel.s][0]+" soft serve"+(sel.a?" and "+ADD[sel.a]+" extra matcha":"")+".",true);reply("That sounds dreamy! 🍵 Show this to the barista at the counter, or order it through Zomato or Swiggy. Want a suggestion for a second drink?",["Best sellers","Not too sweet","Soft serve flavours"])},400)});
+$("#bsend").addEventListener("click",function(){var wasG=greeted;openChat();setTimeout(function(){say("I'd like a "+CLASSIC[sel.l][0]+" latte with "+SOFT[sel.s][0]+" soft serve"+(sel.a?" and "+ADD[sel.a]+" extra matcha":"")+".",true);reply("That sounds dreamy! 🍵 Show this to the barista at the counter, or order it through Zomato or Swiggy. Want a suggestion for a second drink?",["Best sellers","Not too sweet","Soft serve flavours"])},wasG?400:1300)});
 
 /* ---------- reveal on scroll ---------- */
 var rvs=$$(".rv");
@@ -568,10 +584,10 @@ if(!reduce&&matchMedia("(hover:hover)").matches){
 
 /* ---------- chatbot: Latchi ---------- */
 var panel=$("#panel"),msgs=$("#msgs"),cb=$("#cb"),nudge=$("#nudge"),opened=false,greeted=false;
-function openChat(){panel.classList.add("open");panel.setAttribute("aria-hidden","false");cb.setAttribute("aria-expanded","true");nudge.classList.remove("on");$("#cdot").style.display="none";opened=true;if(!greeted){greeted=true;setTimeout(function(){reply("Hi, I’m Latchi! 🍵✨ Ask me about our matcha lattes, soft serve, floats, sweetness or delivery.",["Best sellers","Not too sweet","Soft serve flavours","Delivery","Extra matcha","Opening hours"])},250)}setTimeout(function(){$("#ci").focus()},350)}
-function closeChat(){panel.classList.remove("open");panel.setAttribute("aria-hidden","true");cb.setAttribute("aria-expanded","false")}
+function openChat(){panel.classList.add("open");panel.removeAttribute("inert");panel.setAttribute("aria-hidden","false");cb.setAttribute("aria-expanded","true");nudge.classList.remove("on");$("#cdot").style.display="none";opened=true;if(!greeted){greeted=true;setTimeout(function(){reply("Hi, I’m Latchi! 🍵✨ Ask me about our matcha lattes, soft serve, floats, sweetness or delivery.",["Best sellers","Not too sweet","Soft serve flavours","Delivery","Extra matcha","Opening hours"])},250)}setTimeout(function(){$("#ci").focus()},350)}
+function closeChat(){var was=panel.classList.contains("open"),inside=panel.contains(document.activeElement);panel.classList.remove("open");panel.setAttribute("aria-hidden","true");panel.setAttribute("inert","");cb.setAttribute("aria-expanded","false");if(was&&inside)cb.focus()}
 cb.addEventListener("click",function(){panel.classList.contains("open")?closeChat():openChat()});$("#cx").addEventListener("click",closeChat);
-document.addEventListener("keydown",function(e){if(e.key==="Escape")closeChat()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"){closeChat();setNav(false)}});
 setTimeout(function(){if(!opened)nudge.classList.add("on")},3500);setTimeout(function(){nudge.classList.remove("on")},13000);
 function esc(t){return t.replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
 function say(t,user){var d=document.createElement("div");d.className="m "+(user?"u":"b");d.innerHTML=user?esc(t):t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight}
@@ -584,14 +600,18 @@ var ALL=[];
 CLASSIC.forEach(function(r){ALL.push({n:r[0],d:r[1],k:r[2],s:r[3],bs:r[4]})});
 CLOUD.forEach(function(r){ALL.push({n:r[0],d:r[1],k:r[2],s:r[3],bs:r[4]})});
 function list(a){return a.map(function(x){return x.n}).join(", ")}
-function find(q){var best=null,bs=0;ALL.forEach(function(it){var words=it.n.toLowerCase().replace(/[^a-z ]/g,"").split(" ").filter(function(w){return w.length>2&&w!=="cloud"&&w!=="iced"&&w!=="matcha"&&w!=="latte"});var sc=0;words.forEach(function(w){if(q.indexOf(w)>-1)sc+=w.length});if(q.indexOf(it.n.toLowerCase())>-1)sc+=20;if(sc>bs){bs=sc;best=it}});return bs>=3?best:null}
+function wb(q,k){return new RegExp("(?:^|[^a-z0-9])"+k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).test(q)}
+var NOSWEET=/(?:^|[^a-z])(?:not|no|less|low|without|dont)(?:\s+\w+){0,3}\s+(?:sweet|sugar)|n't(?:\s+\w+){0,3}\s+(?:sweet|sugar)/;
+function find(q){var best=null,bs=0;ALL.forEach(function(it){var nm=it.n.toLowerCase(),words=nm.replace(/[^a-z ]/g,"").split(" ").filter(function(w){return w.length>2&&w!=="cloud"&&w!=="iced"&&w!=="matcha"&&w!=="latte"});var sc=0;words.forEach(function(w){if(wb(q,w))sc+=w.length});if(wb(q,nm))sc+=20+nm.length;if(sc>bs){bs=sc;best=it}});return bs>=3?best:null}
 var PRICE="I can’t quote prices here, since they can change. Please check at the counter or on Zomato and Swiggy. 💗";
-function ask(raw){say(raw,true);var q=raw.toLowerCase(),r,chips=["Best sellers","Not too sweet","Soft serve flavours","Delivery","Extra matcha"];
-  var has=function(){for(var i=0;i<arguments.length;i++)if(q.indexOf(arguments[i])>-1)return true;return false};
+function ask(raw){say(raw,true);var q=raw.toLowerCase().replace(/[\u2018\u2019]/g,"'"),r,chips=["Best sellers","Not too sweet","Soft serve flavours","Delivery","Extra matcha","Opening hours"];
+  var has=function(){for(var i=0;i<arguments.length;i++)if(wb(q,arguments[i]))return true;return false};
   if(has("price","cost","how much","rate","₹","rupee","expensive","cheap","offer","discount")){r=PRICE}
   else if(/^(hi|hey|hello|hii|yo)\b/.test(q)||has("good morning","good evening")){r="Hey you! 🍵 What are you craving today: a creamy cloud latte, a fruity classic, or a soft serve float?"}
   else if(has("thank","thanks","bye")){r="Anytime! Your sign to slow down at Latcha. ✨"}
-  else if(has("not too sweet","less sweet","low sugar","unsweet","sugar free","no sugar","healthy","light")){var a=ALL.filter(function(x){return x.s<=2}).sort(function(a,b){return a.s-b.s||a.k-b.k}).slice(0,4);r="Lighter picks 🍃: "+a.map(function(x){return "<b>"+x.n+"</b> ("+x.k+" kcal, sweetness "+x.s+"/5)"}).join(", ")+". You can also ask for it unsweetened."}
+  else if(has("calorie","kcal")){var ic=find(q);r=ic?"<b>"+ic.n+"</b>: "+ic.k+" kcal.":"Each latte lists its kcal on the menu. Tell me which one and I’ll look it up!"}
+  else if(has("sweet","sugar")&&find(q)){var is=find(q);r="<b>"+is.n+"</b>: sweetness "+is.s+"/5, "+is.k+" kcal."}
+  else if(NOSWEET.test(q)||has("not too sweet","less sweet","low sugar","unsweet","sugar free","no sugar","healthy","light")){var a=ALL.filter(function(x){return x.s<=2}).sort(function(a,b){return a.s-b.s||a.k-b.k}).slice(0,4);r="Lighter picks 🍃: "+a.map(function(x){return "<b>"+x.n+"</b> ("+x.k+" kcal, sweetness "+x.s+"/5)"}).join(", ")+". You can also ask for it unsweetened."}
   else if(has("sweet","dessert","sugar")&&!has("sweetness")){var a2=ALL.filter(function(x){return x.s>=4}).slice(0,4);r="For a sweet tooth 🍰: "+list(a2)+". Or go for a soft serve float!"}
   else if(has("best","popular","favourite","favorite","recommend","suggest","signature","bestseller")){var bsl=ALL.filter(function(x){return x.bs});r="Our best sellers 💗: "+list(bsl)+". If you like it earthy, start with the <b>Pure Iced Matcha Latte</b>."}
   else if(has("creamy","cloud","foam")){r="Cloud lattes are topped with thick cold foam ☁️: "+list(CLOUD.map(function(x){return {n:x[0]}}))+"."}
@@ -607,11 +627,20 @@ function ask(raw){say(raw,true);var q=raw.toLowerCase(),r,chips=["Best sellers",
   else if(has("uji","kyoto","japan","shade","shading","stone","origin","harvest","quality","ceremonial")){r="Our matcha comes from the fields of <b>Uji, Kyoto</b>: shaded for 28 days, first spring harvest, then stone-ground. 🍵"}
   else if(has("hojicha")){r="Our Hojicha menu is new: roasted, smooth and full of comforting flavours. 🤎"}
   else if(has("ube")){r="Ube lovers, we got you 💜: <b>Ube latte</b>, <b>Ube Cloud</b>, <b>Filipino Ube</b> soft serve, <b>Ube Swirl</b> and <b>Matcha &amp; Ube</b>."}
-  else if(has("calorie","kcal")){var it=find(q);r=it?"<b>"+it.n+"</b>: "+it.k+" kcal.":"Each latte lists its kcal on the menu. Tell me which one and I’ll look it up!"}
   else if(has("menu","what do you have","what do you sell","serve","options","flavour","flavor")){r="We have 4 menus: <b>Classic Iced Matcha Lattes</b> (11), <b>Cloud Lattes</b> (6), <b>Premium Soft Serves</b> (8) and <b>Matcha Floats</b> (8). <a href='#menu'>Open the menu</a>"}
   else if(has("contact","insta","dm","phone","call","human","team")){r="Slide into our DMs: <a href='https://www.instagram.com/siplatcha/' target='_blank' rel='noopener'>@siplatcha</a> 💌"}
   else{var f=find(q);if(f){r="<b>"+f.n+"</b>: "+f.d.toLowerCase()+". "+f.k+" kcal, sweetness "+f.s+"/5."+(f.bs?" It’s one of our best sellers! 💗":"")}else{r="Hmm, I’m not sure about that one. 🙈 Try asking about the menu, sweetness, soft serve, delivery, or DM us on <a href='https://www.instagram.com/siplatcha/' target='_blank' rel='noopener'>Instagram</a>."}}
   reply(r,chips)}
+
+/* ---------- phone menu + order buttons ---------- */
+var burger=$("#burger"),mnav=$("#mnav");
+function setNav(o){mnav.classList.toggle("open",o);burger.classList.toggle("x",o);burger.setAttribute("aria-expanded",o?"true":"false");if(o)mnav.removeAttribute("inert");else mnav.setAttribute("inert","")}
+burger.addEventListener("click",function(){setNav(!mnav.classList.contains("open"))});
+mnav.addEventListener("click",function(e){if(e.target.closest("a"))setNav(false)});
+document.addEventListener("click",function(e){if(!e.target.closest("#mnav,#burger"))setNav(false)});
+addEventListener("resize",function(){if(innerWidth>900)setNav(false)});
+function askOrder(){var wasG=greeted;openChat();setTimeout(function(){ask("Delivery")},wasG?300:1300)}
+$("#orderbtn").addEventListener("click",askOrder);$("#orderbtn2").addEventListener("click",askOrder);
 
 /* ---------- math ---------- */
 var clamp=function(v){return v<0?0:v>1?1:v};
@@ -627,12 +656,19 @@ var K0={drop:[.495,.42,.42],hero:[.495,.795,.42],ing:[.5,1.13,.74],hand:[.58,.74
     FX1={tin:[.27,.9,.17],pour:[.7,.9,.27],swirl:[.5,.985,.42]},
     ING0=[[31,31],[50,17],[69,31],[28,64],[72,64]],ING1=[[24,22],[50,12],[76,22],[20,45],[80,45]],
     K=K0,FX=FX0;
-function layout(){var m=innerWidth<=760;K=m?K1:K0;FX=m?FX1:FX0;var I=m?ING1:ING0;ingEls.forEach(function(e,i){e.style.left=I[i][0]+"%";e.style.top=I[i][1]+"%"})}
-layout();addEventListener("resize",layout);
+function layout(){var m=matchMedia("(max-width:760px),(max-aspect-ratio:6/5)").matches;K=m?K1:K0;FX=m?FX1:FX0;var I=m?ING1:ING0;
+  var st=$("#stage"),sr=st.getBoundingClientRect(),vr=$("#view").getBoundingClientRect(),nh=$("#nav").getBoundingClientRect().height,sh=sr.height||innerHeight,sw=sr.width||innerWidth;
+  var safe=Math.max(0,nh-(sr.top-vr.top))/sh*100,vl=Math.max(0,(sw-innerWidth)/2/sw*100);
+  st.style.setProperty("--safe",safe.toFixed(2));st.style.setProperty("--vl",vl.toFixed(2));
+  var hw=6.5*sh/sw;
+  ingEls.forEach(function(e,i){var x=Math.min(100-vl-hw-1,Math.max(vl+hw+1,I[i][0])),y=Math.max(I[i][1],safe+9.5);e.style.left=x+"%";e.style.top=y+"%"});
+  var tn=$("#tinopen"),r=(tn.naturalWidth&&tn.naturalHeight)?tn.naturalWidth/tn.naturalHeight:1.3,half=FX.tin[2]*sh*r/2/sw*100;
+  FX.tin[0]=Math.max(m?.27:.46,(vl+3+half)/100)}
+layout();addEventListener("resize",layout);addEventListener("load",layout);$("#tinopen").addEventListener("load",layout);
 
 var view=$("#view"),nav=$("#nav"),curtain=$("#curtain"),lake=$("#lake"),cup=$("#cup"),cup3=$("#cup3"),trio=$("#trio"),tinopen=$("#tinopen"),pourcup=$("#pourcup"),pourcv=$("#pourcv"),pourimg=$("#pourimg"),ring=$("#ring"),
     shadow=$("#shadow"),ped=$("#ped"),fin=$("#fin"),track=$("#track"),pm=$("#pmedia"),pg=$("#prog");
-var mx=0,my=0,sx=0,sy=0;
+var mx=0,my=0,sx=0,sy=0,sfoot=$(".sfoot");
 if(!reduce)document.addEventListener("pointermove",function(e){mx=e.clientX/innerWidth*2-1;my=e.clientY/innerHeight*2-1});
 
 [[3.4,10,24,0],[2.2,50,30,-.8],[1.6,95,22,-1.4],[2.8,140,28,-.4],[2.0,185,25,-2],[3.0,230,31,-1.1],[1.4,275,23,-.6],[2.4,320,27,-1.7]].forEach(function(a){var e=document.createElement("i");e.style.cssText="--s:"+a[0]+"cqh;--a:"+a[1]+"deg;--r:"+a[2]+"cqh;--d:"+a[3]+"s";ring.appendChild(e)});
@@ -695,6 +731,7 @@ function frame(now){
   sx+=(mx-sx)*.06;sy+=(my-sy)*.06;
   var pr=pm.parentNode.getBoundingClientRect();
   if(!reduce&&pr.bottom>0&&pr.top<innerHeight)pm.style.transform="translateY("+((pr.top+pr.height/2-innerHeight/2)*-.1)+"px)";
+  sfoot.style.opacity=scrollY>40?0:1;
   pg.style.width=(scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)*100)+"%";
   render(t,now);requestAnimationFrame(frame);
 }
