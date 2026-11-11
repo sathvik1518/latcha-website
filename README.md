@@ -1,124 +1,266 @@
-# LATCHA website
+<div align="center">
 
-A scroll-driven landing page for **LATCHA**, a speciality matcha and premium soft-serve café.
-One cup travels through four scenes as you scroll, then the page opens into the menu, a float builder and a small chat helper.
-It is a single `index.html` with no framework and no build step.
+<img src="assets/logo.png" alt="LATCHA logo" width="150">
 
-**Live preview:** https://rahuljakula.github.io/latcha-preview/
+# LATCHA
 
-Built by **Rahul J Akula** (Hyderabad) for **Rajasree Yarlagadda**, founder of LATCHA.
+### Speciality matcha, cloud lattes and premium soft serve.<br>One cup. One scroll. One very pink website.
 
-> This is a design preview. The brand name, logo lettering and menu belong to LATCHA. See [Content and rights](#content-and-rights).
+<br>
 
----
+![HTML5](https://img.shields.io/badge/HTML5-e58aa6?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-b5456a?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-5b8a1f?style=for-the-badge&logo=javascript&logoColor=white)
+![No build step](https://img.shields.io/badge/Build_step-none-4a2433?style=for-the-badge)
+![Any static host](https://img.shields.io/badge/Hosting-any_static_host-f6bfd0?style=for-the-badge&labelColor=4a2433)
 
-## What is on the page
+<br>
 
-**Scroll story** (the first 620 vh of the page)
+<img src="docs/preview-desktop.jpg" alt="LATCHA website on desktop: the hero with the LATCHA lettering and an Ube Cloud cup, and the final matcha table scene" width="100%">
 
+</div>
+
+<br>
+
+<!-- Add the live link here once the site is deployed:
+<p align="center"><a href="https://YOUR-SITE.vercel.app"><b>View the live site →</b></a></p>
+-->
+
+## ✨ What it is
+
+A single-page website for **LATCHA**, a speciality matcha and soft-serve café. One cup travels through four scenes as you scroll. After that, the page opens into the menu, a float builder and a small chat helper called **Latchi**.
+
+It is one `index.html` file. No framework, no install, no build step.
+
+<br>
+
+## 🍵 What is on the page
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### The scroll story
 | Scene | What you see |
 |---|---|
-| 1. Hero | Curtain lifts, the large LATCHA logo lettering rises letter by letter, an Ube Cloud cup floats and swings with sparkles around it. |
-| 2. Ingredients | Five badges (Uji matcha, Rosy cloud, Vanilla soft serve, Ube, Strawberry crush) pop in around a still picture of a matcha and vanilla swirl. |
-| 3. Reviews | Three review cards in frosted glass beside a picture of three LATCHA drinks. |
-| 4. The matcha table | An open tin of matcha powder with its lid beside it and a scoop on top, next to a LATCHA cup that turns while matcha is poured in and mixes. |
+| **1 · Hero** | The curtain lifts, the LATCHA lettering rises letter by letter, and an Ube Cloud cup floats above a glass plinth. |
+| **2 · Ingredients** | Five badges pop in around a matcha and vanilla swirl. |
+| **3 · Reviews** | Three frosted-glass review cards beside three LATCHA drinks. |
+| **4 · The matcha table** | An open tin, a scoop, and a cup that fills with matcha as you scroll. |
 
-**After the story**
+</td>
+<td width="50%" valign="top">
 
-- Pour video section with a rotating "Matcha · Soft serve · Floats" badge
-- Instagram-style profile card and post grid (`@siplatcha`)
-- Full menu: Classic Iced Matcha Lattes (11), Cloud Lattes (6), Premium Soft Serves (8), Matcha Floats (8). Sweetness and calories are shown. **No prices on purpose.**
-- **Build your float:** pick a latte, a soft serve and extra matcha, and see the matching float
-- Latcha 3.0 section, and a footer with the founder line
-- **Latchi**, a cup mascot in the corner. Click it to chat. It answers questions about the menu, sweetness, calories, best sellers, soft serve, delivery, extra matcha, oat milk and opening hours. It never quotes prices.
+### After the story
+| Section | What it does |
+|---|---|
+| **Pour video** | A full-width pour clip with a turning badge. |
+| **Latcha Fam** | An Instagram-style profile card and photo grid. |
+| **Menu** | 33 items in 4 boards, with calories and sweetness. |
+| **Build your float** | Pick a latte, a soft serve and extra matcha. |
+| **Latcha 3.0** | The new cups, in a pink arch. |
+| **Latchi** | A chat helper that answers menu questions. |
 
-Also included: a full phone layout (below 760 px wide), glass panels, 3D tilt cards (desktop), a sparkle cursor trail, and `prefers-reduced-motion` support.
+</td>
+</tr>
+</table>
 
----
+**The menu**
 
-## Run it
+| Board | Items |
+|---|---|
+| Classic Iced Matcha Lattes | 11 |
+| Cloud Lattes | 6 |
+| Premium Soft Serves | 8 |
+| Make-your-own Matcha Floats | 8 |
 
-No install needed. Open `index.html` by double-clicking it, or serve the folder so the videos load reliably:
+Prices are left out on purpose. Every latte shows its calories and a sweetness score from 0 to 5.
+
+<br>
+
+## 📱 Made for phones too
+
+<div align="center">
+<img src="docs/preview-phone.jpg" alt="LATCHA on a phone: the ingredients scene, the reviews scene, the matcha table scene and the open menu" width="100%">
+</div>
+
+- **Two layouts.** The scroll story switches to a tall layout on phones and on tablets held upright, so nothing is cut off at the edges.
+- **Menu button.** Below 900 px wide, the links move into a menu button. It closes when you tap a link or press `Esc`.
+- **Nothing hides under the top bar.** The story keeps its text and badges clear of the fixed navigation bar.
+- **Calmer motion.** If a device asks for reduced motion, the animations tone down.
+
+<br>
+
+## 🚀 Run it on your computer
+
+You need Python, which is already on most computers. Open a terminal **inside this folder** and run:
 
 ```bash
+# Windows
+python -m http.server 8000
+
+# Mac or Linux
 python3 -m http.server 8000
-# then open http://localhost:8000
 ```
 
-It loads fonts from Google Fonts, so it needs an internet connection for the typefaces.
+Then open **http://localhost:8000** in your browser.
 
-## Project layout
+> **Tip:** type `localhost:8000` yourself. If your editor opens `http://[::]:8000`, it will show an error. That address is not a page.
+>
+> Always run it through a server. Some browsers block the videos when you double-click `index.html`.
+
+Another way: in VS Code, install the **Live Server** extension, right-click `index.html` and choose **Open with Live Server**.
+
+The page loads its fonts from Google Fonts, so it needs an internet connection to look its best.
+
+<br>
+
+## 🌐 Put it online
+
+It is a static site, so any static host works. On **Vercel**:
+
+1. Push this folder to a GitHub repository.
+2. On [vercel.com](https://vercel.com), choose **Add New → Project** and import the repository.
+3. Set **Framework Preset** to **Other**. Leave the build and output settings empty.
+4. Click **Deploy**. Every push to `main` deploys again on its own.
+
+Netlify, Cloudflare Pages and GitHub Pages work the same way.
+
+<br>
+
+## 🗂 What is in the folder
 
 ```
-index.html        the whole site (HTML + CSS + JS, inline)
+index.html            the whole site: HTML, CSS and JavaScript in one file
+README.md             this file
 assets/
-  logo*.png       the LATCHA logo (badge, square, and transparent lettering for the hero)
-  cup-*.png       transparent cut-outs: hero cup, swirl cup, three-cup picture
-  tin-open.png    open matcha tin with lid and scoop
-  menu/           33 menu cut-outs: classic-1..11, cloud-1..6, soft-1..8, float-1..8
-  gen-*.jpg       generated photos (setup, pour, ube, soft serve, float)
-  photo-*.jpg     photos from the LATCHA Instagram and the founder's team (used for the preview)
-  pour.mp4        pour video (section after the story)
-  pourcup-opaque.mp4  video of the cup being filled, on a green backdrop
-  pourcup-static.png  still used if the video cannot load
-tools/cutout.swift   Vision-based background remover (macOS)
+├── logo.png          logo badge
+├── logo-sq.png       square logo for the profile card
+├── logo-word.png     transparent LATCHA lettering for the hero
+├── plinth.svg        the glass plinth under the hero cup
+├── cup-*.png         cut-out cups: hero, swirl, trio
+├── tin-open.png      the open matcha tin
+├── menu/             33 menu pictures: classic, cloud, soft, float
+├── gen-*.jpg         generated scene pictures
+├── photo-*.jpg       photos from LATCHA's Instagram and café
+├── pour.mp4          pour video for the section after the story
+├── pourcup-opaque.mp4   cup-filling clip used in the last scene
+└── pourcup-static.png   still picture used if that clip cannot play
+docs/                 screenshots used in this README
+tools/cutout.swift    background remover for new photos (macOS only)
 ```
 
-## How it works
+<br>
 
-- **One animation loop.** A single `requestAnimationFrame` loop drives the whole scroll story. Scroll progress `p` (0 to 1 over the story) maps to a timeline `t = 2.6 + p × 10` seconds and is smoothed each frame (`sm += (p − sm) × 0.075`). The first 2.6 s play on load.
-- **Scenes** are timed windows in that timeline: cup drop, move to ingredients (2.5–3.8 s), badges (3.55 s+), move to reviews (5.3–6.7 s), wipe to the table (8.3–9.75 s), final copy (9.55–10.6 s).
-- **A stage that fits every screen.** The scene lives in a `container-type: size` box and everything uses `cqh` and `cqw` units, so cups land in the same place at any size. On phones (≤ 760 px) the stage becomes portrait and each scene uses a separate position set (`K1`, `FX1`, `ING1` in the script).
-- **Transparent video on every browser.** The cup-pouring clip is an ordinary video with a green backdrop. The page draws each frame to a canvas and removes the green on the fly, because iPhones and some in-app browsers ignore transparent video. If autoplay is blocked, a **Tap to play** button appears over the cup.
-- **Editing the menu.** The items are four arrays near the top of the script: `CLASSIC`, `CLOUD`, `SOFT`, `FLOAT`. Each entry is `[name, description, kcal, sweetness, bestSeller?]`. The matching picture is `assets/menu/<group>-<n>.png`.
-- **Latchi's answers** are keyword rules in the `ask()` function. Add a line there to teach it something new.
+## ⚙️ How it works
 
-## Swapping in real photos
+- **One animation loop.** A single `requestAnimationFrame` loop runs the whole story. Your scroll position becomes a timeline, and each scene is a window of time on it.
+- **A stage that fits every screen.** The scene lives in a box that measures itself, and everything inside uses height and width units. The cups land in the same place at any size.
+- **Safe areas.** The script measures the navigation bar and the screen edges, then keeps badges and cards inside the visible part.
+- **See-through video on every browser.** The pouring clip has a flat green backdrop. The page draws each frame on a canvas and removes the green on the fly, because some phones ignore transparent video. If autoplay is blocked, a **Tap to play** button appears.
+- **Latchi** is a set of keyword rules, not an AI model. It matches whole words, so "tube" does not trigger "ube". It never quotes prices.
 
-Replace a file in `assets/` with one of the same name and the page picks it up. The most useful ones:
+<br>
+
+## 🎨 Make it yours
+
+**Change the menu.** Edit the four lists near the top of the script in `index.html`:
+
+| List | Each entry |
+|---|---|
+| `CLASSIC` and `CLOUD` | `[name, description, calories, sweetness, bestSeller?]` |
+| `SOFT` and `FLOAT` | `[name, description]` |
+
+The matching picture is `assets/menu/<group>-<number>.png`.
+
+**Teach Latchi something new.** Add a line in the `ask()` function. Put specific questions above general ones.
+
+**Link the Order buttons.** The **Order** button and the footer's **Zomato & Swiggy** chip open Latchi's delivery answer. To send people to your Zomato or Swiggy page instead, find `askOrder` in the script and replace it with a link.
+
+**Swap a picture.** Replace a file in `assets/` with one of the same name. The page picks it up.
 
 | File | Used for |
 |---|---|
 | `cup-ube.png` | Hero cup (transparent PNG, about 600 × 1100) |
-| `cup-matchaswirl.png` | Scene 2 picture |
-| `cups-trio.png` | Scene 3 picture |
-| `tin-open.png` | Scene 4 tin |
-| `pourcup-opaque.mp4` | Scene 4 pouring cup (keep a flat green backdrop, about `#41bd46`) |
+| `cup-matchaswirl.png` | Ingredients scene |
+| `cups-trio.png` | Reviews scene |
+| `tin-open.png` | Matcha table scene |
+| `pourcup-opaque.mp4` | Cup being filled (keep a flat green backdrop, about `#41bd46`) |
 | `gen-setup.jpg` | Blurred backdrop and the table scene (16:9) |
 | `menu/*.png` | Menu pictures |
 | `logo.png`, `logo-sq.png`, `logo-word.png` | Logo |
 
-## Rebuilding the media
-
-The generated pictures were made with an image model, then cut out and processed locally. To repeat the steps:
+**Make new cut-outs (macOS 14 or newer):**
 
 ```bash
-# 1. Cut a cup out of a studio photo (single image) or a catalogue sheet (cols x rows)
 swift tools/cutout.swift cup-photo.png 1 1 1 assets/cup-new 1100
 swift tools/cutout.swift menu-sheet.png 4 3 11 assets/menu/classic 420
-
-# 2. Make the cup-pouring video web-ready (H.264, no sound, small)
-ffmpeg -i pour-source.mp4 -t 3.2 -vf "scale=800:450,format=yuv420p" \
-  -c:v libx264 -crf 22 -movflags +faststart -an assets/pourcup-opaque.mp4
 ```
 
-Generate the cup on a flat green backdrop (`#41bd46`) so the on-page keying works.
+<br>
 
-## Browser support
+## ✅ How it was tested
 
-Developed and checked in desktop Chrome and at phone width. The iPhone and Safari video issues found along the way are fixed (see "Transparent video on every browser"), but Safari and a real iPhone have only been checked by the author on one phone. If a video cannot play, the page shows a still picture of the same cup. The scroll story needs `container-type: size`, which all current browsers support.
+Checked in Chromium (the engine behind Chrome and Edge) at widths from 320 px to 1920 px, on phone, tablet and desktop sizes.
 
-## Deploying
+| Check | Result |
+|---|---|
+| Console errors and missing files | None |
+| Sideways scrolling | None at any size |
+| Text, cards and badges hidden under the top bar | None |
+| Keyboard: closed chat window and menu cannot be tabbed into | Pass |
+| Chat answers: calories, sweetness, hours, delivery, oat milk | Pass |
+| Float builder: every soft serve shows the right picture | Pass |
+| Safari, iPhone and Android | **Not tested yet** |
 
-The site is static. It is published with GitHub Pages from the `main` branch root. Any static host (Netlify, Vercel, Cloudflare Pages) works by pointing it at this folder.
+<br>
 
-## Content and rights
+## 📝 Before launch
 
-- Most pictures in `assets/` are **AI-generated** (cups, tin, table, pour, menu cut-outs). They are stand-ins and should be replaced with LATCHA's own photography before launch.
-- Some pictures (`photo-*.jpg`, the logo, the three-cup picture, the swirl-cup picture) are LATCHA's own Instagram images or photos taken at LATCHA, used here for this preview only.
-- The LATCHA name, logo, menu and copy belong to LATCHA. Do not reuse them without the owner's permission.
-- Fonts: Bagel Fat One, Gloock, Nunito Sans, Pinyon Script (Google Fonts, open licences).
+These items need LATCHA's answer or a decision.
 
-## Contact
+- [ ] **Order links.** Add the real Zomato and Swiggy links.
+- [ ] **Reviews.** The three review cards are sample text. Replace them with LATCHA's own customer reviews.
+- [ ] **Instagram numbers.** The post and follower counts are typed into the page. Update them to the live numbers.
+- [ ] **Opening hours.** Latchi says "Bengaluru till 1 AM, Hyderabad till 12 AM". Confirm this.
+- [ ] **Menu spelling.** "Caramel Toffe" is probably "Caramel Toffee". Check it against the printed menu.
+- [ ] **Photos.** Most pictures in `assets/` are AI-generated stand-ins. Replace them with LATCHA's own photography.
+- [ ] **Page weight.** The first load is about 12 MB, mostly PNG pictures. Converting them to WebP would make the site much lighter on mobile data.
+- [ ] **Float picture.** The float builder changes its picture only when you change the soft serve, not the latte or the extra matcha.
 
-**Rahul J Akula** · Hyderabad
+<br>
+
+## 🕒 Changelog
+
+**v1.1**
+- Added the missing `plinth.svg`. The hero no longer asks for a file that does not exist.
+- Fixed the scroll story on tablets and tall windows. Cards and badges are no longer cut off.
+- Keeps text and badges clear of the top navigation bar.
+- Latchi now understands calorie and sweetness questions for each drink, "not sweet" in all its forms, and whole words only. The **Opening hours** button stays visible.
+- The closed chat window can no longer be reached with the `Tab` key.
+- New menu button for phones and tablets. The dead cart link became an **Order** button.
+- Tidied the Instagram highlights, the favourites grid, the tin position on phones and the **Scroll** hint.
+
+**v1.0**
+- First version: scroll story, menu, float builder and Latchi.
+
+<br>
+
+## ⚖️ Content and rights
+
+- The **LATCHA** name, logo, menu and copy belong to LATCHA. Please do not reuse them without the owner's permission.
+- Pictures in `photo-*.jpg`, the logo, the three-cup picture and the swirl-cup picture are LATCHA's own images or photos taken at LATCHA. They are here for this website only.
+- Most other pictures in `assets/` are AI-generated stand-ins.
+- No open-source licence is attached to this code. Please ask before you reuse it.
+- Fonts: Bagel Fat One, Gloock, Nunito Sans and Pinyon Script, from Google Fonts under open licences.
+
+<br>
+
+<div align="center">
+
+**Built by [Sai Sathvik Goud](https://github.com/sathvik1518)**<br>
+for **LATCHA** · founder **Rajasree Yarlagadda**
+
+<sub>Whisked slow. Sipped soft. 🍵</sub>
+
+</div>
