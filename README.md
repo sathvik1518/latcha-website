@@ -32,7 +32,7 @@ The LATCHA website and its backend in **one project**. One deploy gives one link
 | For customers | For the owner |
 |---|---|
 | A scroll story, the full menu, a float builder and the Latchi chat helper | Edit what is on the menu |
-| **Order request** form (name, phone, address, drinks) | See every order and set its status |
+| **+ Add** on every dish, a cart bar, and an **Order request** form (name, phone, address) | See every order and set its status |
 | **Reviews**: read approved ones, write your own | Approve or delete reviews before the public sees them |
 
 **The site never breaks if the backend is down.** It starts with the built-in menu, then swaps in the database menu when the API answers.
@@ -49,6 +49,34 @@ Browser ──▶  /              the website            (site/index.html)
                                   ▼
                            Neon PostgreSQL  (menu_items, orders, order_lines, reviews)
 ```
+
+<br>
+
+## 🖱 What every button does
+
+| Where | Control | What happens |
+|---|---|---|
+| Top bar | **Home, Menu, Build a float, Latcha Fam, Reviews, Contact** | Scrolls to that section (phone: through the menu button) |
+| Top bar | **Order** | Opens the order form. Shows **Order (3)** when you have 3 items |
+| Top bar (phone) | **Menu button** | Opens the links. `Esc` or tapping a link closes it |
+| Hero | **Order LATCHA** | Opens the order form |
+| Hero video | **Tap to play** | Starts the pouring video when the phone blocks autoplay |
+| Instagram card | **Follow @siplatcha** | Opens Instagram in a new tab |
+| Instagram card | **See the menu**, highlight circles | Scroll to the menu or the matching section |
+| Instagram card | **Photo tiles** | Open @siplatcha on Instagram in a new tab |
+| Menu | **+ Add** on each of the 33 dishes | Adds the dish to your order and shows a short message. Tap again for more. The button shows **Added ✓ ×2** |
+| Bottom of screen | **Review your order** | Appears once you add something. Opens the order form |
+| Order form | **− / +** | Change how many of each dish |
+| Order form | **Send order request** | Saves the order. LATCHA calls to confirm. No payment is taken |
+| Float builder | Latte, soft serve, extra matcha | Changes the picture and the summary |
+| Float builder | **Add this float to my order** | Adds the matching float from the menu and puts your latte and extra matcha in the order notes |
+| Float builder | **Ask Latchi about it** | Sends your float to the chat helper |
+| Reviews | **Send review** | Goes to the owner. It appears on the site once approved |
+| Footer | **Follow @siplatcha** | Opens Instagram in a new tab |
+| Footer | **Delivery & hours** | Opens Latchi with the delivery answer and an **Open order form** button |
+| Chat bubble | **Latchi** | Answers menu questions. Say "order now" or press **Open order form** to order |
+
+If the backend is offline, the **+ Add** buttons are hidden and **Order** opens Latchi instead, so nothing shows an error.
 
 <br>
 
@@ -174,7 +202,7 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 
 ## 📝 Before launch
 
-- [ ] **Order links.** The footer button **Zomato & Swiggy** still opens Latchi's delivery answer. Add real links if you want it to leave the site.
+- [ ] **Zomato and Swiggy links.** The footer button **Delivery & hours** opens Latchi's answer. Add real Zomato and Swiggy links if you want people to jump there.
 - [ ] **Who gets the orders.** Orders only appear in `/admin.html`. There is no email, SMS or WhatsApp alert yet, so someone must check it.
 - [ ] **Story reviews.** The three review cards in the scroll story are sample text until three real reviews are approved.
 - [ ] **Instagram numbers.** The post and follower counts are typed into the page.
@@ -195,6 +223,9 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 <br>
 
 <div align="center">
+
+**Built by [Sai Sathvik Goud](https://github.com/sathvik1518)**<br>
+for **LATCHA** · founder **Rajasree Yarlagadda**
 
 <sub>Whisked slow. Sipped soft. 🍵</sub>
 

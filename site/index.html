@@ -322,46 +322,79 @@ footer.site .chip{margin:0 10px 0 0}
   .links{display:none}nav{justify-content:space-between}.grid{gap:8px}.tile{border-radius:14px}.bag{min-width:0}#nudge{display:none}}
 @media(prefers-reduced-motion:reduce){.marq .t,.orb,.sp,#ring,#ring i,.wave,.badge svg,.glass::after,#cb svg,#cb::before,#cb::after,.stagebox .fimg{animation:none}.rv{opacity:1;transform:none;filter:none;transition:none}html{scroll-behavior:auto}}
 
-/* ---------- backend features: order drawer + reviews ---------- */
-.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:36px}
-.rc{background:#fff;border:1.5px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
-.rc{overflow-wrap:anywhere}.rc b{color:var(--berry);letter-spacing:.12em}.rc p{margin:8px 0 10px;line-height:1.55}.rc small{color:var(--mute);font-weight:700}
-.rnone{color:var(--mute);margin-bottom:28px}
-.fm{max-width:640px;padding:24px;border-radius:24px;display:grid;gap:12px}
-.fm h3{font-family:var(--serif);font-weight:400;font-size:26px}
+/* ---------- order drawer + reviews: built from the site's own pieces ---------- */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;margin:34px 0 40px}
+.rc{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1.5px solid var(--line);border-radius:28px;padding:22px;box-shadow:var(--shadow);overflow-wrap:anywhere;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.rc:hover{transform:translateY(-4px)}
+.rc i{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font:700 18px var(--ui);font-style:normal}
+.rc h3{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.1;color:var(--berry);letter-spacing:.04em}
+.rc em{display:block;font-style:normal;font-size:12px;color:var(--mute);margin:4px 0 8px;letter-spacing:.04em}
+.rc p{font-size:15px;line-height:1.6}
+.rnone{color:var(--mute);margin:30px 0 36px;font-size:16px;line-height:1.6}
+.fm{max-width:640px;padding:28px;border-radius:28px;display:grid;gap:14px;box-shadow:var(--shadow)}
+.fm h3{font-family:var(--serif);font-weight:400;font-size:26px;color:var(--ink)}
 .fm label{display:grid;gap:6px;font-size:13px;font-weight:700;color:var(--ink)}
-.fm input,.fm select,.fm textarea{font:inherit;font-weight:400;color:var(--ink);background:#fff;border:1.5px solid var(--rose);border-radius:14px;padding:11px 14px;min-height:44px;width:100%}
-.fm textarea{min-height:90px;resize:vertical}
-.fm input:focus,.fm select:focus,.fm textarea:focus{outline:2px solid var(--berry);outline-offset:1px}
-.fm .chip{margin:6px 0 0;justify-content:center}.fm .chip[disabled]{opacity:.5;cursor:not-allowed}
-.fm .msg{font-size:14px;font-weight:700;min-height:20px}.msg.ok{color:var(--matcha)}.msg.bad{color:var(--crimson)}
+.fm input,.fm select,.fm textarea{font:inherit;font-size:14px;font-weight:400;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:99px;padding:11px 16px;min-height:44px;width:100%;transition:border-color .2s,box-shadow .2s}
+.fm textarea{min-height:92px;border-radius:22px;resize:vertical;line-height:1.5}
+.fm select{appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23b5456a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 16px center;padding-right:38px}
+.fm input:hover,.fm select:hover,.fm textarea:hover{border-color:var(--rose)}
+.fm input:focus,.fm select:focus,.fm textarea:focus{outline:0;border-color:var(--berry);box-shadow:0 0 0 4px rgba(229,138,166,.22)}
+.fm input::placeholder,.fm textarea::placeholder{color:var(--mute);opacity:.7}
+.fm .chip{margin:4px 0 0;justify-content:center}.fm .chip[disabled]{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.fm .msg{font-size:14px;font-weight:700;line-height:1.5;min-height:0}.msg.ok{color:var(--matcha)}.msg.bad{color:var(--crimson)}
 .hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;opacity:0}
-.ordwrap{position:fixed;inset:0;z-index:90;background:rgba(74,36,51,.45);display:flex;justify-content:center;align-items:flex-end;padding:0}
+/* order drawer: same bones as the Latchi chat window */
+.ordwrap{position:fixed;inset:0;z-index:90;background:rgba(74,36,51,.4);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:flex;justify-content:center;align-items:flex-end}
 .ordwrap[hidden]{display:none}
 body.ordopen #chat{display:none}
-.ordbox{background:var(--blush);width:min(720px,100%);max-height:92dvh;overflow:auto;border-radius:26px 26px 0 0;padding:22px clamp(16px,4vw,32px) 28px;position:relative}
-@media(min-width:760px){.ordwrap{align-items:center;padding:24px}.ordbox{border-radius:26px}}
-.ordbox h2{font-family:var(--serif);font-weight:400;font-size:30px;margin-right:48px}
-.ordbox .x{position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;border:1.5px solid var(--rose);background:#fff;color:var(--ink);font-size:20px}
-.og{margin:18px 0 6px;font-weight:700;color:var(--berry);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
-.orow{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--line)}
-.orow span{flex:1;font-size:15px}
-.stp{display:flex;align-items:center;gap:6px}
-.stp button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--rose);background:#fff;color:var(--ink);font-size:18px;font-weight:700}
-.stp output{min-width:22px;text-align:center;font-weight:700}
-.osum{margin:16px 0 4px;font-weight:700}
-.ofields{display:grid;gap:12px;margin-top:14px}
+.ordbox{width:min(560px,100%);max-height:92dvh;display:flex;flex-direction:column;border-radius:28px 28px 0 0;box-shadow:0 30px 70px rgba(122,46,69,.32);background:rgba(255,245,248,.9);animation:ordin .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes ordin{from{opacity:0;transform:translateY(16px) scale(.94)}}
+@media(min-width:760px){.ordwrap{align-items:center;padding:24px}.ordbox{border-radius:28px;max-height:88dvh}}
+.ordbox header{display:flex;align-items:center;gap:12px;padding:16px 18px;background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff;flex:none}
+.ordbox header .av2{width:42px;height:42px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none}
+.ordbox header .av2 svg{width:28px;height:32px}
+.ordbox header b{display:block;font-family:var(--serif);font-weight:400;font-size:19px}
+.ordbox header small{font-size:12px;opacity:.95}
+.ordbox header .x{margin-left:auto;border:0;background:rgba(255,255,255,.22);width:34px;height:34px;border-radius:50%;color:#fff;font-size:20px;line-height:1;flex:none;transition:background .2s}
+.ordbox header .x:hover{background:rgba(255,255,255,.36)}
+.obody{overflow:auto;padding:6px 20px 22px;-webkit-overflow-scrolling:touch}
+.olead{font-size:14px;line-height:1.55;color:var(--mute);margin:14px 0 0}
+.og{font-family:var(--serif);font-weight:400;font-size:20px;color:var(--ink);margin:22px 0 4px}
+.orow{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.orow span{flex:1;font-size:14px;font-weight:700;line-height:1.35}
+.stp{display:flex;align-items:center;gap:8px}
+.stp button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--rose);background:#fff;color:var(--berry);font-size:18px;font-weight:700;line-height:1;transition:all .2s}
+.stp button:hover{border-color:var(--berry);background:var(--petal);transform:translateY(-1px)}
+.stp output{min-width:22px;text-align:center;font-weight:700;font-size:14px}
+.osum{display:inline-block;margin:20px 0 6px;padding:9px 16px;border-radius:99px;background:var(--petal);color:var(--berry);font-weight:700;font-size:13px}
+.ofields{margin-top:12px}
+.ofields.fm{padding:0;max-width:none;background:none;border:0;box-shadow:none}
+
+/* ---------- add buttons, cart bar, toast ---------- */
+.item .m{flex-wrap:wrap;justify-content:center;gap:4px 8px}.item .m span{white-space:nowrap}
+.item .add{-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:block;margin:10px auto 0;min-height:36px;padding:8px 15px;border-radius:99px;border:1.5px solid var(--rose);background:#fff;color:var(--berry);font-weight:700;font-size:12.5px;transition:all .2s}
+.item .add:hover{background:var(--petal);border-color:var(--berry);transform:translateY(-1px)}
+.item .add.in{background:var(--berry);border-color:var(--berry);color:#fff;box-shadow:0 8px 16px rgba(181,69,106,.3)}
+#cartbar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:10px;min-height:48px;padding:12px 22px;border-radius:99px;border:0;background:var(--berry);color:#fff;font-weight:700;font-size:14px;box-shadow:0 8px 20px rgba(181,69,106,.28);transition:transform .2s,box-shadow .2s}
+#cartbar:hover{transform:translate(-50%,-2px);box-shadow:0 12px 24px rgba(181,69,106,.36)}
+#cartbar[hidden]{display:none}
+#cartbar b{background:#ff4d6d;color:#fff;border:2px solid #fff;border-radius:99px;min-width:24px;height:24px;display:inline-grid;place-items:center;font:700 11px/1 var(--ui)}
+body.ordopen #cartbar,body.ordopen #toast{display:none}
+@media(max-width:520px){#cartbar{left:16px;transform:none;bottom:16px;right:92px;justify-content:center}#cartbar:hover{transform:none}}
+#toast{position:fixed;top:88px;left:50%;transform:translate(-50%,-10px) scale(.94);z-index:95;padding:12px 18px;border-radius:18px;font-weight:700;font-size:14px;color:var(--ink);box-shadow:0 12px 28px rgba(122,46,69,.2);opacity:0;pointer-events:none;transition:opacity .35s cubic-bezier(.2,.8,.2,1),transform .35s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 32px);text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#fam .tile{cursor:pointer}
 </style>
 </head>
 <body class="nojs">
 <div id="prog" aria-hidden="true"></div>
 <nav id="nav">
   <a class="logo" href="#top" aria-label="LATCHA home"><img src="assets/logo.png" alt="LATCHA"></a>
-  <div class="links"><a href="#top">Home</a><a href="#menu">Menu</a><a href="#builder">Build a float</a><a href="#fam">Latcha Fam</a><a href="#footer">Contact</a></div>
+  <div class="links"><a href="#top">Home</a><a href="#menu">Menu</a><a href="#builder">Build a float</a><a href="#fam">Latcha Fam</a><a href="#reviews">Reviews</a><a href="#footer">Contact</a></div>
   <button type="button" class="bag" id="orderbtn">Order</button>
   <button type="button" class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i><i></i></button>
 </nav>
-<div id="mnav" inert><a href="#top">Home</a><a href="#menu">Menu</a><a href="#builder">Build a float</a><a href="#fam">Latcha Fam</a><a href="#footer">Contact</a></div>
+<div id="mnav" inert><a href="#top">Home</a><a href="#menu">Menu</a><a href="#builder">Build a float</a><a href="#fam">Latcha Fam</a><a href="#reviews">Reviews</a><a href="#footer">Contact</a></div>
 
 <div id="track">
  <div class="view" id="view">
@@ -374,7 +407,7 @@ body.ordopen #chat{display:none}
     <div id="ings"></div>
     <div id="revs"></div>
     <div id="ped" role="img" aria-label="A blush marble counter with a pink matcha bowl, bamboo whisk, scoop, sifter and a single rose by an arched window"><div class="g"></div></div>
-    <div id="fin"><div class="gl glass"><div class="eb">Matcha · Soft serve · Floats</div><h2>Whisked slow.<br><em>Sipped soft.</em></h2><a class="pill" href="#menu">Order LATCHA</a></div></div>
+    <div id="fin"><div class="gl glass"><div class="eb">Matcha · Soft serve · Floats</div><h2>Whisked slow.<br><em>Sipped soft.</em></h2><a class="pill" id="pillorder" href="#menu">Order LATCHA</a></div></div>
     <div id="shadow"></div>
     <div id="ring" aria-hidden="true"></div>
     <img id="cup" data-a="cup-ube.png" alt="A LATCHA Ube Cloud iced matcha latte with lilac ube cold foam under a clear dome lid">
@@ -467,7 +500,7 @@ body.ordopen #chat{display:none}
       <div class="rv"><h3>1 · Pick your latte</h3><div class="chips" id="pl"></div></div>
       <div class="rv"><h3>2 · Crown it with soft serve</h3><div class="chips" id="ps"></div></div>
       <div class="rv"><h3>3 · Extra matcha?</h3><div class="chips" id="pa"></div></div>
-      <div class="rv"><button class="chip" id="bsend" type="button">Send my float to Latchi</button></div>
+      <div class="rv"><button class="chip" id="badd" type="button">Add this float to my order</button><button class="chip o" id="bsend" type="button">Ask Latchi about it</button></div>
     </div>
     <div class="stagebox rv">
       <span class="orb" style="left:8%;top:12%;width:16%;height:16%"></span><span class="orb" style="right:8%;top:30%;width:10%;height:10%;animation-delay:-3s"></span>
@@ -512,26 +545,29 @@ body.ordopen #chat{display:none}
 <footer class="site" id="footer">
   <div class="brand"><a class="logo lg" href="#top" aria-label="LATCHA"><img src="assets/logo.png" alt="LATCHA"></a><p class="founder"><small>Founder</small><b>Rajasree Yarlagadda</b></p></div>
   <p>Speciality Matcha &amp; Premium Soft Serve<br>Your sign to slow down at Latcha.</p>
-  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Zomato &amp; Swiggy</button></div>
+  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button></div>
   <p style="width:100%;font-size:12px">© LATCHA™</p>
 </footer>
 
+<button type="button" id="cartbar" hidden aria-label="Review your order"><span>Review your order</span><b id="cartn">0</b></button>
+<div id="toast" class="glass" role="status" aria-live="polite"></div>
 <div class="ordwrap" id="ord" hidden>
-  <div class="ordbox" role="dialog" aria-modal="true" aria-labelledby="ordh">
-    <button type="button" class="x" id="ordx" aria-label="Close order form">✕</button>
-    <h2 id="ordh">Order request</h2>
-    <p style="color:var(--mute);margin-top:6px;line-height:1.5">Choose your drinks and leave your details. LATCHA will call you to confirm. No payment is taken here.</p>
-    <div id="ordlist"></div>
-    <div class="osum" id="osum">Nothing selected yet</div>
-    <form class="fm ofields" id="oform" novalidate style="padding:0;max-width:none;background:none;border:0">
-      <label>Your name<input name="customer_name" maxlength="80" autocomplete="name" required></label>
-      <label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>
-      <label>City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
-      <label>Delivery address<textarea name="address" maxlength="300" autocomplete="street-address" required></textarea></label>
-      <label>Notes (optional)<input name="notes" maxlength="300" placeholder="Oat milk, less sweet, gate code"></label>
-      <button class="chip" type="submit" id="osub" disabled>Send order request</button>
-      <div class="msg" id="omsg" role="status"></div>
-    </form>
+  <div class="ordbox glass" role="dialog" aria-modal="true" aria-labelledby="ordh">
+    <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="ordh">Your order</b><small>LATCHA calls to confirm · no payment here</small></div><button type="button" class="x" id="ordx" aria-label="Close order form">×</button></header>
+    <div class="obody">
+      <p class="olead">Pick your sips, tell us where to send them, and we will ring you to confirm. 🍵</p>
+      <div id="ordlist"></div>
+      <div class="osum" id="osum">Nothing selected yet</div>
+      <form class="fm ofields" id="oform" novalidate>
+        <label>Your name<input name="customer_name" maxlength="80" autocomplete="name" required></label>
+        <label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>
+        <label>City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
+        <label>Delivery address<textarea name="address" maxlength="300" autocomplete="street-address" required></textarea></label>
+        <label>Notes (optional)<input name="notes" maxlength="300" placeholder="Oat milk, less sweet, gate code"></label>
+        <button class="chip" type="submit" id="osub" disabled>Send order request</button>
+        <div class="msg" id="omsg" role="status"></div>
+      </form>
+    </div>
   </div>
 </div>
 
@@ -613,15 +649,15 @@ var CLOUD=[["Banana Pudding Cloud","Creamy banana, biscuit bliss",364,4,1],["Coo
 var SOFT=[["Vanilla Silk","Silky smooth vanilla"],["Strawberry Crush","Creamy strawberry swirl"],["Vanilla & Strawberry","Classic vanilla strawberry swirl"],["Uji Matcha","Smooth, umami matcha"],["Filipino Ube","Nutty & creamy Filipino ube"],["Matcha & Ube","Dreamy matcha ube swirl"],["Matcha Swirl","Umami-rich creamy matcha swirl"],["Ube Swirl","Mix matcha with nutty ube"]];
 var FLOAT=[["Vanilla Silk Float","Classic iced matcha latte + our Vanilla Silk"],["Strawberry Crush Float","Classic iced matcha latte + Strawberry Crush"],["Signature Swirl Float","Classic iced matcha latte + Signature Swirl"],["Matcha Swirl Float","Classic iced matcha latte + Matcha Swirl"],["Ube Swirl Float","Classic iced matcha latte + Ube Swirl"],["Uji Matcha Float","Classic iced matcha latte + Uji Matcha"],["Filipino Ube Float","Classic iced matcha latte + Filipino Ube"],["Matcha Ube Float","Classic iced matcha latte + Matcha Ube"]];
 function dots(n){var s="";for(var i=0;i<5;i++)s+='<i class="'+(i<n?"on":"")+'"></i>';return '<span class="dots" aria-label="Sweetness '+n+' of 5">'+s+'</span>'}
-function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+'</div>'}
+function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+(o.id?'<button type="button" class="add" data-id="'+o.id+'" aria-label="Add '+o.n.replace(/"/g,"")+' to your order">+ Add</button>':'')+'</div>'}
 var LOGO='<span class="logo"><img src="assets/logo.png" alt="LATCHA"></span>';
 function board(title,sub,html,strip,note){return '<article class="board rv"><div class="bh">'+LOGO+'<span class="t2">Speciality Matcha | Soft Serves | Floats</span></div><div class="pillt">'+title+(sub?'<small>'+sub+'</small>':'')+'</div><div class="items">'+html+'</div>'+(note?'<div class="note">'+note+'</div>':'')+(strip?'<div class="strip">'+strip+'</div>':'')+'<div class="addon">MATCHA ADD ON · 1G · 2G · 3G · 4G</div></article>'}
 function renderBoards(){
 var h="";
-h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],img:"menu/classic-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],img:"menu/cloud-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],img:"menu/soft-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
-h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],img:"menu/float-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/classic-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/cloud-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/soft-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/float-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
 $("#boards").innerHTML=h;
 }
 renderBoards();
@@ -643,7 +679,7 @@ if("IntersectionObserver" in window){var io=new IntersectionObserver(function(es
 
 /* ---------- 3D tilt cards + sparkle trail ---------- */
 if(!reduce&&matchMedia("(hover:hover)").matches){
-  document.addEventListener("pointermove",function(e){var t=e.target.closest&&e.target.closest("[data-tilt]");
+  document.addEventListener("pointermove",function(e){var t=e.target.closest&&!e.target.closest(".add")&&e.target.closest("[data-tilt]");
     $$("[data-tilt].tl").forEach(function(x){if(x!==t){x.classList.remove("tl");x.style.transition="transform .5s";x.style.transform=""}});
     if(t){var r=t.getBoundingClientRect(),px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
       t.classList.add("tl");t.style.transition="transform .08s";t.style.transform="perspective(800px) rotateY("+px*14+"deg) rotateX("+(-py*14)+"deg) translateY(-4px)"}
@@ -673,7 +709,8 @@ function wb(q,k){return new RegExp("(?:^|[^a-z0-9])"+k.replace(/[.*+?^${}()|[\]\
 var NOSWEET=/(?:^|[^a-z])(?:not|no|less|low|without|dont)(?:\s+\w+){0,3}\s+(?:sweet|sugar)|n't(?:\s+\w+){0,3}\s+(?:sweet|sugar)/;
 function find(q){var best=null,bs=0;ALL.forEach(function(it){var nm=it.n.toLowerCase(),words=nm.replace(/[^a-z ]/g,"").split(" ").filter(function(w){return w.length>2&&w!=="cloud"&&w!=="iced"&&w!=="matcha"&&w!=="latte"});var sc=0;words.forEach(function(w){if(wb(q,w))sc+=w.length});if(wb(q,nm))sc+=20+nm.length;if(sc>bs){bs=sc;best=it}});return bs>=3?best:null}
 var PRICE="I can’t quote prices here, since they can change. Please check at the counter or on Zomato and Swiggy. 💗";
-function ask(raw){say(raw,true);var q=raw.toLowerCase().replace(/[\u2018\u2019]/g,"'"),r,chips=["Best sellers","Not too sweet","Soft serve flavours","Delivery","Extra matcha","Opening hours"];
+function ask(raw){say(raw,true);
+  if(/^(open order form|order now|place (an )?order|i want to order|i wanna order)\W*$/i.test(raw.trim())){reply("Opening the order form for you. 🛍️ Pick your drinks and we will call you to confirm.");setTimeout(openOrder,900);return}var q=raw.toLowerCase().replace(/[\u2018\u2019]/g,"'"),r,chips=["Best sellers","Not too sweet","Soft serve flavours","Delivery","Extra matcha","Opening hours"];
   var has=function(){for(var i=0;i<arguments.length;i++)if(wb(q,arguments[i]))return true;return false};
   if(has("price","cost","how much","rate","₹","rupee","expensive","cheap","offer","discount")){r=PRICE}
   else if(/^(hi|hey|hello|hii|yo)\b/.test(q)||has("good morning","good evening")){r="Hey you! 🍵 What are you craving today: a creamy cloud latte, a fruity classic, or a soft serve float?"}
@@ -690,7 +727,7 @@ function ask(raw){say(raw,true);var q=raw.toLowerCase().replace(/[\u2018\u2019]/
   else if(has("add on","addon","add-on","extra matcha","stronger","more matcha","bold","shot")){r="Make it bolder with extra matcha: <b>1G, 2G, 3G or 4G</b> on top of any latte. 🍵"}
   else if(has("oat","vegan","dairy","milk","lactose","plant")){r="Every latte can be made with <b>regular milk or oat milk</b>. Just tell the barista. 🌾"}
   else if(has("caffeine","coffee","energy","jitter")){r="Matcha has caffeine, but it comes with L-theanine for a calmer, steadier lift than coffee. 🍃"}
-  else if(has("deliver","zomato","swiggy","order online","home")){r="We deliver on <b>Zomato</b> and <b>Swiggy</b>, and we pack every order with care. 🛍️"}
+  else if(has("deliver","zomato","swiggy","order online","home")){r="We deliver on <b>Zomato</b> and <b>Swiggy</b>, and we pack every order with care. 🛍️ You can also send us an order request right here, and we will call to confirm.";chips=["Open order form","Best sellers","Opening hours"]}
   else if(has("open","hour","time","timing","close","till")){r="We’re open daily till late (Bengaluru till 1AM, Hyderabad till 12AM). 🌙"}
   else if(has("where","location","address","outlet","near","city","bengaluru","bangalore","hyderabad","hyd","map")){r="We’re in <b>Bengaluru</b> and <b>Hyderabad</b>. For the exact outlet and map pin, check our <a href='https://www.instagram.com/siplatcha/' target='_blank' rel='noopener'>Instagram</a>."}
   else if(has("uji","kyoto","japan","shade","shading","stone","origin","harvest","quality","ceremonial")){r="Our matcha comes from the fields of <b>Uji, Kyoto</b>: shaded for 28 days, first spring harvest, then stone-ground. 🍵"}
@@ -819,7 +856,7 @@ function applyMenu(items){
   sel.l=0;sel.s=0;renderBoards();buildAll();
   chipRow("#pl",CLASSIC.map(function(r){return r[0]}),"l",upd);chipRow("#ps",SOFT.map(function(r){return r[0]}),"s",upd);upd();
   $$("#boards .rv").forEach(function(x){x.classList.add("in")});
-  ORDER_OK=true;return true}
+  ORDER_OK=true;cartUI();return true}
 function loadMenu(){return jreq("/api/menu").then(applyMenu)}
 
 /* order drawer */
@@ -854,8 +891,9 @@ $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.tar
 
 /* reviews */
 function stars(n){return "★★★★★".slice(0,n)}
+var RCOL=["#e58aa6","#5b8a1f","#a98ce0"];
 function showReviews(list){var g=$("#rgrid");
-  g.innerHTML=list.length?list.map(function(r){return '<article class="rc"><b aria-label="'+r.rating+' out of 5">'+stars(r.rating)+'</b><p>“'+esc(r.text)+'”</p><small>'+esc(r.author)+'</small></article>'}).join(""):'<p class="rnone">No reviews yet. Be the first to share one below.</p>';
+  g.innerHTML=list.length?list.map(function(r,i){return '<article class="rc"><i style="background:'+RCOL[i%3]+'" aria-hidden="true">'+esc(r.author.charAt(0).toUpperCase())+'</i><div><h3 aria-label="'+r.rating+' out of 5">'+stars(r.rating)+'</h3><em>'+esc(r.author)+'</em><p>“'+esc(r.text)+'”</p></div></article>'}).join(""):'<p class="rnone">No reviews yet. Be the first to share one below.</p>';
   if(list.length>=3)revEls.forEach(function(el,i){var r=list[i];el.innerHTML='<i style="background:'+REVS[i][1]+'" aria-hidden="true">'+esc(r.author.charAt(0).toUpperCase())+'</i><div><h3>'+stars(r.rating)+'</h3><em>'+esc(r.author)+'</em><p>“'+esc(r.text)+'”</p></div>'})}
 function loadReviews(){return jreq("/api/reviews?limit=12").then(showReviews)}
 $("#rform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#rmsg");
@@ -868,6 +906,38 @@ $("#rform").addEventListener("submit",function(e){e.preventDefault();var f=e.tar
 /* start: the page works on its own; the database only improves it */
 loadMenu().catch(function(){});
 loadReviews().catch(function(){$("#rgrid").innerHTML='<p class="rnone">Reviews will show here soon.</p>'});
+
+/* ---------- UX layer: add to order, cart bar, clickable controls ---------- */
+var floatNotes=[];
+function toast(t){var e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(function(){e.classList.remove("on")},2200)}
+function cartTotal(){var n=0;Object.keys(cart).forEach(function(i){n+=cart[i]});return n}
+function cartUI(){var n=cartTotal();
+  $("#orderbtn").textContent=n?"Order ("+n+")":"Order";
+  $("#cartn").textContent=n;$("#cartbar").hidden=!n;
+  $$("#boards .add").forEach(function(b){var q=cart[b.dataset.id]||0;b.classList.toggle("in",!!q);b.textContent=q?"Added ✓ ×"+q:"+ Add"})}
+function itemName(id){var nm="",G=[CLASSIC,CLOUD,SOFT,FLOAT];G.forEach(function(g){g.forEach(function(r){if(r.id==id)nm=r[0]})});return nm}
+function addToCart(id){var q=Math.min(20,(cart[id]||0)+1);cart[id]=q;cartUI();toast("Added "+itemName(id)+" · "+cartTotal()+" in your order")}
+$("#boards").addEventListener("click",function(e){var b=e.target.closest(".add");if(b)addToCart(b.dataset.id)});
+$("#cartbar").addEventListener("click",function(){openOrder()});
+/* keep the order form and the cart bar in step */
+var _ordSum=ordSum;ordSum=function(){_ordSum();cartUI()};
+var _showOrder=showOrder;showOrder=function(){_showOrder();var n=$("#oform").notes;if(!n.value&&floatNotes.length)n.value=floatNotes.join("; ").slice(0,300)};
+/* after a successful order the cart is empty again */
+new MutationObserver(function(){if(/received/.test($("#omsg").textContent)){floatNotes=[];cartUI()}}).observe($("#omsg"),{childList:true,characterData:true,subtree:true});
+
+/* hero "Order LATCHA": opens the order form (or scrolls to the menu when ordering is offline) */
+$("#pillorder").addEventListener("click",function(e){if(ORDER_OK){e.preventDefault();openOrder()}});
+/* float builder: the float on the menu that matches the chosen soft serve */
+$("#badd").addEventListener("click",function(){
+  if(!ORDER_OK){openOrder();return}
+  var want=SOFT2FLOAT[(SOFT[sel.s].pos||sel.s+1)-1]+1,row=null;FLOAT.forEach(function(r){if(r.pos===want)row=r});
+  if(!row){toast("That float is not available right now");return}
+  addToCart(row.id);floatNotes.push(CLASSIC[sel.l][0]+" latte"+(sel.a?", "+ADD[sel.a]+" matcha":""))});
+/* Instagram-style tiles open the Instagram page, like the real thing */
+$$("#fam .tile").forEach(function(t){t.setAttribute("role","link");t.setAttribute("tabindex","0");t.setAttribute("aria-label","Open @siplatcha on Instagram");
+  var go=function(){window.open("https://www.instagram.com/siplatcha/","_blank","noopener")};
+  t.addEventListener("click",go);t.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+cartUI();
 })();
 </script>
 </body>
