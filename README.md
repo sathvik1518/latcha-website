@@ -195,8 +195,8 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 | Browser run with Chromium: menu from the database, hidden dish removed, order, bad phone message, review, owner approval, scripts in reviews do not run | Pass |
 | Site with the backend switched off (built-in menu, calm messages, Order opens Latchi) | Pass |
 | Sideways scrolling on a 390 px phone | None |
-| **Neon itself** and **a live Vercel deploy** | **Not tested yet.** Check `/api/health` after your first deploy |
-| Safari, iPhone and Android | **Not tested yet** |
+| Live Vercel deploy and the Neon connection | **Pass.** `/api/health` returns `{"ok":true}` on the live site, and `/admin.html` loads |
+| Safari, iPhone and Android | **Pass.** Tried on real devices by the site owner |
 
 <br>
 
