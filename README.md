@@ -258,9 +258,6 @@ These items need LATCHA's answer or a decision.
 
 <div align="center">
 
-**Built by [Sai Sathvik Goud](https://github.com/sathvik1518)**<br>
-for **LATCHA** · founder **Rajasree Yarlagadda**
-
 <sub>Whisked slow. Sipped soft. 🍵</sub>
 
 </div>
