@@ -6,6 +6,8 @@
 
 ### Speciality matcha, cloud lattes and premium soft serve.<br>One scroll to browse. One form to order. One link for everything.
 
+**By Sathvik & Sunny**
+
 <br>
 
 ![HTML5](https://img.shields.io/badge/Frontend-HTML_CSS_JS-e58aa6?style=for-the-badge)
@@ -30,7 +32,8 @@ The LATCHA website and its backend in **one project**. One deploy gives one link
 | For customers | For the owner |
 |---|---|
 | A scroll story, the full menu, a float builder and the Latchi chat helper | Edit what is on the menu |
-| **+ Add** on every dish, a cart bar, and an **Order request** form (name, phone, address) | See every order and set its status |
+| **+ Add** and **−** on every dish, a cart bar, and an **Order request** form (name, phone, address) | See every order and set its status |
+| **Track your order**: type the order number and phone, see Received, Confirmed or Delivered | Customers see the status you set |
 | **Reviews**: read approved ones, write your own | Approve or delete reviews before the public sees them |
 
 **The site never breaks if the backend is down.** It starts with the built-in menu, then swaps in the database menu when the API answers.
@@ -63,9 +66,13 @@ Browser ──▶  /              the website            (site/index.html)
 | Instagram card | **See the menu**, highlight circles | Scroll to the menu or the matching section |
 | Instagram card | **Photo tiles** | Open @siplatcha on Instagram in a new tab |
 | Menu | **+ Add** on each of the 33 dishes | Adds the dish to your order and shows a short message. Tap again for more. The button shows **Added ✓ ×2** |
+| Menu | **−** beside **+ Add** | Takes one off. It is greyed out until you add that dish |
 | Bottom of screen | **Review your order** | Appears once you add something. Opens the order form |
 | Order form | **− / +** | Change how many of each dish |
-| Order form | **Send order request** | Saves the order. LATCHA calls to confirm. No payment is taken |
+| Order form | **Send order request** | Saves the order and shows your order number. LATCHA calls to confirm. No payment is taken |
+| Order form | **Track this order** | Appears after you order. Opens the tracker with your order number and phone already filled in |
+| Footer | **Track your order** | Opens the tracker. Type the order number and the mobile number you ordered with |
+| Tracker | **Check status** | Shows Received, Confirmed, Delivered or Cancelled, plus your items. Shows nothing private (no name, phone or address) |
 | Float builder | Latte, soft serve, extra matcha | Changes the picture and the summary |
 | Float builder | **Add this float to my order** | Adds the matching float from the menu and puts your latte and extra matcha in the order notes |
 | Float builder | **Ask Latchi about it** | Sends your float to the chat helper |
@@ -96,6 +103,7 @@ Try everything in the browser at **`/docs`**.
 **Safety built in**
 - Passwords are stored as salted hashes, never as plain text.
 - Orders are checked (Indian mobile number, 1 to 20 of each drink, Bengaluru or Hyderabad only), and the drink name is saved at order time. Maximum 5 orders per phone per hour.
+- Order tracking needs the order number **and** the phone number. A wrong phone and a missing order give the same answer, and the reply holds only the status, items and time.
 - Reviews stay hidden until approved. A hidden field catches simple spam bots. The waiting queue is capped.
 - Review and order text is always shown as plain text, so nobody can inject code into the site or the owner screen.
 - Database rules (rating 1 to 5, sweetness 0 to 5, quantity 1 to 20) are enforced in the database too.
@@ -118,7 +126,7 @@ Open **http://localhost:8000**. This uses a small local file database (`dev.db`)
 
 To try the owner screen locally, copy `.env.example` to `.env`, then fill in `ADMIN_PASSWORD_HASH` and `JWT_SECRET` (steps in the next section) and restart.
 
-Run the tests any time: `python -m pytest -q` (37 tests: 26 API and 11 browser). Browser tests need `playwright install chromium` once.
+Run the tests any time: `python -m pytest -q` (37 tests: 26 API and 11 browser). Browser tests need `playwright install chromium` once. They use a throw-away database, never your live site. GitHub also runs them on every push (`.github/workflows/tests.yml`).
 
 <br>
 
@@ -137,6 +145,18 @@ Run the tests any time: `python -m pytest -q` (37 tests: 26 API and 11 browser).
    JWT_SECRET=the-long-random-text
    ```
 4. Create the tables and load the menu in Neon: `python scripts/init_db.py` (safe to run twice).
+
+<br>
+
+## 🔑 Change the owner username or password
+
+The owner login lives in two settings: `ADMIN_USERNAME` and `ADMIN_PASSWORD_HASH`. There is no change-password button.
+
+1. Run `python scripts/make_admin_hash.py`, type the new password (12+ characters). It prints a line starting `pbkdf2$`.
+2. In **Vercel, Settings, Environment Variables**, paste that line into `ADMIN_PASSWORD_HASH` (tick **Production**). Set `ADMIN_USERNAME` the same way. Do the same in your local `.env` if you use it.
+3. **Redeploy**, and log in at the main address plus `/admin.html`.
+
+The value must be one unbroken line with no quotes and no spaces. One stray character makes every login say "Wrong username or password". `JWT_SECRET` must also be set, or login always fails. Never share these values or screenshot your `.env`.
 
 <br>
 
@@ -177,7 +197,10 @@ app/                    the backend
 scripts/
 ├── init_db.py          create tables, load the 33 menu items
 └── make_admin_hash.py  make the owner password hash
-tests/                  19 automated tests
+tests/                  37 automated tests
+├── test_api.py         26 API tests
+└── e2e/                11 browser tests (Playwright) on a throw-away database
+.github/workflows/      runs the tests on every push
 index.py                the file Vercel looks for (loads app/main.py)
 requirements.txt        Python packages
 .env.example            the settings you need (copy to .env)
@@ -190,18 +213,19 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 
 | Check | Result |
 |---|---|
-| 19 automated API tests (orders, reviews, login, limits, cache, site serving) | Pass on SQLite and on PostgreSQL 16 |
+| 26 automated API tests (orders, order tracking, reviews, login, limits, cache, site serving) | Pass on SQLite and on PostgreSQL 16 |
+| 11 browser tests with Playwright (menu, + and − buttons, order, order tracking, review approval, owner login, spam trap), run on every push | Pass |
 | Browser run with Chromium: menu from the database, hidden dish removed, order, bad phone message, review, owner approval, scripts in reviews do not run | Pass |
 | Site with the backend switched off (built-in menu, calm messages, Order opens Latchi) | Pass |
 | Sideways scrolling on a 390 px phone | None |
 | Live Vercel deploy and the Neon connection | **Pass.** `/api/health` returns `{"ok":true}` on the live site, and `/admin.html` loads |
+| Owner login and order tracking on the live site | **Pass.** Checked by hand |
 | Safari, iPhone and Android | **Pass.** Tried on real devices by the site owner |
 
 <br>
 
 ## 📝 Before launch
 
-- [ ] **Zomato and Swiggy links.** The footer button **Delivery & hours** opens Latchi's answer. Add real Zomato and Swiggy links if you want people to jump there.
 - [ ] **Who gets the orders.** Orders only appear in `/admin.html`. There is no email, SMS or WhatsApp alert yet, so someone must check it.
 - [ ] **Story reviews.** The three review cards in the scroll story are sample text until three real reviews are approved.
 - [ ] **Instagram numbers.** The post and follower counts are typed into the page.
@@ -223,7 +247,7 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 
 <div align="center">
 
-**Built by [Sai Sathvik Goud](https://github.com/sathvik1518)**<br>
+**By [Sathvik](https://github.com/sathvik1518) & Sunny**<br>
 for **LATCHA** · founder **Rajasree Yarlagadda**
 
 <sub>Whisked slow. Sipped soft. 🍵</sub>
