@@ -21,9 +21,7 @@
 
 <br>
 
-<!-- Add the live link here once the site is deployed:
-<p align="center"><a href="https://YOUR-SITE.vercel.app"><b>View the live site →</b></a></p>
--->
+<p align="center"><a href="https://latcha-website.vercel.app"><b>View the live site →</b></a></p>
 
 ## ✨ What it is
 
@@ -86,6 +84,7 @@ If the backend is offline, the **+ Add** buttons are hidden and **Order** opens 
 |---|---|---|
 | `GET /api/menu` | public | Menu items that are switched on |
 | `POST /api/orders` | public | Order request. No prices or payment: LATCHA confirms by phone |
+| `POST /api/orders/track` | public | Needs the order number **and** the phone used. Returns status and items only (no name, phone or address). A wrong number and a missing order give the same answer |
 | `GET /api/reviews` | public | Approved reviews only |
 | `POST /api/reviews` | public | Goes to the owner's queue, hidden until approved |
 | `POST /api/admin/login` | owner | Gives a token that lasts 2 hours |
@@ -119,7 +118,7 @@ Open **http://localhost:8000**. This uses a small local file database (`dev.db`)
 
 To try the owner screen locally, copy `.env.example` to `.env`, then fill in `ADMIN_PASSWORD_HASH` and `JWT_SECRET` (steps in the next section) and restart.
 
-Run the tests any time: `python -m pytest -q`
+Run the tests any time: `python -m pytest -q` (37 tests: 26 API and 11 browser). Browser tests need `playwright install chromium` once.
 
 <br>
 
@@ -224,6 +223,8 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 
 <div align="center">
 
+**Built by [Sai Sathvik Goud](https://github.com/sathvik1518)**<br>
+for **LATCHA** · founder **Rajasree Yarlagadda**
 
 <sub>Whisked slow. Sipped soft. 🍵</sub>
 

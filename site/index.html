@@ -370,6 +370,23 @@ body.ordopen #chat{display:none}
 .ofields{margin-top:12px}
 .ofields.fm{padding:0;max-width:none;background:none;border:0;box-shadow:none}
 
+/* order tracking: reuses the order window look */
+.tstep{display:flex;gap:0;margin:18px 0 6px;padding:0;list-style:none}
+.tstep li{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--mute);position:relative;padding-top:30px}
+.tstep li::before{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);width:16px;height:16px;border-radius:50%;background:#fff;border:2px solid var(--rose);z-index:1}
+.tstep li::after{content:"";position:absolute;top:13px;left:-50%;width:100%;height:2px;background:var(--rose)}
+.tstep li:first-child::after{display:none}
+.tstep li.on{color:var(--berry)}
+.tstep li.on::before{background:var(--berry);border-color:var(--berry)}
+.tstep li.on::after{background:var(--berry)}
+.tstat{margin:14px 0 4px;padding:14px 16px;border-radius:18px;background:var(--petal);color:var(--ink);font-size:14px;line-height:1.5;font-weight:700}
+.tstat.bad{color:var(--crimson)}
+.tlines{margin:10px 0 0;padding:0;list-style:none}
+.tlines li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;font-weight:700}
+.tmeta{font-size:12px;color:var(--mute);margin:10px 0 0}
+body.ordopen #trk{z-index:91}
+#omsg .chip{display:flex;width:fit-content;margin:12px 0 0}
+
 /* ---------- add buttons, cart bar, toast ---------- */
 .item .m{flex-wrap:wrap;justify-content:center;gap:4px 8px}.item .m span{white-space:nowrap}
 .item .add{-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:block;margin:10px auto 0;min-height:36px;padding:8px 15px;border-radius:99px;border:1.5px solid var(--rose);background:#fff;color:var(--berry);font-weight:700;font-size:12.5px;transition:all .2s}
@@ -550,7 +567,7 @@ body.ordopen #cartbar,body.ordopen #toast{display:none}
 <footer class="site" id="footer">
   <div class="brand"><a class="logo lg" href="#top" aria-label="LATCHA"><img src="assets/logo.png" alt="LATCHA"></a><p class="founder"><small>Founder</small><b>Rajasree Yarlagadda</b></p></div>
   <p>Speciality Matcha &amp; Premium Soft Serve<br>Your sign to slow down at Latcha.</p>
-  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button></div>
+  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button><button type="button" class="chip o" id="trackbtn">Track your order</button></div>
   <p style="width:100%;font-size:12px">© LATCHA™</p>
 </footer>
 
@@ -572,6 +589,21 @@ body.ordopen #cartbar,body.ordopen #toast{display:none}
         <button class="chip" type="submit" id="osub" disabled>Send order request</button>
         <div class="msg" id="omsg" role="status"></div>
       </form>
+    </div>
+  </div>
+</div>
+
+<div class="ordwrap" id="trk" hidden>
+  <div class="ordbox glass" role="dialog" aria-modal="true" aria-labelledby="trkh">
+    <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="trkh">Track your order</b><small>Use the order number and the mobile number you gave us</small></div><button type="button" class="x" id="trkx" aria-label="Close order tracking">×</button></header>
+    <div class="obody">
+      <form class="fm ofields" id="tform" novalidate>
+        <label>Order number<input name="order_id" inputmode="numeric" autocomplete="off" placeholder="For example 12" required></label>
+        <label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>
+        <button class="chip" type="submit" id="tsub">Check status</button>
+        <div class="msg" id="tmsg" role="status"></div>
+      </form>
+      <div id="tres" hidden></div>
     </div>
   </div>
 </div>
@@ -891,8 +923,34 @@ $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.tar
   var lines=Object.keys(cart).map(function(i){return {item_id:+i,quantity:cart[i]}});if(!lines.length)return;
   btn.disabled=true;msg.className="msg";msg.textContent="Sending…";
   jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,lines:lines})})
-  .then(function(r){cart={};ordRender();f.reset();msg.className="msg ok";msg.textContent="Order request #"+r.id+" received. LATCHA will call to confirm. 💗";btn.disabled=true})
+  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};cart={};ordRender();f.reset();msg.className="msg ok";msg.textContent="Order request #"+r.id+" received. LATCHA will call to confirm. 💗 ";
+    var a=document.createElement("button");a.type="button";a.className="chip o";a.id="trackthis";a.textContent="Track this order";a.addEventListener("click",function(){var p=lastOrder;closeOrder();showTrack(p)});msg.appendChild(a);btn.disabled=true})
   .catch(function(er){msg.className="msg bad";msg.textContent=errText(er);ordSum()})});
+
+/* order tracking */
+var trk=$("#trk"),trkFrom=null,lastOrder=null;
+var TSTAT={new:"We got your order. LATCHA will call you to confirm it.",confirmed:"Confirmed. Your order is being made and sent your way.",delivered:"Delivered. We hope you enjoyed every sip! 🍵",cancelled:"This order was cancelled. Please order again or ask Latchi if you need help."};
+function showTrack(pre){trkFrom=document.activeElement;var f=$("#tform");f.reset();$("#tmsg").textContent="";$("#tmsg").className="msg";$("#tres").hidden=true;$("#tres").innerHTML="";
+  if(pre){f.order_id.value=pre.id;f.phone.value=pre.phone}
+  trk.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";(pre?$("#tsub"):f.order_id).focus()}
+function closeTrack(){if(trk.hidden)return;trk.hidden=true;if(ord.hidden){document.body.classList.remove("ordopen");document.body.style.overflow=""}if(trkFrom&&trkFrom.focus)trkFrom.focus()}
+$("#trackbtn").addEventListener("click",function(){showTrack()});
+$("#trkx").addEventListener("click",closeTrack);
+trk.addEventListener("click",function(e){if(e.target===trk)closeTrack()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTrack()});
+function trackHtml(o){var st=o.status,steps=[["new","Received"],["confirmed","Confirmed"],["delivered","Delivered"]],at=st==="cancelled"?-1:["new","confirmed","delivered"].indexOf(st),h="";
+  if(st!=="cancelled")h+='<ol class="tstep" aria-label="Order progress">'+steps.map(function(x,i){return '<li'+(i<=at?' class="on"':'')+(i===at?' aria-current="step"':'')+'>'+x[1]+'</li>'}).join("")+'</ol>';
+  h+='<div class="tstat'+(st==="cancelled"?' bad':'')+'" id="tstat">Order #'+o.id+' · '+esc(TSTAT[st])+'</div><ul class="tlines">'+o.lines.map(function(l){return '<li><span>'+esc(l.item_name)+'</span><span>× '+l.quantity+'</span></li>'}).join("")+'</ul>';
+  var d=new Date(o.created_at);if(!isNaN(d))h+='<p class="tmeta">Placed '+esc(d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}))+'</p>';
+  return h}
+$("#tform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#tmsg"),btn=$("#tsub"),res=$("#tres"),id=f.order_id.value.replace(/^#/,"").trim();
+  res.hidden=true;
+  if(!/^[0-9]{1,10}$/.test(id)||+id<1){msg.className="msg bad";msg.textContent="Enter your order number, like 12.";return}
+  btn.disabled=true;msg.className="msg";msg.textContent="Checking…";
+  jreq("/api/orders/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({order_id:+id,phone:f.phone.value})})
+  .then(function(o){msg.textContent="";res.innerHTML=trackHtml(o);res.hidden=false})
+  .catch(function(er){msg.className="msg bad";msg.textContent=er.status===404?"We could not find that order. Check the order number and mobile number.":errText(er)})
+  .then(function(){btn.disabled=false})});
 
 /* reviews */
 function stars(n){return "★★★★★".slice(0,n)}

@@ -48,6 +48,15 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
                           message="Order request received. LATCHA will confirm it by phone.")
 
 
+@public.post("/orders/track", response_model=s.TrackOut)
+def track_order(body: s.TrackIn, db: Session = Depends(get_db)):
+    o = db.get(m.Order, body.order_id)
+    # Same answer for "no such order" and "wrong phone", so nobody can probe which numbers exist.
+    if o is None or o.phone != body.phone:
+        raise HTTPException(404, "We could not find that order. Check the order number and phone number.")
+    return o
+
+
 @public.get("/reviews", response_model=list[s.ReviewOut])
 def reviews(limit: int = Query(20, ge=1, le=50), db: Session = Depends(get_db)):
     return db.scalars(select(m.Review).where(m.Review.approved.is_(True))

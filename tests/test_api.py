@@ -68,6 +68,41 @@ def test_order_rate_limit(c):
     assert codes == [201] * 5 + [429]
 
 
+def _place(c, phone, name="Track Test"):
+    r = c.post("/api/orders", json={**ORDER, "customer_name": name, "phone": phone})
+    assert r.status_code == 201
+    return r.json()["id"]
+
+
+def test_track_shows_status_and_items_but_no_private_details(c):
+    oid = _place(c, "9100000001")
+    r = c.post("/api/orders/track", json={"order_id": oid, "phone": "+91 91000 00001"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["id"] == oid and body["status"] == "new"
+    assert body["lines"] == [{"item_name": "Pure Iced Matcha Latte", "quantity": 2}]
+    assert set(body) == {"id", "created_at", "status", "lines"}  # no phone, address or name
+    h = tok(c)
+    c.patch(f"/api/admin/orders/{oid}", json={"status": "delivered"}, headers=h)
+    assert c.post("/api/orders/track", json={"order_id": oid, "phone": "9100000001"}).json()["status"] == "delivered"
+
+
+def test_track_wrong_phone_and_missing_order_look_the_same(c):
+    oid = _place(c, "9100000002")
+    wrong = c.post("/api/orders/track", json={"order_id": oid, "phone": "9100000003"})
+    missing = c.post("/api/orders/track", json={"order_id": 99999999, "phone": "9100000002"})
+    assert wrong.status_code == missing.status_code == 404
+    assert wrong.json() == missing.json()
+
+
+@pytest.mark.parametrize("bad", [
+    dict(order_id=0, phone="9000000002"), dict(order_id=-1, phone="9000000002"),
+    dict(order_id=1, phone="12345"), dict(order_id="abc", phone="9000000002"), dict(phone="9000000002"),
+])
+def test_track_rejects_bad_input(c, bad):
+    assert c.post("/api/orders/track", json=bad).status_code == 422
+
+
 def test_unavailable_item_blocked(c):
     h = tok(c)
     c.patch("/api/admin/menu/2", json={"available": False}, headers=h)

@@ -7,6 +7,18 @@ Category = Literal["classic", "cloud", "soft", "float"]
 Status = Literal["new", "confirmed", "delivered", "cancelled"]
 
 
+def clean_phone(v: str) -> str:
+    """One rule for every phone number: the same one orders use."""
+    d = re.sub(r"[\s\-()]", "", v)
+    if d.startswith("+91"):
+        d = d[3:]
+    elif d.startswith("91") and len(d) == 12:
+        d = d[2:]
+    if not re.fullmatch(r"[6-9]\d{9}", d):
+        raise ValueError("Enter a valid 10 digit Indian mobile number")
+    return d
+
+
 class MenuItemOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
@@ -62,14 +74,7 @@ class OrderIn(BaseModel):
     @field_validator("phone")
     @classmethod
     def phone_ok(cls, v: str) -> str:
-        d = re.sub(r"[\s\-()]", "", v)
-        if d.startswith("+91"):
-            d = d[3:]
-        elif d.startswith("91") and len(d) == 12:
-            d = d[2:]
-        if not re.fullmatch(r"[6-9]\d{9}", d):
-            raise ValueError("Enter a valid 10 digit Indian mobile number")
-        return d
+        return clean_phone(v)
 
 
 class LineOut(BaseModel):
@@ -96,6 +101,31 @@ class OrderReceipt(BaseModel):
     id: int
     status: Status
     message: str
+
+
+class TrackIn(BaseModel):
+    order_id: int = Field(ge=1, le=2_000_000_000)
+    phone: str
+
+    @field_validator("phone")
+    @classmethod
+    def phone_ok(cls, v: str) -> str:
+        return clean_phone(v)
+
+
+class TrackLine(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    item_name: str
+    quantity: int
+
+
+class TrackOut(BaseModel):
+    """What a customer may see: no phone, no address."""
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
+    status: Status
+    lines: list[TrackLine]
 
 
 class StatusIn(BaseModel):
