@@ -374,6 +374,11 @@ body.ordopen #chat{display:none}
 .item .m{flex-wrap:wrap;justify-content:center;gap:4px 8px}.item .m span{white-space:nowrap}
 .item .add{-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:block;margin:10px auto 0;min-height:36px;padding:8px 15px;border-radius:99px;border:1.5px solid var(--rose);background:#fff;color:var(--berry);font-weight:700;font-size:12.5px;transition:all .2s}
 .item .add:hover{background:var(--petal);border-color:var(--berry);transform:translateY(-1px)}
+.item .act{display:flex;align-items:center;justify-content:center;gap:6px;margin:10px auto 0}
+.item .act .add{margin:0;padding:8px 12px;white-space:nowrap}
+.item .minus{-webkit-user-select:none;user-select:none;touch-action:manipulation;-webkit-tap-highlight-color:transparent;flex:none;width:36px;height:36px;padding:0;border-radius:50%;border:1.5px solid var(--rose);background:#fff;color:var(--berry);font-size:18px;font-weight:700;line-height:1;transition:all .2s}
+.item .minus:hover:not(:disabled){border-color:var(--berry);background:var(--petal);transform:translateY(-1px)}
+.item .minus:disabled{opacity:.4;cursor:default}
 .item .add.in{background:var(--berry);border-color:var(--berry);color:#fff;box-shadow:0 8px 16px rgba(181,69,106,.3)}
 #cartbar{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:80;display:flex;align-items:center;gap:10px;min-height:48px;padding:12px 22px;border-radius:99px;border:0;background:var(--berry);color:#fff;font-weight:700;font-size:14px;box-shadow:0 8px 20px rgba(181,69,106,.28);transition:transform .2s,box-shadow .2s}
 #cartbar:hover{transform:translate(-50%,-2px);box-shadow:0 12px 24px rgba(181,69,106,.36)}
@@ -649,7 +654,7 @@ var CLOUD=[["Banana Pudding Cloud","Creamy banana, biscuit bliss",364,4,1],["Coo
 var SOFT=[["Vanilla Silk","Silky smooth vanilla"],["Strawberry Crush","Creamy strawberry swirl"],["Vanilla & Strawberry","Classic vanilla strawberry swirl"],["Uji Matcha","Smooth, umami matcha"],["Filipino Ube","Nutty & creamy Filipino ube"],["Matcha & Ube","Dreamy matcha ube swirl"],["Matcha Swirl","Umami-rich creamy matcha swirl"],["Ube Swirl","Mix matcha with nutty ube"]];
 var FLOAT=[["Vanilla Silk Float","Classic iced matcha latte + our Vanilla Silk"],["Strawberry Crush Float","Classic iced matcha latte + Strawberry Crush"],["Signature Swirl Float","Classic iced matcha latte + Signature Swirl"],["Matcha Swirl Float","Classic iced matcha latte + Matcha Swirl"],["Ube Swirl Float","Classic iced matcha latte + Ube Swirl"],["Uji Matcha Float","Classic iced matcha latte + Uji Matcha"],["Filipino Ube Float","Classic iced matcha latte + Filipino Ube"],["Matcha Ube Float","Classic iced matcha latte + Matcha Ube"]];
 function dots(n){var s="";for(var i=0;i<5;i++)s+='<i class="'+(i<n?"on":"")+'"></i>';return '<span class="dots" aria-label="Sweetness '+n+' of 5">'+s+'</span>'}
-function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+(o.id?'<button type="button" class="add" data-id="'+o.id+'" aria-label="Add '+o.n.replace(/"/g,"")+' to your order">+ Add</button>':'')+'</div>'}
+function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+(o.id?'<div class="act"><button type="button" class="minus" data-id="'+o.id+'" aria-label="Remove one '+o.n.replace(/"/g,"")+' from your order" disabled>\u2212</button><button type="button" class="add" data-id="'+o.id+'" aria-label="Add '+o.n.replace(/"/g,"")+' to your order">+ Add</button></div>':'')+'</div>'}
 var LOGO='<span class="logo"><img src="assets/logo.png" alt="LATCHA"></span>';
 function board(title,sub,html,strip,note){return '<article class="board rv"><div class="bh">'+LOGO+'<span class="t2">Speciality Matcha | Soft Serves | Floats</span></div><div class="pillt">'+title+(sub?'<small>'+sub+'</small>':'')+'</div><div class="items">'+html+'</div>'+(note?'<div class="note">'+note+'</div>':'')+(strip?'<div class="strip">'+strip+'</div>':'')+'<div class="addon">MATCHA ADD ON · 1G · 2G · 3G · 4G</div></article>'}
 function renderBoards(){
@@ -679,7 +684,7 @@ if("IntersectionObserver" in window){var io=new IntersectionObserver(function(es
 
 /* ---------- 3D tilt cards + sparkle trail ---------- */
 if(!reduce&&matchMedia("(hover:hover)").matches){
-  document.addEventListener("pointermove",function(e){var t=e.target.closest&&!e.target.closest(".add")&&e.target.closest("[data-tilt]");
+  document.addEventListener("pointermove",function(e){var t=e.target.closest&&!e.target.closest(".add,.minus")&&e.target.closest("[data-tilt]");
     $$("[data-tilt].tl").forEach(function(x){if(x!==t){x.classList.remove("tl");x.style.transition="transform .5s";x.style.transform=""}});
     if(t){var r=t.getBoundingClientRect(),px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;
       t.classList.add("tl");t.style.transition="transform .08s";t.style.transform="perspective(800px) rotateY("+px*14+"deg) rotateX("+(-py*14)+"deg) translateY(-4px)"}
@@ -914,10 +919,11 @@ function cartTotal(){var n=0;Object.keys(cart).forEach(function(i){n+=cart[i]});
 function cartUI(){var n=cartTotal();
   $("#orderbtn").textContent=n?"Order ("+n+")":"Order";
   $("#cartn").textContent=n;$("#cartbar").hidden=!n;
-  $$("#boards .add").forEach(function(b){var q=cart[b.dataset.id]||0;b.classList.toggle("in",!!q);b.textContent=q?"Added ✓ ×"+q:"+ Add"})}
+  $$("#boards .add").forEach(function(b){var q=cart[b.dataset.id]||0;b.classList.toggle("in",!!q);b.textContent=q?"Added ✓ ×"+q:"+ Add";var m=b.parentNode.querySelector(".minus");if(m)m.disabled=!q})}
 function itemName(id){var nm="",G=[CLASSIC,CLOUD,SOFT,FLOAT];G.forEach(function(g){g.forEach(function(r){if(r.id==id)nm=r[0]})});return nm}
 function addToCart(id){var q=Math.min(20,(cart[id]||0)+1);cart[id]=q;cartUI();toast("Added "+itemName(id)+" · "+cartTotal()+" in your order")}
-$("#boards").addEventListener("click",function(e){var b=e.target.closest(".add");if(b)addToCart(b.dataset.id)});
+function removeFromCart(id){var q=(cart[id]||0)-1;if(q>0)cart[id]=q;else delete cart[id];cartUI();toast("Removed "+itemName(id)+" · "+cartTotal()+" in your order")}
+$("#boards").addEventListener("click",function(e){var b=e.target.closest(".add");if(b){addToCart(b.dataset.id);return}var m=e.target.closest(".minus");if(m&&!m.disabled)removeFromCart(m.dataset.id)});
 $("#cartbar").addEventListener("click",function(){openOrder()});
 /* keep the order form and the cart bar in step */
 var _ordSum=ordSum;ordSum=function(){_ordSum();cartUI()};
