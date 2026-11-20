@@ -4,9 +4,9 @@
 
 # LATCHA
 
-### Speciality matcha, cloud lattes and premium soft serve.<br>One scroll to browse. One form to order. One link for everything.
+### A matcha café website that moves, swirls and actually takes orders.<br>One scroll to fall in love. One form to order. One link for everything.
 
-**By Sunny & Sathvik**
+*Whisked slow. Sipped soft.* 🍵
 
 <br>
 
@@ -23,7 +23,71 @@
 
 <br>
 
-<p align="center"><a href="https://latcha-website.vercel.app"><b>View the live site →</b></a></p>
+<p align="center">
+<a href="https://latcha-website.vercel.app"><b>🍵 View the live site</b></a> &nbsp;·&nbsp;
+<a href="#-try-it-on-your-computer"><b>🚀 Run it</b></a> &nbsp;·&nbsp;
+<a href="#-what-every-button-does"><b>🖱 What every button does</b></a> &nbsp;·&nbsp;
+<a href="#-the-api"><b>🔌 API</b></a>
+</p>
+
+<p align="center"><sub>Built for the LATCHA matcha café · Hyderabad &amp; Bengaluru</sub></p>
+
+## 🌸 Why it feels special
+
+| | |
+|---|---|
+| 🥤 **A cup you can play with** | The hero cup floats, leans and tilts with your mouse (or your phone). Cherries and leaves drift around it and move away from your pointer. |
+| 💗 **One flavour tap changes the mood** | Switch from Ube Cloud to Matcha Swirl: the cup spins, the cherries fly in and out, and the whole background melts from rose pink to matcha green. |
+| 🎬 **A scroll that tells a story** | Cups, the matcha tin on a marble counter, then the pour. Smooth scroll, no jumps. |
+| 🛒 **A real shop behind the pretty page** | Menu of 33 dishes, order requests, an order tracker, reviews and an owner screen. All backed by a database. |
+| 📱 **Made for phones first** | Same site, laid out for thumbs. Tested on a 390 px screen with no sideways scrolling. |
+| 🛡 **Safe by default** | Hashed passwords, a spam trap, order limits, private tracking, reviews held until approved. |
+| ✅ **Tested** | 37 automatic tests (26 API + 11 real-browser) run on every push. |
+
+<br>
+
+## 🍃 A day with LATCHA
+
+| Time | Customer | Owner |
+|---|---|---|
+| ☀️ Morning | Scrolls the story, builds a float: a Pure Iced Matcha Latte crowned with a Vanilla Silk swirl and extra matcha | Opens `/admin.html` and sees the overnight orders |
+| 🌤 Afternoon | Taps **Send order request** and gets an order number | Calls to confirm and sets the status to **Confirmed** |
+| 🌙 Evening | Types the number and phone in **Track your order** and sees **Delivered** | Switches a sold-out dish off and approves a new review |
+
+<br>
+
+## 📸 A quick look
+
+<p align="center">
+<img src="docs/preview-matcha.jpg" alt="Matcha Swirl flavour with the green background" width="49%">
+<img src="docs/preview-story.jpg" alt="The scroll story with customer words beside the cups" width="49%">
+</p>
+<p align="center">
+<img src="docs/preview-menu.jpg" alt="The menu boards" width="49%">
+<img src="docs/preview-float.jpg" alt="The build-your-own float section" width="49%">
+</p>
+<p align="center">
+<img src="docs/preview-fam.jpg" alt="The Latcha Fam section with the Instagram card and photo tiles" width="70%">
+</p>
+<p align="center">
+<img src="docs/preview-phone.jpg" alt="The site on a phone: hero, menu and float builder" width="70%">
+</p>
+<p align="center"><sub>Preview pictures show the page before the 3D cherries load. On the live site they are real 3D cherries.</sub></p>
+
+<br>
+
+## ⚡ Run it in 60 seconds
+
+```powershell
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements-dev.txt
+python scripts/init_db.py
+python -m uvicorn app.main:app --port 8000 --reload
+```
+Open **http://localhost:8000**. No database account needed: it uses a small local file. Full steps, Neon and Vercel setup are further down.
+
+<br>
 
 ## ✨ What it is
 
@@ -31,7 +95,7 @@ The LATCHA website and its backend in **one project**. One deploy gives one link
 
 | For customers | For the owner |
 |---|---|
-| A scroll story, the full menu, a float builder and the Latchi chat helper | Edit what is on the menu |
+| A home screen with a tilting cup, floating 3D cherries and two flavour cards, then a scroll story, the full menu, a float builder and the LATCHI chat helper | Edit what is on the menu |
 | **+ Add** and **−** on every dish, a cart bar, and an **Order request** form (name, phone, address) | See every order and set its status |
 | **Track your order**: type the order number and phone, see Received, Confirmed or Delivered | Customers see the status you set |
 | **Reviews**: read approved ones, write your own | Approve or delete reviews before the public sees them |
@@ -40,15 +104,28 @@ The LATCHA website and its backend in **one project**. One deploy gives one link
 
 <br>
 
+## 🎨 Design and speed
+
+- **Home screen:** a thick crimson LATCHA wordmark, a tilted Ube Cloud cup with sparkles, floating 3D cherries and leaves, bubbles, two flavour cards and the line "Your sign to slow down." Sizes scale with the screen width, so it looks the same on a laptop and on a large monitor.
+- **Colours:** the whole site uses one thick rose palette: rose `#f6bfd0`, deep rose `#e58aa6`, berry `#b5456a`, crimson `#b5303a`. The scroll story, the menu, the reviews and the footer match the home screen.
+- **Chat helper:** it is called **LATCHI** everywhere.
+- **Smooth scroll:** Lenis (`site/assets/vendor/lenis.min.js`).
+- **3D cherries and leaves:** Google's `model-viewer` (`site/assets/vendor/model-viewer.min.js`). The 3D files load from the internet. Until they arrive, flat pictures show, so the home screen never looks empty. If the local `model-viewer` file fails, the page loads it again from a public CDN.
+- **Speed:** the 3D objects start one at a time after the page loads, pictures lower down load only when you scroll near them, and the scroll story only redraws while you can see it. `speed-changes.patch` holds only these speed edits, so you can undo just them with `git apply -R speed-changes.patch` (do it before other edits to `site/index.html`).
+- **Tab icon:** the LATCHA logo (`favicon.ico` and `favicon-*.png` in `site/`).
+- **Pictures:** phone photos are stored upright. If you add a photo from a phone, rotate it properly before you save it as WebP, or it can show sideways.
+
+<br>
+
 ## 🧱 How the pieces fit
 
-```
-Browser ──▶  /              the website            (site/index.html)
-        ──▶  /api/...       FastAPI + SQLAlchemy   (app/)
-        ──▶  /admin.html    owner screen           (site/admin.html)
-                                  │
-                                  ▼
-                           Neon PostgreSQL  (menu_items, orders, order_lines, reviews)
+```mermaid
+flowchart LR
+  B([🌐 Browser]) --> W["/ &nbsp; the website<br/>site/index.html"]
+  B --> A["/api &nbsp; FastAPI + SQLAlchemy<br/>app/"]
+  B --> O["/admin.html &nbsp; owner screen"]
+  A --> D[("🗄 Neon PostgreSQL<br/>menu_items · orders · order_lines · reviews")]
+  O --> A
 ```
 
 <br>
@@ -57,10 +134,13 @@ Browser ──▶  /              the website            (site/index.html)
 
 | Where | Control | What happens |
 |---|---|---|
-| Top bar | **Home, Menu, Build a float, Latcha Fam, Reviews, Contact** | Scrolls to that section (phone: through the menu button) |
-| Top bar | **Order** | Opens the order form. Shows **Order (3)** when you have 3 items |
+| Top bar | **Home, Menu, Matcha, Floats** | Scrolls to that part of the page. The menu button on a phone also lists Latcha Fam, Reviews and Contact |
+| Top bar | **Follow @siplatcha** | Opens Instagram in a new tab |
+| Top bar | **Order** | Appears once you scroll past the first screen. Opens the order form. Shows **Order (3)** when you have 3 items |
 | Top bar (phone) | **Menu button** | Opens the links. `Esc` or tapping a link closes it |
-| Hero | **Order LATCHA** | Opens the order form |
+| Hero | **Order LATCHA +** | Opens the order form |
+| Hero | **Ube Cloud / Matcha Swirl cards and the two arrows** | Switch the flavour. The cup spins, the cherries fly in and out, and the background turns pink or green |
+| Hero | Move the mouse over the cup | The cup tilts and the cherries move away from the pointer. On a phone it follows the tilt of the phone |
 | Hero video | **Tap to play** | Starts the pouring video when the phone blocks autoplay |
 | Instagram card | **Follow @siplatcha** | Opens Instagram in a new tab |
 | Instagram card | **See the menu**, highlight circles | Scroll to the menu or the matching section |
@@ -75,13 +155,13 @@ Browser ──▶  /              the website            (site/index.html)
 | Tracker | **Check status** | Shows Received, Confirmed, Delivered or Cancelled, plus your items. Shows nothing private (no name, phone or address) |
 | Float builder | Latte, soft serve, extra matcha | Changes the picture and the summary |
 | Float builder | **Add this float to my order** | Adds the matching float from the menu and puts your latte and extra matcha in the order notes |
-| Float builder | **Ask Latchi about it** | Sends your float to the chat helper |
+| Float builder | **Ask LATCHI about it** | Sends your float to the chat helper |
 | Reviews | **Send review** | Goes to the owner. It appears on the site once approved |
 | Footer | **Follow @siplatcha** | Opens Instagram in a new tab |
-| Footer | **Delivery & hours** | Opens Latchi with the delivery answer and an **Open order form** button |
-| Chat bubble | **Latchi** | Answers menu questions. Say "order now" or press **Open order form** to order |
+| Footer | **Delivery & hours** | Opens LATCHI with the delivery answer and an **Open order form** button |
+| Chat bubble | **LATCHI** | Answers menu questions. Say "order now" or press **Open order form** to order |
 
-If the backend is offline, the **+ Add** buttons are hidden and **Order** opens Latchi instead, so nothing shows an error.
+If the backend is offline, the **+ Add** buttons are hidden and **Order** opens LATCHI instead, so nothing shows an error.
 
 <br>
 
@@ -186,7 +266,8 @@ Neon's free plan puts the database to sleep after 5 minutes idle, so the first r
 site/                   the website, served at /
 ├── index.html          the whole site (HTML, CSS, JavaScript)
 ├── admin.html          owner screen: orders, reviews, menu on/off
-└── assets/             pictures and videos
+├── favicon.ico, favicon-*.png, apple-touch-icon.png   the tab icon
+└── assets/             pictures and videos, plus vendor/ (lenis and model-viewer)
 app/                    the backend
 ├── main.py             starts the app, serves the site, security headers
 ├── routes.py           all API endpoints
@@ -205,6 +286,7 @@ index.py                the file Vercel looks for (loads app/main.py)
 requirements.txt        Python packages
 .env.example            the settings you need (copy to .env)
 docs/, tools/           README pictures, and a macOS cut-out helper
+speed-changes.patch     the speed edits only, so they can be undone on their own
 ```
 
 <br>
@@ -216,11 +298,12 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 | 26 automated API tests (orders, order tracking, reviews, login, limits, cache, site serving) | Pass on SQLite and on PostgreSQL 16 |
 | 11 browser tests with Playwright (menu, + and − buttons, order, order tracking, review approval, owner login, spam trap), run on every push | Pass |
 | Browser run with Chromium: menu from the database, hidden dish removed, order, bad phone message, review, owner approval, scripts in reviews do not run | Pass |
-| Site with the backend switched off (built-in menu, calm messages, Order opens Latchi) | Pass |
+| Site with the backend switched off (built-in menu, calm messages, Order opens LATCHI) | Pass |
 | Sideways scrolling on a 390 px phone | None |
 | Live Vercel deploy and the Neon connection | **Pass.** `/api/health` returns `{"ok":true}` on the live site, and `/admin.html` loads |
 | Owner login and order tracking on the live site | **Pass.** Checked by hand |
-| Safari, iPhone and Android | **Pass.** Tried on real devices by the site owner |
+| Safari, iPhone and Android | **Pass.** Tried on real devices by the site owner (before the new home screen) |
+| New home screen, rose colours, tab icon and speed changes | All 37 tests pass on Sathvik's PC. The look was checked in screenshots and on the live site by eye. The 3D cherries need the internet and were not tested in the build sandbox |
 
 <br>
 
@@ -229,10 +312,11 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 - [ ] **Who gets the orders.** Orders only appear in `/admin.html`. There is no email, SMS or WhatsApp alert yet, so someone must check it.
 - [ ] **Story reviews.** The three review cards in the scroll story are sample text until three real reviews are approved.
 - [ ] **Instagram numbers.** The post and follower counts are typed into the page.
-- [ ] **Opening hours.** Latchi says "Bengaluru till 1 AM, Hyderabad till 12 AM". Confirm this.
+- [ ] **Opening hours.** LATCHI says "Bengaluru till 1 AM, Hyderabad till 12 AM". Confirm this.
 - [ ] **Menu spelling.** "Caramel Toffe" is probably "Caramel Toffee".
 - [ ] **Photos.** Most pictures are AI-generated stand-ins. Replace them with LATCHA's own.
-- [ ] **Page weight.** The first load is about 12 MB. WebP versions of the pictures would help on mobile data.
+- [ ] **Page weight.** Pictures use WebP and load as you scroll, but the pour video is about 4 MB and the 3D cherries come from another server. Test on mobile data.
+- [ ] **Look on every screen.** The tests check behaviour, not looks. Check colours, sizes and picture direction by eye on a laptop and a phone after each change.
 - [ ] **New dishes need a picture.** Add `site/assets/menu/<category>-<number>.png`, where the number matches the dish's `position`. Without one, the card shows without a picture.
 
 <br>
@@ -247,9 +331,12 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 
 <div align="center">
 
-**By Sunny & [Sathvik](https://github.com/sathvik1518)**<br>
-for **LATCHA** · founder **Rajasree Yarlagadda**
+Made with matcha and stubbornness for **LATCHA** · founder **Rajasree Yarlagadda**
 
 <sub>Whisked slow. Sipped soft. 🍵</sub>
+
+<br>
+
+**By Sathvik & Sunny**
 
 </div>
