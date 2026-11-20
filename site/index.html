@@ -9,6 +9,8 @@
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://api.getlayers.ai" crossorigin>
+<link rel="preload" as="image" href="assets/cup-ube.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gloock&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=Pinyon+Script&display=swap" rel="stylesheet">
@@ -31,7 +33,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 #prog{position:fixed;top:0;left:0;height:3px;width:0;z-index:100;background:linear-gradient(90deg,var(--rose),var(--berry));border-radius:0 3px 3px 0}
 
 /* ---------- glass ---------- */
-.glass{position:relative;background:var(--glass);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--glass-line);overflow:hidden}
+.glass{position:relative;background:var(--glass);-webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4);border:1px solid var(--glass-line);overflow:hidden}
 .glass::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.6) 50%,transparent 62%) -150% 0/250% 100% no-repeat;animation:shim 7s ease-in-out infinite}
 @keyframes shim{0%,55%{background-position:-150% 0}100%{background-position:150% 0}}
 
@@ -46,7 +48,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:max(100vw,calc(100vh*1.791));aspect-ratio:1456/813;container-type:size;overflow:hidden;background:var(--petal)}
 .stage>*{position:absolute}
-#bgblur{left:-4%;top:-4%;width:108%;height:108%;background:url(assets/gen-setup.jpg) 50% 50%/cover no-repeat;filter:blur(14px) saturate(1.1)}
+#bgblur{left:-4%;top:-4%;width:108%;height:108%;background:url(assets/gen-setup.webp) 50% 50%/cover no-repeat;filter:blur(14px) saturate(1.1)}
 #wash{left:0;top:0;width:100%;height:100%;background:linear-gradient(180deg,rgba(255,245,248,.42),rgba(253,227,236,.55))}
 .orb{border-radius:50%;pointer-events:none;background:radial-gradient(circle at 30% 26%,rgba(255,255,255,.95) 0 5%,rgba(255,255,255,.4) 18%,rgba(246,191,208,.28) 56%,rgba(229,138,166,.42) 100%);box-shadow:inset -1cqh -1.4cqh 2.4cqh rgba(229,138,166,.45),inset 1cqh 1cqh 2cqh rgba(255,255,255,.85),0 2cqh 5cqh rgba(181,69,106,.16);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);animation:fl 9s ease-in-out infinite}
 @keyframes fl{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3.2cqh) scale(1.04)}}
@@ -68,7 +70,7 @@ button{font:inherit;cursor:pointer;color:inherit}
 .rev h3{font-family:var(--serif);font-weight:400;font-size:3.2cqh;line-height:1.1}
 .rev em{display:block;font-style:normal;font-size:1.3cqh;color:var(--mute);margin:.4cqh 0 .9cqh;letter-spacing:.04em}
 .rev p{font-size:1.7cqh;line-height:1.5}
-#ped{left:0;top:0;width:100%;height:100%;clip-path:inset(100% 0 0 0);background:url(assets/gen-setup.jpg) 50% 50%/cover no-repeat,var(--petal)}
+#ped{left:0;top:0;width:100%;height:100%;clip-path:inset(100% 0 0 0);background:url(assets/gen-setup.webp) 50% 50%/cover no-repeat,var(--petal)}
 #ped .g{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(255,235,242,.28),rgba(255,235,242,0) 45%)}
 #fin{left:0;right:0;top:calc(var(--safe,0)*1cqh + 3cqh);text-align:center;opacity:0;color:var(--ink);pointer-events:none}
 #fin .gl{display:inline-block;padding:3.4cqh 7cqh 3.6cqh;border-radius:4.4cqh;box-shadow:0 2cqh 6cqh rgba(122,46,69,.2)}
@@ -553,10 +555,14 @@ footer.site .chip:not(.o){color:var(--berry)!important}
 .h2arrows button{width:calc(var(--r)*2.25);height:calc(var(--r)*2.25);font-size:var(--r)}
 .h2side{gap:calc(var(--r)*2.5)}
 }
+.h2float,.h2tilt,.h2spin,.mslot,#cup,#cup3,#trio{will-change:transform}
+#h2cv{will-change:contents}
 </style>
-<script type="module" src="assets/vendor/model-viewer.min.js"></script>
+
 <script src="assets/vendor/lenis.min.js"></script>
-<script>setTimeout(function(){if(!window.customElements||customElements.get("model-viewer"))return;var m=document.createElement("script");m.type="module";m.src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";document.head.appendChild(m)},2500)</script>
+<script>(function(){function go(){if(!window.customElements||customElements.get("model-viewer"))return;var m=document.createElement("script");m.type="module";m.src="assets/vendor/model-viewer.min.js";m.onerror=function(){var c=document.createElement("script");c.type="module";c.src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js";document.head.appendChild(c)};document.head.appendChild(m)}
+function idle(){(window.requestIdleCallback||function(f){setTimeout(f,300)})(go,{timeout:2500})}
+if(document.readyState==="complete")idle();else addEventListener("load",idle)})()</script>
 
 </head>
 <body class="nojs">
@@ -579,8 +585,8 @@ footer.site .chip:not(.o){color:var(--berry)!important}
       <p class="h2sub">Make your next matcha run a <em>latcha run.</em></p>
     </div>
     <div class="h2cupbox"><div class="h2rise"><div class="h2float"><div class="h2lean"><div class="h2tilt" id="h2tilt"><div class="h2spin" id="h2spin">
-      <img id="h2c0" src="assets/cup-ube.png" width="607" height="1100" alt="An Ube Cloud: iced matcha latte under a cloud of ube cream in a LATCHA cup">
-      <img id="h2c1" class="off" src="assets/cup-matchaswirl.png" width="621" height="900" alt="">
+      <img id="h2c0" src="assets/cup-ube.webp" width="607" height="1100" alt="An Ube Cloud: iced matcha latte under a cloud of ube cream in a LATCHA cup">
+      <img id="h2c1" class="off" src="assets/cup-matchaswirl.webp" width="621" height="900" alt="">
     </div></div></div><span class="h2spk" style="--rad:14vh;--p:9s;--dl:-0s"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 0c.9 6.6 4.5 10.2 12 12-7.5 1.8-11.1 5.4-12 12-.9-6.6-4.5-10.2-12-12C7.5 10.2 11.1 6.6 12 0z"/></svg></span><span class="h2spk" style="--rad:21vh;--p:12s;--dl:-3s"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 0c.9 6.6 4.5 10.2 12 12-7.5 1.8-11.1 5.4-12 12-.9-6.6-4.5-10.2-12-12C7.5 10.2 11.1 6.6 12 0z"/></svg></span><span class="h2spk" style="--rad:11vh;--p:8s;--dl:-5s"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 0c.9 6.6 4.5 10.2 12 12-7.5 1.8-11.1 5.4-12 12-.9-6.6-4.5-10.2-12-12C7.5 10.2 11.1 6.6 12 0z"/></svg></span><span class="h2spk" style="--rad:26vh;--p:15s;--dl:-2s"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 0c.9 6.6 4.5 10.2 12 12-7.5 1.8-11.1 5.4-12 12-.9-6.6-4.5-10.2-12-12C7.5 10.2 11.1 6.6 12 0z"/></svg></span><span class="h2spk" style="--rad:17vh;--p:10s;--dl:-7s"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 0c.9 6.6 4.5 10.2 12 12-7.5 1.8-11.1 5.4-12 12-.9-6.6-4.5-10.2-12-12C7.5 10.2 11.1 6.6 12 0z"/></svg></span><span class="h2spk" style="--rad:30vh;--p:18s;--dl:-9s"><svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12 0c.9 6.6 4.5 10.2 12 12-7.5 1.8-11.1 5.4-12 12-.9-6.6-4.5-10.2-12-12C7.5 10.2 11.1 6.6 12 0z"/></svg></span></div></div></div>
     <div class="h2details">
       <p>Ceremonial matcha from Uji, Kyoto — shaded for 28 days, picked at the first spring harvest, stone-ground. Poured into cloud lattes, premium soft serve and build-your-own floats.</p>
@@ -590,8 +596,8 @@ footer.site .chip:not(.o){color:var(--berry)!important}
     <div class="h2side">
       <div class="h2pick" role="group" aria-label="Pick a flavour">
         <div class="h2cards">
-          <button type="button" class="fcard on" data-i="0" aria-pressed="true"><span class="sh"><i></i></span><span class="im"><img src="assets/cup-ube.png" alt=""></span><span class="t"><b>Ube Cloud</b><span>Cloud latte · 311 kcal</span></span></button>
-          <button type="button" class="fcard" data-i="1" aria-pressed="false"><span class="sh"><i></i></span><span class="im"><img src="assets/cup-matchaswirl.png" alt=""></span><span class="t"><b>Matcha Swirl</b><span>Premium soft serve</span></span></button>
+          <button type="button" class="fcard on" data-i="0" aria-pressed="true"><span class="sh"><i></i></span><span class="im"><img src="assets/cup-ube.webp" alt=""></span><span class="t"><b>Ube Cloud</b><span>Cloud latte · 311 kcal</span></span></button>
+          <button type="button" class="fcard" data-i="1" aria-pressed="false"><span class="sh"><i></i></span><span class="im"><img src="assets/cup-matchaswirl.webp" alt=""></span><span class="t"><b>Matcha Swirl</b><span>Premium soft serve</span></span></button>
         </div>
         <div class="h2arrows"><button type="button" id="h2prev" aria-label="Previous flavour"><span aria-hidden="true">←</span></button><button type="button" id="h2next" aria-label="Next flavour"><span aria-hidden="true">→</span></button></div>
       </div>
@@ -616,11 +622,11 @@ footer.site .chip:not(.o){color:var(--berry)!important}
     <div id="fin"><div class="gl glass"><div class="eb">Matcha · Soft serve · Floats</div><h2>Whisked slow.<br><em>Sipped soft.</em></h2><a class="pill" id="pillorder" href="#menu">Order LATCHA</a></div></div>
     <div id="shadow"></div>
     <div id="ring" aria-hidden="true"></div>
-    <img id="cup" data-a="cup-ube.png" alt="A LATCHA Ube Cloud iced matcha latte with lilac ube cold foam under a clear dome lid">
-    <img id="cup3" data-a="cup-matchaswirl.png" alt="A LATCHA cup of twisted matcha and vanilla soft serve">
-    <img id="trio" data-a="cups-trio.png" alt="Three LATCHA iced matcha drinks side by side">
-    <img id="tinopen" data-a="tin-open.png" alt="An open pink LATCHA Matcha Powder tin with its silver lid beside it and a bamboo scoop of matcha on top">
-    <img id="pourimg" data-a="pourcup-static.png" alt="A LATCHA cup with a bamboo scoop of matcha above it">
+    <img id="cup" data-a="cup-ube.webp" alt="A LATCHA Ube Cloud iced matcha latte with lilac ube cold foam under a clear dome lid">
+    <img id="cup3" data-a="cup-matchaswirl.webp" alt="A LATCHA cup of twisted matcha and vanilla soft serve">
+    <img id="trio" data-a="cups-trio.webp" alt="Three LATCHA iced matcha drinks side by side">
+    <img id="tinopen" data-a="tin-open.webp" alt="An open pink LATCHA Matcha Powder tin with its silver lid beside it and a bamboo scoop of matcha on top">
+    <img id="pourimg" data-a="pourcup-static.webp" alt="A LATCHA cup with a bamboo scoop of matcha above it">
     <button id="pourtap" type="button" aria-label="Play the matcha pouring video"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.500v15l13-7.500z" fill="currentColor"/></svg>Tap to play</button>
     <canvas id="pourcv" width="800" height="450" aria-hidden="true"></canvas>
     <video id="pourcup" muted loop playsinline webkit-playsinline preload="auto" aria-hidden="true" style="position:absolute;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none"></video>
@@ -631,8 +637,8 @@ footer.site .chip:not(.o){color:var(--berry)!important}
 
 <section class="pour" id="pour" aria-labelledby="pourh">
   <div class="pmedia" id="pmedia">
-    <img class="bgi" data-a="gen-pour.jpg" alt="">
-    <video id="pv" autoplay muted loop playsinline preload="metadata" poster="assets/gen-pour.jpg" aria-hidden="true"><source src="assets/pour.mp4" type="video/mp4"></video>
+    <img class="bgi" data-a="gen-pour.webp" alt="">
+    <video id="pv" muted loop playsinline preload="none" poster="assets/gen-pour.webp" data-src="assets/pour.mp4" aria-hidden="true"></video>
   </div>
   <div class="badge" aria-hidden="true">
     <svg viewBox="0 0 150 150"><defs><path id="cp" d="M75 75m-56 0a56 56 0 1 1 112 0a56 56 0 1 1-112 0"/></defs><circle cx="75" cy="75" r="72" fill="rgba(255,255,255,.55)" stroke="#fff" stroke-width="2"/><text font-family="Nunito Sans,sans-serif" font-weight="700" font-size="12.5" letter-spacing="3.4" fill="#b5456a"><textPath href="#cp">MATCHA · SOFT SERVE · FLOATS · </textPath></text></svg>
@@ -668,15 +674,15 @@ footer.site .chip:not(.o){color:var(--berry)!important}
       </div>
     </aside>
     <div class="grid" id="grid">
-      <div class="tile rv" data-tilt style="--i:0"><img class="ph" data-a="photo-personality.jpg" alt="What your matcha order says about you: three LATCHA drinks on a pink striped background"><div class="cap">Find your matcha personality</div></div>
+      <div class="tile rv" data-tilt style="--i:0"><img class="ph" data-a="photo-personality.webp" alt="What your matcha order says about you: three LATCHA drinks on a pink striped background"><div class="cap">Find your matcha personality</div></div>
       <div class="tile txt p rv" data-tilt style="--i:1">The city can wait.<br>Your matcha can’t.<small>Latcha · slow down</small></div>
-      <div class="tile rv" data-tilt style="--i:2"><img class="ph" data-a="photo-ubebox.jpg" alt="A hand holding a LATCHA box with a lilac ube soft serve in front of the pink kiosk" style="object-position:50% 62%"><div class="cap">Ube soft serve · creamy, vibrant, so good</div></div>
-      <div class="tile cp rv" data-tilt style="--i:3"><img data-a="cup-softserve.png" alt="Iced matcha latte topped with a swirl of soft serve"></div>
-      <div class="tile rv" data-tilt style="--i:4"><img class="ph" data-a="photo-hojicha.jpg" alt="A Hojicha ube latte with LATCHA branding over roasted purple sweet potato"><div class="cap">Four new ways to fall in love with Hojicha</div></div>
+      <div class="tile rv" data-tilt style="--i:2"><img class="ph" data-a="photo-ubebox.webp" alt="A hand holding a LATCHA box with a lilac ube soft serve in front of the pink kiosk" style="object-position:50% 62%"><div class="cap">Ube soft serve · creamy, vibrant, so good</div></div>
+      <div class="tile cp rv" data-tilt style="--i:3"><img data-a="cup-softserve.webp" alt="Iced matcha latte topped with a swirl of soft serve"></div>
+      <div class="tile rv" data-tilt style="--i:4"><img class="ph" data-a="photo-hojicha.webp" alt="A Hojicha ube latte with LATCHA branding over roasted purple sweet potato"><div class="cap">Four new ways to fall in love with Hojicha</div></div>
       <div class="tile txt w rv" data-tilt style="--i:5">28 days of shading.<br>First spring harvest.<br>Stone-ground.<small>Uji, Kyoto</small></div>
-      <div class="tile rv" data-tilt style="--i:6"><img class="ph" data-a="photo-sign.jpg" alt="The LATCHA sign: speciality matcha and desserts, on the blush kiosk" style="object-position:50% 80%"><div class="cap">Speciality matcha &amp; desserts</div></div>
-      <div class="tile cp rv" data-tilt style="--i:7"><img data-a="cup-hero.png" alt="LATCHA iced matcha latte with a pink lid"></div>
-      <div class="tile rv" data-tilt style="--i:8"><img class="ph nf" data-a="bg-shop.jpg" alt="A barista pouring cold foam into a cup, wearing a red LATCHA apron"><div class="cap">Poured to order</div></div>
+      <div class="tile rv" data-tilt style="--i:6"><img class="ph" data-a="photo-sign.webp" alt="The LATCHA sign: speciality matcha and desserts, on the blush kiosk" style="object-position:50% 80%"><div class="cap">Speciality matcha &amp; desserts</div></div>
+      <div class="tile cp rv" data-tilt style="--i:7"><img data-a="cup-hero.webp" alt="LATCHA iced matcha latte with a pink lid"></div>
+      <div class="tile rv" data-tilt style="--i:8"><img class="ph nf" data-a="bg-shop.webp" alt="A barista pouring cold foam into a cup, wearing a red LATCHA apron"><div class="cap">Poured to order</div></div>
     </div>
   </div>
 </section>
@@ -688,9 +694,9 @@ footer.site .chip:not(.o){color:var(--berry)!important}
   <h2 class="h1 rv"><span class="sc">Our</span> Menu</h2>
   <p class="lead rv">Ceremonial Uji matcha whisked to order, cloud lattes, premium soft serve and build-your-own floats. Sweetness and calories on every cup, so you can pick your pour.</p>
   <div class="fav">
-    <figure class="rv" data-tilt style="--i:0"><img data-a="gen-ube.jpg" alt="An iced ube matcha latte with lilac cold foam beside a pink ribbon bow and rose petals" loading="lazy"><figcaption class="glass"><span>Ube Cloud<small>Fluffy, creamy ube</small></span></figcaption></figure>
-    <figure class="rv" data-tilt style="--i:1"><img data-a="gen-softserve.jpg" alt="A hand holding a cup of matcha and strawberry swirl soft serve against a blush wall" loading="lazy"><figcaption class="glass"><span>Swirl Soft Serve<small>Premium, slow-churned</small></span></figcaption></figure>
-    <figure class="rv" data-tilt style="--i:2"><img data-a="gen-float.jpg" alt="An iced matcha latte crowned with vanilla soft serve on a marble table" loading="lazy"><figcaption class="glass"><span>Vanilla Silk Float<small>Latte + soft serve</small></span></figcaption></figure>
+    <figure class="rv" data-tilt style="--i:0"><img data-a="gen-ube.webp" alt="An iced ube matcha latte with lilac cold foam beside a pink ribbon bow and rose petals" loading="lazy"><figcaption class="glass"><span>Ube Cloud<small>Fluffy, creamy ube</small></span></figcaption></figure>
+    <figure class="rv" data-tilt style="--i:1"><img data-a="gen-softserve.webp" alt="A hand holding a cup of matcha and strawberry swirl soft serve against a blush wall" loading="lazy"><figcaption class="glass"><span>Swirl Soft Serve<small>Premium, slow-churned</small></span></figcaption></figure>
+    <figure class="rv" data-tilt style="--i:2"><img data-a="gen-float.webp" alt="An iced matcha latte crowned with vanilla soft serve on a marble table" loading="lazy"><figcaption class="glass"><span>Vanilla Silk Float<small>Latte + soft serve</small></span></figcaption></figure>
   </div>
   <div class="boards" id="boards"></div>
 </section>
@@ -710,7 +716,7 @@ footer.site .chip:not(.o){color:var(--berry)!important}
     </div>
     <div class="stagebox rv">
       <span class="orb" style="left:8%;top:12%;width:16%;height:16%"></span><span class="orb" style="right:8%;top:30%;width:10%;height:10%;animation-delay:-3s"></span>
-      <img class="fimg" id="fimg" data-a="menu/float-1.png" alt="Your float">
+      <img class="fimg" id="fimg" data-a="menu/float-1.webp" alt="Your float">
       <div class="cap glass"><span id="fname">Vanilla Silk float</span><small id="fsub"></small></div>
     </div>
   </div>
@@ -727,8 +733,8 @@ footer.site .chip:not(.o){color:var(--berry)!important}
   <div class="arch rv" data-tilt>
     <span class="orb" style="left:10%;top:36%;width:14%;height:11%"></span><span class="orb" style="right:12%;top:22%;width:9%;height:7%;animation-delay:-4s"></span>
     <svg class="sp2" style="left:16%;top:28%" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1l2.600 8.400L23 12l-8.400 2.600L12 23l-2.600-8.400L1 12l8.400-2.600z"/></svg>
-    <img class="c1" data-a="cup-softserve.png" alt="Iced matcha latte crowned with soft serve">
-    <img class="c2" data-a="cup-hero.png" alt="LATCHA iced matcha latte with a pink lid">
+    <img class="c1" data-a="cup-softserve.webp" alt="Iced matcha latte crowned with soft serve">
+    <img class="c2" data-a="cup-hero.webp" alt="LATCHA iced matcha latte with a pink lid">
   </div>
 </section>
 
@@ -831,9 +837,9 @@ var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").mat
 var ART={
 "plinth.svg":svg('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1456 813"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".3" stop-color="#fff" stop-opacity=".62"/><stop offset=".6" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fde3ec" stop-opacity=".5"/></linearGradient><linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fde3ec" stop-opacity=".6"/></linearGradient><radialGradient id="r" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><ellipse cx="728" cy="676" rx="300" ry="30" fill="url(#r)"/><path d="M558 534V640C558 662 640 676 728 676C816 676 898 662 898 640V534Z" fill="url(#b)" stroke="#fff" stroke-opacity=".85" stroke-width="2.500"/><path d="M596 548V650M640 556V664" stroke="#fff" stroke-opacity=".55" stroke-width="10" stroke-linecap="round"/><ellipse cx="728" cy="534" rx="170" ry="26" fill="url(#t)" stroke="#fff" stroke-opacity=".9" stroke-width="2.500"/><ellipse cx="728" cy="530" rx="116" ry="12" fill="#fff" opacity=".5"/></svg>'),
 };
-function load(img,name){img.onerror=function(){img.onerror=null;if(ART[name])img.src=ART[name];else img.style.visibility="hidden"};img.src=BASE+name}
+function load(img,name){img.onerror=function(){img.onerror=null;if(ART[name])img.src=ART[name];else img.style.visibility="hidden"};img.decoding="async";if(!img.closest("#view,#top")&&!img.hasAttribute("loading"))img.loading="lazy";img.src=BASE+name}
 $$("img[data-a]").forEach(function(i){load(i,i.getAttribute("data-a"))});
-var pv=$("#pv");if(pv){pv.querySelector("source").addEventListener("error",function(){pv.remove()});pv.addEventListener("error",function(){pv.remove()});if(reduce){pv.removeAttribute("autoplay");try{pv.pause()}catch(e){}}}
+var pv=$("#pv");if(pv){var pvs=pv.querySelector("source");if(pvs)pvs.addEventListener("error",function(){pv.remove()});pv.addEventListener("error",function(){pv.remove()});if(reduce){pv.removeAttribute("autoplay");try{pv.pause()}catch(e){}}}
 
 /* ---------- decorative glass orbs + sparkles (stage) ---------- */
 var $o=$("#orbs");$o.style.cssText="left:0;top:0;width:100%;height:100%;position:absolute";
@@ -846,11 +852,11 @@ var QUOTES=["The city can wait. Your matcha can’t.","Make your next matcha run
 $("#mq").innerHTML=QUOTES.concat(QUOTES).map(function(q){return "<span>"+q+"</span>"}).join("");
 
 /* ---------- scroll-story content ---------- */
-var INGS=[["Uji matcha","Straight from Kyoto",31,31,"menu/soft-4.png"],
-["Rosy cloud","Velvety rose cold foam",50,17,"menu/cloud-3.png"],
-["Vanilla soft serve","Slow-churned, premium",69,31,"menu/soft-1.png"],
-["Ube","Nutty, creamy, Filipino",28,64,"menu/soft-5.png"],
-["Strawberry crush","Candy-sweet",72,64,"menu/soft-2.png"]];
+var INGS=[["Uji matcha","Straight from Kyoto",31,31,"menu/soft-4.webp"],
+["Rosy cloud","Velvety rose cold foam",50,17,"menu/cloud-3.webp"],
+["Vanilla soft serve","Slow-churned, premium",69,31,"menu/soft-1.webp"],
+["Ube","Nutty, creamy, Filipino",28,64,"menu/soft-5.webp"],
+["Strawberry crush","Candy-sweet",72,64,"menu/soft-2.webp"]];
 var REVS=[["A","#e58aa6","Actually tastes like matcha","Ananya R.","Smooth and earthy, not sugary. Pure Iced Matcha Latte is my go-to."],
 ["K","#5b8a1f","Soft serve done right","Kavya M.","The Uji Matcha soft serve is creamy without being heavy. I went back the next day."],
 ["R","#a98ce0","My midnight spot","Riya S.","Open till late and the Ube Cloud is unreal. Our whole Latcha fam is obsessed."]];
@@ -875,10 +881,10 @@ var LOGO='<span class="logo"><img src="assets/logo.png" alt="LATCHA"></span>';
 function board(title,sub,html,strip,note){return '<article class="board rv"><div class="bh">'+LOGO+'<span class="t2">Speciality Matcha | Soft Serves | Floats</span></div><div class="pillt">'+title+(sub?'<small>'+sub+'</small>':'')+'</div><div class="items">'+html+'</div>'+(note?'<div class="note">'+note+'</div>':'')+(strip?'<div class="strip">'+strip+'</div>':'')+'<div class="addon">MATCHA ADD ON · 1G · 2G · 3G · 4G</div></article>'}
 function renderBoards(){
 var h="";
-h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/classic-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/cloud-"+(r.pos||i+1)+".png"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/soft-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
-h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/float-"+(r.pos||i+1)+".png"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/classic-"+(r.pos||i+1)+".webp"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/cloud-"+(r.pos||i+1)+".webp"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/soft-"+(r.pos||i+1)+".webp"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/float-"+(r.pos||i+1)+".webp"})}).join(""),"","Please check for availability with the counter staff");
 $("#boards").innerHTML=h;
 }
 renderBoards();
@@ -1064,7 +1070,11 @@ function attachModel(o,which){if(reduce||!window.customElements)return;
   var go=function(){var mv=document.createElement("model-viewer");mv.setAttribute("src",MODELS[which]);mv.setAttribute("camera-orbit",o.orbit);mv.setAttribute("exposure",o.kind==="leaf"?"1.0":(o.bg?"1.0":"1.2"));mv.setAttribute("environment-image","neutral");mv.setAttribute("interaction-prompt","none");mv.setAttribute("disable-zoom","");mv.setAttribute("disable-tap","");mv.setAttribute("disable-pan","");mv.setAttribute("shadow-intensity","0");mv.setAttribute("loading","eager");mv.setAttribute("alt","");mv.setAttribute("aria-hidden","true");mv.setAttribute("crossorigin","anonymous");
     mv.addEventListener("load",function(){o.el.classList.add("ok")});mv.addEventListener("error",function(){o.el.classList.remove("ok")});
     if(o.mv)o.mv.remove();o.mv=mv;o.fl.appendChild(mv)};
-  if(customElements.get("model-viewer"))go();else customElements.whenDefined("model-viewer").then(go)}
+  var start=function(){if(customElements.get("model-viewer"))go();else customElements.whenDefined("model-viewer").then(go)};
+  mvQueue.push(start);mvPump()}
+var mvQueue=[],mvTimer=0,mvReady=document.readyState==="complete";
+function mvPump(){if(!mvReady||mvTimer||!mvQueue.length)return;mvTimer=setTimeout(function(){mvTimer=0;var f=mvQueue.shift();if(f)f();mvPump()},140)}
+addEventListener("load",function(){setTimeout(function(){mvReady=true;mvPump()},400)});
 function mkSlots(host,list,kind,store,bg){list.forEach(function(a){
   var e=document.createElement("div");e.className="mslot";e.style.cssText="--t:"+a[0]+"%;--l:"+a[1]+"%;--sz:"+a[2]+";--o:"+a[5]+";";
   if(a[4]&&matchMedia("(max-width:767px)").matches)e.style.display="none";
@@ -1142,30 +1152,40 @@ $("#h2prev").addEventListener("click",function(){showFlavour(hi-1)});
 $("#h2next").addEventListener("click",function(){showFlavour(hi+1)});
 /* Lenis smooth scrolling (as in the Soda template), paused while a drawer is open */
 var lenis=null;
-if(window.Lenis&&!reduce){lenis=new Lenis({smoothWheel:true,anchors:true});window.lenis=lenis;(function lr(t){lenis.raf(t);requestAnimationFrame(lr)})(performance.now());
+if(window.Lenis&&!reduce){lenis=new Lenis({smoothWheel:true,anchors:true});window.lenis=lenis;
   [$("#ord"),$("#trk"),$("#panel"),$("#mnav")].forEach(function(e){if(e)e.setAttribute("data-lenis-prevent","")});
   new MutationObserver(function(){if(document.body.classList.contains("ordopen"))lenis.stop();else lenis.start()}).observe(document.body,{attributes:true,attributeFilter:["class"]})}
 var navAs=[].slice.call(document.querySelectorAll("#navlinks a")),navSecs=navAs.map(function(a){return document.querySelector(a.getAttribute("href"))}),lastOn=-1;
+var secTop=[],docH=0,lastTickY=-1;
+function measureSecs(){secTop=navSecs.map(function(el){return el?el.getBoundingClientRect().top+scrollY:null});docH=document.documentElement.scrollHeight}
+addEventListener("resize",function(){setTimeout(measureSecs,150)});addEventListener("load",function(){setTimeout(measureSecs,300)});setTimeout(measureSecs,600);setInterval(measureSecs,4000);
 function heroTick(){
+  if(scrollY===lastTickY)return;lastTickY=scrollY;
   nav.classList.toggle("past",scrollY>innerHeight*.5);
-  var y=scrollY+innerHeight*.35,on=0,best=-1e9;navSecs.forEach(function(el,k){if(!el)return;var tp=el.getBoundingClientRect().top+scrollY;if(tp<=y&&tp>best){best=tp;on=k}});
+  var y=scrollY+innerHeight*.35,on=0,best=-1e9;secTop.forEach(function(tp,k){if(tp===null||tp===undefined)return;if(tp<=y&&tp>best){best=tp;on=k}});
   if(on!==lastOn){lastOn=on;navAs.forEach(function(a,k){a.classList.toggle("on",k===on);if(k===on)a.setAttribute("aria-current","page");else a.removeAttribute("aria-current")})}}
 
 /* ---------- loop ---------- */
 function scrollP(){var max=track.offsetHeight-innerHeight;return max>0?clamp((scrollY-track.offsetTop)/max):0}
-var sm=scrollP(),start=performance.now(),introDone=true,T0=3.8,TS=6.8;
+var drewOnce=false,sm=scrollP(),start=performance.now(),introDone=true,T0=3.8,TS=6.8;
 function frame(now){
+  if(lenis)lenis.raf(now);
   var p=scrollP(),t;
   sm=reduce?p:sm+(p-sm)*.075;t=T0+sm*TS;
   sx+=(mx-sx)*.06;sy+=(my-sy)*.06;
   var pr=pm.parentNode.getBoundingClientRect();
   if(!reduce&&pr.bottom>0&&pr.top<innerHeight)pm.style.transform="translateY("+((pr.top+pr.height/2-innerHeight/2)*-.1)+"px)";
+  var tt=track.offsetTop,inStory=scrollY>tt-innerHeight*1.2&&scrollY<tt+track.offsetHeight+innerHeight*.2;
   heroTick();
-  pg.style.width=(scrollY/Math.max(1,document.documentElement.scrollHeight-innerHeight)*100)+"%";
-  render(t,now);requestAnimationFrame(frame);
+  pg.style.width=(scrollY/Math.max(1,(docH||document.documentElement.scrollHeight)-innerHeight)*100)+"%";
+  if(inStory||!drewOnce){render(t,now);drewOnce=true}requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 
+
+/* pour video: download + play only while visible */
+(function(){var v=document.getElementById("pv");if(!v||!("IntersectionObserver"in window))return;
+new IntersectionObserver(function(en){var on=en[0].isIntersecting;if(on){if(!v.getAttribute("src")){v.src=v.dataset.src}var p=v.play();if(p&&p.catch)p.catch(function(){})}else v.pause()},{rootMargin:"300px 0px"}).observe(v)})();
 /* ---------- backend: menu, orders, reviews (same address: /api) ---------- */
 var API="",ORDER_OK=false;
 function jreq(u,o){return fetch(API+u,o).then(function(r){return r.json().catch(function(){return {}}).then(function(b){if(!r.ok){var e=new Error("http");e.status=r.status;e.body=b;throw e}return b})})}
