@@ -6,7 +6,7 @@
 
 ### Speciality matcha, cloud lattes and premium soft serve.<br>One scroll to browse. One form to order. One link for everything.
 
-**By Sathvik & Sunny**
+**By Sunny & Sathvik**
 
 <br>
 
@@ -31,7 +31,7 @@ The LATCHA website and its backend in **one project**. One deploy gives one link
 
 | For customers | For the owner |
 |---|---|
-| A scroll story, the full menu, a float builder and the LATCHI chat helper | Edit what is on the menu |
+| A scroll story, the full menu, a float builder and the Latchi chat helper | Edit what is on the menu |
 | **+ Add** and **−** on every dish, a cart bar, and an **Order request** form (name, phone, address) | See every order and set its status |
 | **Track your order**: type the order number and phone, see Received, Confirmed or Delivered | Customers see the status you set |
 | **Reviews**: read approved ones, write your own | Approve or delete reviews before the public sees them |
@@ -75,13 +75,13 @@ Browser ──▶  /              the website            (site/index.html)
 | Tracker | **Check status** | Shows Received, Confirmed, Delivered or Cancelled, plus your items. Shows nothing private (no name, phone or address) |
 | Float builder | Latte, soft serve, extra matcha | Changes the picture and the summary |
 | Float builder | **Add this float to my order** | Adds the matching float from the menu and puts your latte and extra matcha in the order notes |
-| Float builder | **Ask LATCHI about it** | Sends your float to the chat helper |
+| Float builder | **Ask Latchi about it** | Sends your float to the chat helper |
 | Reviews | **Send review** | Goes to the owner. It appears on the site once approved |
 | Footer | **Follow @siplatcha** | Opens Instagram in a new tab |
-| Footer | **Delivery & hours** | Opens LATCHI with the delivery answer and an **Open order form** button |
-| Chat bubble | **LATCHI** | Answers menu questions. Say "order now" or press **Open order form** to order |
+| Footer | **Delivery & hours** | Opens Latchi with the delivery answer and an **Open order form** button |
+| Chat bubble | **Latchi** | Answers menu questions. Say "order now" or press **Open order form** to order |
 
-If the backend is offline, the **+ Add** buttons are hidden and **Order** opens LATCHI instead, so nothing shows an error.
+If the backend is offline, the **+ Add** buttons are hidden and **Order** opens Latchi instead, so nothing shows an error.
 
 <br>
 
@@ -216,7 +216,7 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 | 26 automated API tests (orders, order tracking, reviews, login, limits, cache, site serving) | Pass on SQLite and on PostgreSQL 16 |
 | 11 browser tests with Playwright (menu, + and − buttons, order, order tracking, review approval, owner login, spam trap), run on every push | Pass |
 | Browser run with Chromium: menu from the database, hidden dish removed, order, bad phone message, review, owner approval, scripts in reviews do not run | Pass |
-| Site with the backend switched off (built-in menu, calm messages, Order opens LATCHI) | Pass |
+| Site with the backend switched off (built-in menu, calm messages, Order opens Latchi) | Pass |
 | Sideways scrolling on a 390 px phone | None |
 | Live Vercel deploy and the Neon connection | **Pass.** `/api/health` returns `{"ok":true}` on the live site, and `/admin.html` loads |
 | Owner login and order tracking on the live site | **Pass.** Checked by hand |
@@ -229,7 +229,7 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 - [ ] **Who gets the orders.** Orders only appear in `/admin.html`. There is no email, SMS or WhatsApp alert yet, so someone must check it.
 - [ ] **Story reviews.** The three review cards in the scroll story are sample text until three real reviews are approved.
 - [ ] **Instagram numbers.** The post and follower counts are typed into the page.
-- [ ] **Opening hours.** LATCHI says "Bengaluru till 1 AM, Hyderabad till 12 AM". Confirm this.
+- [ ] **Opening hours.** Latchi says "Bengaluru till 1 AM, Hyderabad till 12 AM". Confirm this.
 - [ ] **Menu spelling.** "Caramel Toffe" is probably "Caramel Toffee".
 - [ ] **Photos.** Most pictures are AI-generated stand-ins. Replace them with LATCHA's own.
 - [ ] **Page weight.** The first load is about 12 MB. WebP versions of the pictures would help on mobile data.
@@ -247,7 +247,7 @@ docs/, tools/           README pictures, and a macOS cut-out helper
 
 <div align="center">
 
-**By [Sathvik](https://github.com/sathvik1518) & Sunny**<br>
+**By Sunny & [Sathvik](https://github.com/sathvik1518)**<br>
 for **LATCHA** · founder **Rajasree Yarlagadda**
 
 <sub>Whisked slow. Sipped soft. 🍵</sub>
