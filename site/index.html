@@ -560,6 +560,13 @@ footer.site .chip:not(.o){color:var(--berry)!important}
 /* scroll story ground = same vivid pink as the home screen */
 #bgblur{filter:blur(14px) saturate(1.6)}
 #wash{background:radial-gradient(circle at 50% 45%,rgba(229,138,166,.86) 0%,rgba(246,191,208,.84) 52%,rgba(250,214,226,.82) 100%)}
+/* bottom pair (soft serve + floats): same height, same row heights */
+.board:has(>.items[data-n="8"]),.board:has(.items[data-n="8"]){align-self:stretch;display:flex;flex-direction:column}
+.items[data-n="8"]{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:1fr;flex:1 1 auto;align-content:stretch}
+.items[data-n="8"]>.item{max-width:none;flex:none}
+.items[data-n="8"]~.note,.items[data-n="8"]~.strip,.items[data-n="8"]~.addon{margin-top:16px}
+@media(min-width:981px) and (max-width:1279px){.items[data-n="8"]{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.items[data-n="8"]{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* menu boards: equal cards, buttons on one line, short last rows centred */
 .boards{align-items:start}
 .items{--c:5;display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:12px}
