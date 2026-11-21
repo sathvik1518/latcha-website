@@ -1138,7 +1138,12 @@ if(!reduce)addEventListener("pointermove",function(e){if(e.pointerType!=="mouse"
 var h2box=hero.querySelector(".h2cupbox");
 function placeLayers(){var on=innerWidth<1280&&h2box,hr=hero.getBoundingClientRect(),br=on?h2box.getBoundingClientRect():null;
   [lfL,bgL,fgL].forEach(function(L){if(on){var padY=Math.round(br.height*.12);L.style.top=Math.round(br.top-hr.top-padY)+"px";L.style.height=Math.round(br.height+padY*2)+"px";L.style.bottom="auto"}else{L.style.top="";L.style.height="";L.style.bottom=""}})}
-function measure(){placeLayers();berries.forEach(function(o){var e=o.el,L=e.parentNode;o.rest={cx:e.offsetLeft+e.offsetWidth/2,cy:L.offsetTop+e.offsetTop+e.offsetHeight/2}})}
+/* every cherry and leaf circles the cup non-stop, like the twinkle stars */
+function orbitInit(o,i,leaf){var e=o.el,L=e.parentNode,W=L.clientWidth,H=L.clientHeight,im=hero.querySelector(".h2spin img:not(.off)")||hero.querySelector(".h2spin img"),hw=im?im.getBoundingClientRect().width/2:W*.3;
+  var lx=e.offsetLeft+e.offsetWidth/2,ly=e.offsetTop+e.offsetHeight/2,rx=Math.min(hw*(leaf?1.55+.1*(i%3):1.05+.13*(i%5)),W*.46),ry=Math.min(rx*.5,H*.42);
+  o.oc={x:W/2,y:H/2};o.ol={x:lx,y:ly};o.orx=rx;o.ory=ry;o.oa=Math.atan2((ly-H/2)/(ry||1),(lx-W/2)/(rx||1));o.ow=(leaf?.2+.03*(i%3):.3+.04*(i%4))}
+function orbitPos(o,t){var a=o.oa+t*o.ow,x=o.oc.x+Math.cos(a)*o.orx,y=o.oc.y+Math.sin(a)*o.ory;return{dx:x-o.ol.x,dy:y-o.ol.y,d:(Math.sin(a)+1)/2}}
+function measure(){placeLayers();berries.forEach(function(o,i){var e=o.el,L=e.parentNode;o.rest={cx:e.offsetLeft+e.offsetWidth/2,cy:L.offsetTop+e.offsetTop+e.offsetHeight/2};orbitInit(o,i,false)});leaves.forEach(function(o,i){orbitInit(o,i,true)})}
 measure();addEventListener("resize",measure);addEventListener("load",function(){setTimeout(measure,200)});if(window.ResizeObserver)new ResizeObserver(function(){measure()}).observe(hero);
 function heroFrame(now){if(!hrun)return;requestAnimationFrame(heroFrame);
   var dt=hlast?Math.min((now-hlast)/1000,.1):.016;hlast=now;ht+=dt;var t=ht,box=hero.getBoundingClientRect(),R=RU(),tx=hp.x,ty=hp.y;
@@ -1152,12 +1157,12 @@ function heroFrame(now){if(!hrun)return;requestAnimationFrame(heroFrame);
   fgL.style.transform="translate3d("+(hcur.x*60)+"px,"+(hcur.y*60)+"px,0)";bgL.style.transform="translate3d("+(hcur.x*-30)+"px,"+(hcur.y*-30)+"px,0)";lfL.style.transform="translate3d("+(hcur.x*-15)+"px,"+(hcur.y*-15)+"px,0)";
   berries.forEach(function(o,i){var el=o.el,st=o.st;
     if(switching){var s=o.sp;if(s){el.style.transform="translate("+s.x+"px,"+s.y+"px) rotate("+s.rot+"deg) scale("+s.scale+")";el.style.opacity=s.opacity}return}
-    var shift=i<6?60:-30,cx=box.left+o.rest.cx+hcur.x*shift+st.rx+st.baseX,cy=box.top+o.rest.cy+hcur.y*shift+st.ry+st.baseY,dx=hp.px-cx,dy=hp.py-cy,dist=Math.hypot(dx,dy)||1,trx=0,try_=0,speed=1;
+    var ob=o.oc?orbitPos(o,t):{dx:0,dy:0,d:.5},shift=i<6?60:-30,cx=box.left+o.rest.cx+hcur.x*shift+st.rx+st.baseX+ob.dx,cy=box.top+o.rest.cy+hcur.y*shift+st.ry+st.baseY+ob.dy,dx=hp.px-cx,dy=hp.py-cy,dist=Math.hypot(dx,dy)||1,trx=0,try_=0,speed=1;
     if(dist<400){var f=(400-dist)/400;trx=dx/dist*f*-80;try_=dy/dist*f*-80;speed=1+f*5}
     var kr=1-Math.pow(1-.1,dt*60);st.rx+=(trx-st.rx)*kr;st.ry+=(try_-st.ry)*kr;st.angle+=.2*speed*dt*60;
     var phase=(t+i*.7)*(Math.PI*2/PER[i%PER.length]);
-    el.style.transform="translate("+(st.rx+st.baseX)+"px,"+(st.ry+st.baseY+Math.sin(phase)*15)+"px) rotate("+(st.angle+Math.cos(phase)*6)+"deg)"});
-  leaves.forEach(function(o,i){var ph=(t+i*1.2)*(Math.PI*2/(10+i*2));o.el.style.transform="translate("+Math.cos(ph*.5)*15+"px,"+Math.sin(ph)*20+"px) rotate("+Math.sin(ph*.3)*15+"deg)"});
+    el.style.transform="translate("+(st.rx+st.baseX+ob.dx)+"px,"+(st.ry+st.baseY+ob.dy+Math.sin(phase)*15)+"px) rotate("+(st.angle+Math.cos(phase)*6)+"deg) scale("+(.82+.36*ob.d)+")"});
+  leaves.forEach(function(o,i){var ph=(t+i*1.2)*(Math.PI*2/(10+i*2));var ob=o.oc?orbitPos(o,t):{dx:0,dy:0,d:.5};o.el.style.transform="translate("+(ob.dx+Math.cos(ph*.5)*15)+"px,"+(ob.dy+Math.sin(ph)*20)+"px) rotate("+(Math.sin(ph*.3)*15+t*20)+"deg) scale("+(.85+.3*ob.d)+")"});
   bubTick(dt)}
 if(!reduce&&"IntersectionObserver"in window){new IntersectionObserver(function(en){var vis=en[0]&&en[0].isIntersecting;if(vis&&!hrun){hrun=true;hlast=0;requestAnimationFrame(heroFrame)}else if(!vis&&hrun){hrun=false;bubs.length=0;bctx.setTransform(1,0,0,1,0,0);bctx.clearRect(0,0,hcv.width,hcv.height)}}).observe(hero)}
 /* flavour switch: spin + blur the cup, implode and re-explode the berries, morph the ground */
