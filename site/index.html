@@ -1098,12 +1098,12 @@ var PER=[5,7,6,8,5.5,6.5,9,11,10];
 var SVGB='<svg viewBox="0 0 100 110" aria-hidden="true"><defs><radialGradient id="hcg" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#ff7d86"/><stop offset=".35" stop-color="#d8212f"/><stop offset="1" stop-color="#6e0715"/></radialGradient></defs><path d="M52 40C54 22 62 10 80 4" fill="none" stroke="#4e9b2a" stroke-width="4.5" stroke-linecap="round"/><circle cx="48" cy="68" r="34" fill="url(#hcg)"/><ellipse cx="36" cy="52" rx="9" ry="13" fill="#fff" opacity=".5" transform="rotate(-30 36 52)"/></svg>';
 var SVGL='<svg viewBox="0 0 80 100" aria-hidden="true"><path d="M40 4C74 30 78 72 40 96 2 72 6 30 40 4z" fill="#a8c47a"/><path d="M40 12V92" stroke="#7a9a4e" stroke-width="2.5" opacity=".6"/></svg>';
 var berries=[],leaves=[];
-function attachModel(o,which){if(reduce||!window.customElements)return;
+function attachModel(o,which,now){if(reduce||!window.customElements)return;
   var go=function(){var mv=document.createElement("model-viewer");mv.setAttribute("src",MODELS[which]);mv.setAttribute("camera-orbit",o.orbit);mv.setAttribute("exposure",o.kind==="leaf"?"1.0":(o.bg?"1.0":"1.2"));mv.setAttribute("environment-image","neutral");mv.setAttribute("interaction-prompt","none");mv.setAttribute("disable-zoom","");mv.setAttribute("disable-tap","");mv.setAttribute("disable-pan","");mv.setAttribute("shadow-intensity","0");mv.setAttribute("loading","eager");mv.setAttribute("alt","");mv.setAttribute("aria-hidden","true");mv.setAttribute("crossorigin","anonymous");
     var pb=document.createElement("div");pb.slot="progress-bar";pb.style.display="none";mv.appendChild(pb);mv.addEventListener("load",function(){o.el.classList.add("ok")});mv.addEventListener("error",function(){o.el.classList.remove("ok")});
     if(o.mv)o.mv.remove();o.mv=mv;o.fl.appendChild(mv)};
   var start=function(){if(customElements.get("model-viewer"))go();else customElements.whenDefined("model-viewer").then(go)};
-  mvQueue.push(start);mvPump()}
+  if(now)start();else{mvQueue.push(start);mvPump()}}
 var mvQueue=[],mvTimer=0,mvReady=document.readyState==="complete";
 function mvPump(){if(!mvReady||mvTimer||!mvQueue.length)return;mvTimer=setTimeout(function(){mvTimer=0;var f=mvQueue.shift();if(f)f();mvPump()},140)}
 addEventListener("load",function(){setTimeout(function(){mvReady=true;mvPump()},400)});
@@ -1145,7 +1145,7 @@ function placeLayers(){var on=innerWidth<1280&&h2box,hr=hero.getBoundingClientRe
 /* every cherry and leaf circles the cup non-stop, like the twinkle stars */
 function orbitInit(o,i,leaf){var e=o.el,L=e.parentNode,W=L.clientWidth,H=L.clientHeight,im=hero.querySelector(".h2spin img:not(.off)")||hero.querySelector(".h2spin img"),hw=im?im.getBoundingClientRect().width/2:W*.3;
   var lx=e.offsetLeft+e.offsetWidth/2,ly=e.offsetTop+e.offsetHeight/2,rx=Math.min(hw*(leaf?1.55+.1*(i%3):1.05+.13*(i%5)),W*.46),ry=Math.min(rx*.5,H*.42);
-  o.oc={x:W/2,y:H/2};o.ol={x:lx,y:ly};o.orx=rx;o.ory=ry;o.oa=Math.atan2((ly-H/2)/(ry||1),(lx-W/2)/(rx||1));o.ow=(leaf?.2+.03*(i%3):.3+.04*(i%4))}
+  o.base=parseFloat(e.style.getPropertyValue("--o"))||1;o.oc={x:W/2,y:H/2};o.ol={x:lx,y:ly};o.orx=rx;o.ory=ry;o.oa=Math.atan2((ly-H/2)/(ry||1),(lx-W/2)/(rx||1));o.ow=(leaf?.2+.03*(i%3):.3+.04*(i%4))}
 function orbitPos(o,t){var a=o.oa+t*o.ow,x=o.oc.x+Math.cos(a)*o.orx,y=o.oc.y+Math.sin(a)*o.ory;return{dx:x-o.ol.x,dy:y-o.ol.y,d:(Math.sin(a)+1)/2}}
 function measure(){placeLayers();berries.forEach(function(o,i){var e=o.el,L=e.parentNode;o.rest={cx:e.offsetLeft+e.offsetWidth/2,cy:L.offsetTop+e.offsetTop+e.offsetHeight/2};orbitInit(o,i,false)});leaves.forEach(function(o,i){orbitInit(o,i,true)})}
 measure();addEventListener("resize",measure);addEventListener("load",function(){setTimeout(measure,200)});if(window.ResizeObserver)new ResizeObserver(function(){measure()}).observe(hero);
@@ -1160,7 +1160,7 @@ function heroFrame(now){if(!hrun)return;requestAnimationFrame(heroFrame);
     el.style.transform="translate3d("+x+"px,"+y+"px,0) scale("+(.65+.35*(depth+1)*.5)+")";el.style.opacity=.35+.65*(depth+1)*.5});
   fgL.style.transform="translate3d("+(hcur.x*60)+"px,"+(hcur.y*60)+"px,0)";bgL.style.transform="translate3d("+(hcur.x*-30)+"px,"+(hcur.y*-30)+"px,0)";lfL.style.transform="translate3d("+(hcur.x*-15)+"px,"+(hcur.y*-15)+"px,0)";
   berries.forEach(function(o,i){var el=o.el,st=o.st;
-    if(switching){var s=o.sp;if(s){el.style.transform="translate("+s.x+"px,"+s.y+"px) rotate("+s.rot+"deg) scale("+s.scale+")";el.style.opacity=s.opacity}return}
+    if(switching&&o.sp){var s=o.sp,so=o.oc?orbitPos(o,t):{dx:0,dy:0,d:.5},k=s.k,gx=o.oc?o.oc.x-o.ol.x:0,gy=o.oc?o.oc.y-o.ol.y:0;st.angle+=.2*dt*60;st.rx=0;st.ry=0;el.style.transform="translate("+(so.dx*(1-k)+gx*k)+"px,"+(so.dy*(1-k)+gy*k)+"px) rotate("+st.angle+"deg) scale("+((.82+.36*so.d)*(1-.9*k))+")";el.style.opacity=(1-k)*(o.base||1);return}
     var ob=o.oc?orbitPos(o,t):{dx:0,dy:0,d:.5},shift=i<6?60:-30,cx=box.left+o.rest.cx+hcur.x*shift+st.rx+st.baseX+ob.dx,cy=box.top+o.rest.cy+hcur.y*shift+st.ry+st.baseY+ob.dy,dx=hp.px-cx,dy=hp.py-cy,dist=Math.hypot(dx,dy)||1,trx=0,try_=0,speed=1;
     if(dist<400){var f=(400-dist)/400;trx=dx/dist*f*-80;try_=dy/dist*f*-80;speed=1+f*5}
     var kr=1-Math.pow(1-.1,dt*60);st.rx+=(trx-st.rx)*kr;st.ry+=(try_-st.ry)*kr;st.angle+=.2*speed*dt*60;
@@ -1171,20 +1171,23 @@ function heroFrame(now){if(!hrun)return;requestAnimationFrame(heroFrame);
 if(!reduce&&"IntersectionObserver"in window){new IntersectionObserver(function(en){var vis=en[0]&&en[0].isIntersecting;if(vis&&!hrun){hrun=true;hlast=0;requestAnimationFrame(heroFrame)}else if(!vis&&hrun){hrun=false;bubs.length=0;bctx.setTransform(1,0,0,1,0,0);bctx.clearRect(0,0,hcv.width,hcv.height)}}).observe(hero)}
 /* flavour switch: spin + blur the cup, implode and re-explode the berries, morph the ground */
 function setCup(i){hc.forEach(function(c,k){c.classList.toggle("off",k!==i);c.setAttribute("alt",k===i?(i?"A Matcha Swirl: Uji matcha and vanilla soft serve twisted in a LATCHA cup":"An Ube Cloud: iced matcha latte under a cloud of ube cream in a LATCHA cup"):"")})}
-function setModels(i){berries.forEach(function(o){o.fl.innerHTML=i?SVGL:SVGB;o.el.classList.remove("ok");attachModel(o,i)})}
+function setModels(i){return Promise.all(berries.map(function(o){o.fl.innerHTML=i?SVGL:SVGB;o.el.classList.remove("ok");attachModel(o,i,true);
+  return new Promise(function(res){if(reduce||!window.customElements||o.el.style.display==="none"){res();return}var n=0;(function chk(){if(o.el.classList.contains("ok")||++n>18)res();else setTimeout(chk,100)})()})}))}
+/* warm the cache so the other flavour's 3D models are ready before you press the arrow */
+addEventListener("load",function(){setTimeout(function(){if(!reduce)MODELS.forEach(function(u){fetch(u,{mode:"cors"}).catch(function(){})})},2500)});
 async function showFlavour(i){i=(i+2)%2;if(i===hi||hbusy)return;hbusy=true;
   hcards.forEach(function(c,k){c.classList.toggle("on",k===i);c.setAttribute("aria-pressed",k===i?"true":"false")});hero.classList.toggle("is-matcha",i===1);
   if(reduce||!hrun){setCup(i);setModels(i);hi=i;hbusy=false;return}
   switching=true;
   var cup=(async function(){await tw(hs,{spin:360,blur:15},600,power2In);setCup(i);hi=i;await tw(hs,{spin:720,blur:0},1500,backOut(.7));hs.spin=0})();
-  var models=wait(500).then(function(){setModels(i)});
-  var bs=berries.map(async function(o){var el=o.el,st=o.st;if(el.style.display==="none")return;
-    var LY=el.parentNode,cx=LY.clientWidth/2-(el.offsetLeft+el.offsetWidth/2),cy=LY.clientHeight/2-(el.offsetTop+el.offsetHeight/2);
-    var s=o.sp={x:st.baseX,y:st.baseY,rot:st.angle,scale:1,opacity:1};
-    await tw(s,{x:cx,y:cy,rot:st.angle+45,scale:.1,opacity:0},500,power2In);await wait(300);
-    var nx=(Math.random()-.5)*200,ny=(Math.random()-.5)*200;
-    await tw(s,{x:nx,y:ny,rot:st.angle+90,scale:1,opacity:1},900,backOut(1.5));
-    st.angle+=90;st.baseX=nx;st.baseY=ny;st.rx=0;st.ry=0;el.style.opacity="";o.sp=null});
+  var models=wait(850).then(function(){return setModels(i)});
+  var easeOut=function(t){return 1-Math.pow(1-t,3)};
+  var bs=berries.map(async function(o,j){var el=o.el,st=o.st;if(el.style.display==="none")return;
+    var sp=o.sp={k:0};
+    await wait(j*30);await tw(sp,{k:1},500,power2In);
+    await models;await wait(j*45);
+    await tw(sp,{k:0},1100,easeOut);
+    st.rx=0;st.ry=0;el.style.opacity="";o.sp=null});
   await Promise.all([cup,models].concat(bs));switching=false;hbusy=false}
 function restartAuto(){clearInterval(hauto)}
 hcards.forEach(function(c){c.addEventListener("click",function(){showFlavour(+c.dataset.i)})});
