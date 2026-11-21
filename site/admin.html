@@ -57,6 +57,9 @@ button.d{background:var(--crimson);color:#fff;box-shadow:0 8px 20px rgba(181,48,
 .card .row+div,.card>div{margin-top:4px}
 .card label{display:inline-flex;align-items:center;gap:6px}
 .card summary{color:var(--ink)}
+.badge{display:inline-block;padding:5px 12px;border-radius:99px;font-size:13px;font-weight:700;background:rgba(255,255,255,.8);color:var(--mute);border:1px solid var(--rose)}
+.badge.ok{background:#e8f0d6;color:var(--matcha);border-color:#cfe0a8}.badge.warn{background:#fff0d6;color:#9a5b00;border-color:#f3d79b}
+button.sm{min-height:36px;padding:7px 14px;font-size:13px}
 .glass{background:var(--glass)}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
 .mute{color:var(--mute);font-size:14px}
@@ -112,7 +115,12 @@ function orderCard(o){
     el("div",{text:o.phone+" · "+(o.outlet_name||o.city)}),el("div",{class:"mute",text:o.address}),
     el("ul",{},o.lines.map(function(l){return el("li",{text:l.quantity+" × "+l.item_name})})),
     o.notes?el("div",{class:"mute",text:"Note: "+o.notes}):"",
-    el("div",{class:"mute",text:new Date(o.created_at).toLocaleString()})])}
+    el("div",{class:"mute",text:new Date(o.created_at).toLocaleString()}),payRow(o)])}
+function payRow(o){
+  var paid=o.payment_status==="paid",lab=paid?"Paid":o.payment_status==="pending"?"Waiting for payment":o.payment_status==="failed"?"Payment failed":"Pay at delivery";
+  var kids=[el("span",{class:"badge "+(paid?"ok":o.payment_status==="unpaid"?"":"warn"),text:(o.amount!=null?"₹"+o.amount+" · ":"")+(o.payment_method==="upi"?"UPI · ":"")+lab})];
+  if(!paid)kids.push(el("button",{class:"o sm",text:"Mark as paid",onclick:function(){api("POST","/api/admin/orders/"+o.id+"/mark-paid").then(load).catch(fail)}}));
+  return el("div",{class:"row payrow",style:"justify-content:flex-start;margin-top:10px"},kids)}
 function reviewCard(r){
   var box=el("div",{class:"card"},[el("div",{class:"row"},[el("b",{text:"★".repeat(r.rating)+" · "+r.author}),el("span",{class:"mute",text:r.approved?"Approved":"Waiting"})]),el("p",{text:r.text})]);
   var row=el("div",{class:"row",style:"justify-content:flex-start"});
@@ -123,7 +131,11 @@ function menuCard(i){
   var av=el("input",{type:"checkbox"});av.checked=i.available;av.onchange=function(){api("PATCH","/api/admin/menu/"+i.id,{available:av.checked}).catch(function(er){av.checked=!av.checked;fail(er)})};
   var bs=el("input",{type:"checkbox"});bs.checked=i.best_seller;bs.onchange=function(){api("PATCH","/api/admin/menu/"+i.id,{best_seller:bs.checked}).catch(function(er){bs.checked=!bs.checked;fail(er)})};
   return el("div",{class:"card"},[el("div",{class:"row"},[el("b",{text:i.category+" · "+i.name}),el("span",{class:"mute",text:i.calories!=null?i.calories+" kcal":""})]),
-    el("div",{class:"row",style:"justify-content:flex-start;gap:18px"},[el("label",{},[av," On the menu"]),el("label",{},[bs," Best seller"])])])}
+    el("div",{class:"row",style:"justify-content:flex-start;gap:18px"},[el("label",{},[av," On the menu"]),el("label",{},[bs," Best seller"]),priceBox(i)])])}
+function priceBox(i){
+  var pr=el("input",{type:"number",min:"1",max:"20000",step:"1",placeholder:"No price",value:i.price||"","aria-label":"Price in rupees",style:"width:120px;min-height:38px;padding:7px 14px"});
+  var save=function(){var v=pr.value.trim();api("PATCH","/api/admin/menu/"+i.id,{price:v?parseInt(v,10):null}).then(function(x){i=x;pr.value=x.price||"";$("err").textContent=""}).catch(function(er){pr.value=i.price||"";fail(er)})};
+  pr.onchange=save;return el("label",{class:"mute"},["Price ₹ ",pr])}
 function outletCard(o,items){
   var box=el("div",{class:"card"}),stat=el("span",{class:"mute",text:o.status});
   var on=el("input",{type:"checkbox"});on.checked=o.accepting_orders;

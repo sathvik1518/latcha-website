@@ -73,5 +73,7 @@ def ensure_schema(engine, SessionLocal, Base) -> None:
         with engine.begin() as c:
             c.execute(text("ALTER TABLE orders ADD COLUMN outlet_id INTEGER REFERENCES outlets(id)"))
             c.execute(text("CREATE INDEX IF NOT EXISTS ix_orders_outlet_id ON orders (outlet_id)"))
+    from .payments import upgrade_payment_schema
+    upgrade_payment_schema(engine)
     with SessionLocal() as db:
         seed_outlets(db)

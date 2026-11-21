@@ -17,6 +17,13 @@ def admin_login(page: Page, password: str):
     expect(page.locator("#app")).to_be_visible()
 
 
+def choose_cash(page: Page):
+    """The order window now offers UPI first. These older tests place a pay-at-delivery order, as before."""
+    expect(page.locator("#paychoice")).to_be_visible()
+    page.locator(".pc", has_text="Pay at delivery").click()
+    expect(page.locator("#osub")).to_have_text("Send order request")
+
+
 def set_status(page: Page, customer: str, status: str):
     """Pick a status and wait until the server has saved it (the page saves in the background)."""
     select = page.locator("#list .card", has_text=customer).get_by_label("Status")
@@ -67,6 +74,7 @@ def test_customer_order_and_review_then_owner_approves(page: Page, context, admi
     page.fill("#oform [name=customer_name]", customer)
     page.fill("#oform [name=phone]", "98765 43210")
     page.fill("#oform [name=address]", "12 MG Road, Indiranagar")
+    choose_cash(page)
     page.click("#osub")
     msg = page.locator("#omsg")
     expect(msg).to_contain_text("received")
@@ -107,6 +115,7 @@ def test_owner_can_change_an_order_status(page: Page, admin_password):
     page.fill("#oform [name=customer_name]", customer)
     page.fill("#oform [name=phone]", "98765 43210")
     page.fill("#oform [name=address]", "12 MG Road, Indiranagar")
+    choose_cash(page)
     page.click("#osub")
     expect(page.locator("#omsg")).to_contain_text("received")
 
@@ -163,6 +172,7 @@ def place_order(page: Page, name: str, phone: str) -> str:
     page.fill("#oform [name=customer_name]", name)
     page.fill("#oform [name=phone]", phone)
     page.fill("#oform [name=address]", "12 MG Road, Indiranagar")
+    choose_cash(page)
     page.click("#osub")
     msg = page.locator("#omsg")
     expect(msg).to_contain_text("received")
@@ -230,3 +240,74 @@ def test_tracking_rejects_a_bad_order_number(page: Page):
     page.fill("#tform [name=phone]", "98222 22222")
     page.click("#tsub")
     expect(page.locator("#tmsg")).to_contain_text("Enter your order number")
+
+
+def fill_order(page: Page, name: str, phone: str):
+    page.goto("/")
+    add = page.locator(".item .add").first
+    add.scroll_into_view_if_needed()
+    add.click()
+    page.click("#cartbar")
+    page.fill("#oform [name=customer_name]", name)
+    page.fill("#oform [name=phone]", phone)
+    page.fill("#oform [name=address]", "12 MG Road, Indiranagar")
+    expect(page.locator("#paychoice")).to_be_visible()
+
+
+def test_customer_pays_by_upi_in_demo_mode_and_owner_sees_paid(page: Page, context, admin_password):
+    name = unique("E2E Payer")
+    fill_order(page, name, "98765 43211")
+    expect(page.locator("#osub")).to_contain_text("with UPI")       # UPI is the default choice
+    page.click("#osub")
+    box = page.locator("#paybox")
+    expect(box).to_be_visible()
+    expect(page.locator("#pbtag")).to_contain_text("Demo payment")
+    amount = page.locator("#pbamt").inner_text()
+    assert amount.startswith("₹") and int(amount[1:]) > 0
+    page.click("#pbpay")
+    expect(page.locator(".pbtick")).to_be_visible(timeout=8000)
+    expect(page.locator("#pbsub")).to_contain_text("is paid")
+    order_no = re.search(r"#(\d+)", page.locator("#pbsub").inner_text()).group(1)
+
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    card = owner.locator("#list .card", has_text=f"#{order_no} · {name}")
+    expect(card).to_contain_text(f"{amount} · UPI · Paid")
+
+
+def test_unpaid_upi_order_can_be_paid_later_from_tracking(page: Page):
+    name = unique("E2E Later")
+    fill_order(page, name, "98765 43212")
+    page.click("#osub")
+    expect(page.locator("#paybox")).to_be_visible()
+    order_no = re.search(r"#(\d+)", page.locator("#pbsub").inner_text()).group(1)
+    page.click("#pbcancel")                                          # "Not now"
+    expect(page.locator("#ord")).to_be_hidden()
+
+    page.click("#trackbtn")
+    page.fill("#tform [name=order_id]", order_no)
+    page.fill("#tform [name=phone]", "98765 43212")
+    page.click("#tsub")
+    expect(page.locator("#tres")).to_contain_text("Payment pending")
+    page.click("#paynow")
+    expect(page.locator("#paybox")).to_be_visible()
+    page.click("#pbpay")
+    expect(page.locator(".pbtick")).to_be_visible(timeout=8000)
+
+    page.click("#pbmsg .chip")                                       # Track this order
+    page.click("#tsub")
+    expect(page.locator("#tres")).to_contain_text("Paid")
+
+
+def test_owner_can_mark_a_cash_order_as_paid(page: Page, context, admin_password):
+    name = unique("E2E Cash")
+    fill_order(page, name, "98765 43213")
+    choose_cash(page)
+    page.click("#osub")
+    expect(page.locator("#omsg")).to_contain_text("received")
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    card = owner.locator("#list .card", has_text=name)
+    expect(card).to_contain_text("Pay at delivery")
+    card.get_by_role("button", name="Mark as paid").click()
+    expect(card).to_contain_text("Paid")

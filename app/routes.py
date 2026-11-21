@@ -1,9 +1,10 @@
 import time
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query
+import json, logging
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from . import models as m, outlets as ot, schemas as s
+from . import models as m, outlets as ot, payments as pay, schemas as s
 from .config import get_settings
 from .db import get_db
 from .security import make_token, require_admin, verify_password
@@ -14,6 +15,8 @@ auth = APIRouter(prefix="/api/admin")
 
 MAX_ORDERS_PER_PHONE_HOUR = 5
 MAX_PENDING_REVIEWS = 200
+log = logging.getLogger("latcha.pay")
+NOT_FOUND = "We could not find that order. Check the order number and phone number."
 
 
 # ---------- public ----------
@@ -73,14 +76,113 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
         for l in body.lines:
             if l.item_id in view["sold_out"]:
                 raise HTTPException(422, f"{items[l.item_id].name} is sold out at {outlet.name}. Please remove it or choose another outlet.")
+    total = pay.order_total([(items[l.item_id], l.quantity) for l in body.lines])
+    if body.pay == "upi":
+        if pay.mode() == "off":
+            raise HTTPException(422, "Online payment is not available right now. Please choose pay at delivery.")
+        if total is None:
+            raise HTTPException(422, "Online payment is not available for these items yet. Please choose pay at delivery.")
     order = m.Order(customer_name=body.customer_name, phone=body.phone, address=body.address,
-                    city=outlet.city if outlet else body.city, notes=body.notes, outlet_id=outlet.id if outlet else None)
+                    city=outlet.city if outlet else body.city, notes=body.notes, outlet_id=outlet.id if outlet else None,
+                    amount=total, payment_method=body.pay, payment_status="pending" if body.pay == "upi" else "unpaid")
     for l in body.lines:
-        order.lines.append(m.OrderLine(item_id=l.item_id, item_name=items[l.item_id].name, quantity=l.quantity))
+        order.lines.append(m.OrderLine(item_id=l.item_id, item_name=items[l.item_id].name, quantity=l.quantity,
+                                       price=items[l.item_id].price))
     db.add(order)
+    start = None
+    if body.pay == "upi":
+        db.flush()  # we need the order number for the provider
+        try:
+            made = pay.create_provider_order(order.id, total)
+        except Exception:  # noqa: BLE001  (nothing is saved if the payment service is down)
+            db.rollback()
+            raise HTTPException(502, "The payment service is busy. Please try again, or choose pay at delivery.")
+        order.payment_provider, order.payment_ref = made["provider"], made["provider_order_id"]
+        start = s.PaymentStart(**pay.public_payment(order))
     db.commit()
-    return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None,
-                          message="Order request received. LATCHA will confirm it by phone.")
+    msg = "Order saved. Complete the UPI payment to confirm it." if start else "Order request received. LATCHA will confirm it by phone."
+    return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None, message=msg,
+                          amount=total, payment=start)
+
+
+def _own_order(db: Session, order_id: int, phone: str) -> m.Order:
+    o = db.get(m.Order, order_id)
+    if o is None or o.phone != phone:   # same answer for "no such order" and "wrong phone"
+        raise HTTPException(404, NOT_FOUND)
+    return o
+
+
+@public.get("/payments/config", response_model=s.PayConfig)
+def payments_config():
+    return s.PayConfig(mode=pay.mode())
+
+
+@public.post("/orders/{order_id}/pay", response_model=s.PaymentStart)
+def restart_payment(order_id: int, body: s.PayIn, db: Session = Depends(get_db)):
+    """Used when the customer closed the payment window and wants to pay again. Reuses the same provider order."""
+    o = _own_order(db, order_id, body.phone)
+    if o.payment_method != "upi" or o.status == "cancelled" or pay.mode() == "off":
+        raise HTTPException(422, "This order cannot be paid online.")
+    if o.payment_status == "paid":
+        raise HTTPException(409, "This order is already paid.")
+    if not o.payment_ref or (o.payment_provider or "demo") != ("razorpay" if pay.mode() == "razorpay" else "demo"):
+        try:
+            made = pay.create_provider_order(o.id, o.amount)
+        except Exception:  # noqa: BLE001
+            raise HTTPException(502, "The payment service is busy. Please try again.")
+        o.payment_provider, o.payment_ref = made["provider"], made["provider_order_id"]
+    o.payment_status = "pending"
+    db.commit()
+    return s.PaymentStart(**pay.public_payment(o))
+
+
+@public.post("/orders/{order_id}/pay/confirm", response_model=s.PayResult)
+def confirm_payment(order_id: int, body: s.PayIn, db: Session = Depends(get_db)):
+    o = _own_order(db, order_id, body.phone)
+    if o.payment_method != "upi" or o.status == "cancelled":
+        raise HTTPException(422, "This order cannot be paid online.")
+    if o.payment_status == "paid":   # double click or retry: same answer, nothing changes
+        return s.PayResult(id=o.id, payment_status="paid", amount=o.amount)
+    if o.payment_provider == "demo":
+        if pay.mode() != "demo":
+            raise HTTPException(404, "Not found")   # the pretend screen is switched off once real payments are on
+        pay.mark_paid(db, o, f"demo_pay_{o.id}")
+    else:
+        if not (body.razorpay_payment_id and body.razorpay_order_id and body.razorpay_signature):
+            raise HTTPException(422, "Payment details are missing.")
+        if pay.mode() != "razorpay" or body.razorpay_order_id != o.payment_ref or not pay.verify_checkout_signature(
+                body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature):
+            raise HTTPException(400, "We could not verify that payment. If money was taken, it will be matched shortly.")
+        pay.mark_paid(db, o, body.razorpay_payment_id)
+    return s.PayResult(id=o.id, payment_status=o.payment_status, amount=o.amount)
+
+
+@public.post("/payments/razorpay/webhook")
+async def razorpay_webhook(request: Request, db: Session = Depends(get_db)):
+    """Razorpay tells us a payment succeeded or failed. Signature checked; safe to receive twice."""
+    raw = await request.body()
+    if not pay.verify_webhook_signature(raw, request.headers.get("x-razorpay-signature", "")):
+        raise HTTPException(400, "Bad signature")
+    try:
+        ev = json.loads(raw)
+        kind = ev.get("event", "")
+        ent = (ev.get("payload", {}).get("payment") or {}).get("entity") or {}
+        ref = ent.get("order_id")
+    except (ValueError, AttributeError):
+        raise HTTPException(400, "Bad payload")
+    o = db.scalar(select(m.Order).where(m.Order.payment_ref == ref)) if ref else None
+    if o is None:
+        log.warning("Webhook %s for unknown order %s", kind, ref)
+        return {"ok": True}
+    if kind in ("payment.captured", "order.paid"):
+        if ent.get("amount") != (o.amount or 0) * 100:
+            log.error("Webhook amount mismatch on order %s: got %s", o.id, ent.get("amount"))
+            return {"ok": True}
+        pay.mark_paid(db, o, ent.get("id"))
+    elif kind == "payment.failed" and o.payment_status == "pending":
+        o.payment_status = "failed"
+        db.commit()
+    return {"ok": True}
 
 
 @public.post("/orders/track", response_model=s.TrackOut)
@@ -166,6 +268,17 @@ def set_order_status(order_id: int, body: s.StatusIn, db: Session = Depends(get_
         raise HTTPException(404, "Not found")
     o.status = body.status
     db.commit()
+    return o
+
+
+@admin.post("/orders/{order_id}/mark-paid", response_model=s.OrderOut)
+def mark_order_paid(order_id: int, db: Session = Depends(get_db)):
+    """For cash or a UPI payment the owner saw land in their own app."""
+    o = db.get(m.Order, order_id)
+    if not o:
+        raise HTTPException(404, "Not found")
+    if o.payment_status != "paid":
+        pay.mark_paid(db, o, "manual")
     return o
 
 

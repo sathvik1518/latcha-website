@@ -30,6 +30,7 @@ class MenuItemOut(BaseModel):
     sweetness: int | None
     best_seller: bool
     available: bool
+    price: int | None = None
 
 
 class MenuItemIn(BaseModel):
@@ -41,6 +42,7 @@ class MenuItemIn(BaseModel):
     sweetness: int | None = Field(None, ge=0, le=5)
     best_seller: bool = False
     available: bool = True
+    price: int | None = Field(None, ge=1, le=20000)
 
 
 class MenuItemPatch(BaseModel):
@@ -51,6 +53,7 @@ class MenuItemPatch(BaseModel):
     sweetness: int | None = Field(None, ge=0, le=5)
     best_seller: bool | None = None
     available: bool | None = None
+    price: int | None = Field(None, ge=1, le=20000)
 
 
 class LineIn(BaseModel):
@@ -65,6 +68,7 @@ class OrderIn(BaseModel):
     city: Literal["Bengaluru", "Hyderabad"] | None = None   # optional when an outlet is chosen (the outlet knows its city)
     outlet: str | None = Field(None, max_length=40)           # outlet slug, e.g. "jp-nagar"
     notes: str = Field("", max_length=300)
+    pay: Literal["cod", "upi"] = "cod"                        # cod = pay at delivery (the old way)
     lines: list[LineIn] = Field(min_length=1, max_length=20)
 
     @model_validator(mode="after")
@@ -103,7 +107,17 @@ class OrderOut(BaseModel):
     status: Status
     outlet_id: int | None = None
     outlet_name: str | None = None
+    payment_method: str = "cod"
+    payment_status: str = "unpaid"
+    amount: int | None = None
     lines: list[LineOut]
+
+
+class PaymentStart(BaseModel):
+    provider: Literal["demo", "razorpay"]
+    amount: int
+    provider_order_id: str
+    key_id: str | None = None
 
 
 class OrderReceipt(BaseModel):
@@ -111,6 +125,30 @@ class OrderReceipt(BaseModel):
     status: Status
     message: str
     outlet: str | None = None
+    amount: int | None = None
+    payment: PaymentStart | None = None
+
+
+class PayIn(BaseModel):
+    phone: str
+    razorpay_payment_id: str | None = Field(None, max_length=64)
+    razorpay_order_id: str | None = Field(None, max_length=64)
+    razorpay_signature: str | None = Field(None, max_length=128)
+
+    @field_validator("phone")
+    @classmethod
+    def phone_ok(cls, v: str) -> str:
+        return clean_phone(v)
+
+
+class PayConfig(BaseModel):
+    mode: Literal["demo", "razorpay", "off"]
+
+
+class PayResult(BaseModel):
+    id: int
+    payment_status: str
+    amount: int | None = None
 
 
 class TrackIn(BaseModel):
@@ -135,6 +173,9 @@ class TrackOut(BaseModel):
     id: int
     created_at: datetime
     status: Status
+    payment_method: str = "cod"
+    payment_status: str = "unpaid"
+    amount: int | None = None
     lines: list[TrackLine]
 
 

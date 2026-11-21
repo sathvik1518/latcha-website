@@ -20,6 +20,7 @@ class MenuItem(Base):
     sweetness: Mapped[int | None] = mapped_column(Integer, nullable=True)
     best_seller: Mapped[bool] = mapped_column(Boolean, default=False)
     available: Mapped[bool] = mapped_column(Boolean, default=True)
+    price: Mapped[int | None] = mapped_column(Integer, nullable=True)   # rupees; empty = no online payment for this dish
     __table_args__ = (
         CheckConstraint("sweetness IS NULL OR (sweetness BETWEEN 0 AND 5)", name="ck_sweet"),
         CheckConstraint("calories IS NULL OR calories >= 0", name="ck_cal"),
@@ -63,6 +64,13 @@ class Order(Base):
     status: Mapped[str] = mapped_column(String(20), default="new", index=True)
     outlet_id: Mapped[int | None] = mapped_column(ForeignKey("outlets.id"), nullable=True, index=True)
     outlet: Mapped["Outlet | None"] = relationship()
+    payment_method: Mapped[str] = mapped_column(String(10), default="cod", server_default="cod")      # cod | upi
+    payment_status: Mapped[str] = mapped_column(String(10), default="unpaid", server_default="unpaid")  # unpaid | pending | paid | failed
+    amount: Mapped[int | None] = mapped_column(Integer, nullable=True)       # rupees, worked out on the server
+    payment_provider: Mapped[str | None] = mapped_column(String(12), nullable=True)   # demo | razorpay
+    payment_ref: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)   # provider order id
+    payment_id: Mapped[str | None] = mapped_column(String(64), nullable=True)        # provider payment id once paid
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     lines: Mapped[list["OrderLine"]] = relationship(back_populates="order", cascade="all, delete-orphan")
 
     @property
@@ -77,6 +85,7 @@ class OrderLine(Base):
     item_id: Mapped[int] = mapped_column(ForeignKey("menu_items.id"))
     item_name: Mapped[str] = mapped_column(String(80))  # snapshot, survives menu edits
     quantity: Mapped[int] = mapped_column(Integer)
+    price: Mapped[int | None] = mapped_column(Integer, nullable=True)  # price per piece when ordered (snapshot)
     order: Mapped[Order] = relationship(back_populates="lines")
     __table_args__ = (CheckConstraint("quantity BETWEEN 1 AND 20", name="ck_qty"),)
 

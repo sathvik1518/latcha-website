@@ -81,7 +81,7 @@ def test_track_shows_status_and_items_but_no_private_details(c):
     body = r.json()
     assert body["id"] == oid and body["status"] == "new"
     assert body["lines"] == [{"item_name": "Pure Iced Matcha Latte", "quantity": 2}]
-    assert set(body) == {"id", "created_at", "status", "lines"}  # no phone, address or name
+    assert set(body) == {"id", "created_at", "status", "lines", "payment_method", "payment_status", "amount"}  # no phone, address or name
     h = tok(c)
     c.patch(f"/api/admin/orders/{oid}", json={"status": "delivered"}, headers=h)
     assert c.post("/api/orders/track", json={"order_id": oid, "phone": "9100000001"}).json()["status"] == "delivered"
@@ -276,3 +276,221 @@ def test_outlet_admin_needs_login(c):
     assert c.get("/api/admin/outlets").status_code == 401
     assert c.patch("/api/admin/outlets/1", json={"accepting_orders": False}).status_code == 401
     assert c.put("/api/admin/outlets/1/sold-out/1", json={"sold_out": True}).status_code == 401
+
+
+# ---------------- UPI payments ----------------
+import hashlib, hmac, json as _json
+from app import payments as _pay
+from app.config import get_settings as _gs
+
+UPI = dict(ORDER, pay="upi", phone="9200000001", city="Hyderabad", lines=[dict(item_id=1, quantity=2), dict(item_id=2, quantity=1)])
+
+
+@pytest.fixture
+def paymode(monkeypatch):
+    def set_mode(mode, **kw):
+        st = _gs()
+        monkeypatch.setattr(st, "payments_mode", mode)
+        for k, v in kw.items():
+            monkeypatch.setattr(st, k, v)
+    return set_mode
+
+
+def _price(c, i):
+    return next(x["price"] for x in c.get("/api/menu").json() if x["id"] == i)
+
+
+def test_menu_has_prices_and_owner_can_change_one(c):
+    assert [x["id"] for x in c.get("/api/menu").json() if not x["price"] and x["id"] <= 33] == []
+    h = tok(c)
+    assert c.patch("/api/admin/menu/1", json={"price": 260}, headers=h).json()["price"] == 260
+    assert c.patch("/api/admin/menu/1", json={"price": 0}, headers=h).status_code == 422
+    assert c.patch("/api/admin/menu/1", json={"price": 249}, headers=h).json()["price"] == 249
+
+
+def test_payments_config(c, paymode):
+    paymode("demo"); assert c.get("/api/payments/config").json() == {"mode": "demo"}
+    paymode("off"); assert c.get("/api/payments/config").json() == {"mode": "off"}
+    paymode("razorpay", razorpay_key_id="", razorpay_key_secret="")   # keys missing: never a silent fake
+    assert c.get("/api/payments/config").json() == {"mode": "off"}
+
+
+def test_cash_order_is_unchanged_and_has_amount(c, paymode):
+    paymode("demo")
+    r = c.post("/api/orders", json=dict(ORDER, phone="9200000002")).json()
+    assert r["payment"] is None and r["amount"] == 2 * _price(c, 1)
+    o = c.post("/api/orders/track", json={"order_id": r["id"], "phone": "9200000002"}).json()
+    assert o["payment_method"] == "cod" and o["payment_status"] == "unpaid"
+
+
+def test_demo_upi_order_pays_once(c, paymode):
+    paymode("demo")
+    r = c.post("/api/orders", json=UPI)
+    assert r.status_code == 201
+    b = r.json()
+    assert b["amount"] == 2 * _price(c, 1) + _price(c, 2)            # worked out by the server
+    assert b["payment"]["provider"] == "demo" and b["payment"]["amount"] == b["amount"]
+    tr = lambda: c.post("/api/orders/track", json={"order_id": b["id"], "phone": "9200000001"}).json()
+    assert tr()["payment_status"] == "pending"
+    ok = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000001"})
+    assert ok.status_code == 200 and ok.json()["payment_status"] == "paid"
+    again = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000001"})   # double click
+    assert again.status_code == 200 and again.json()["payment_status"] == "paid"
+    assert tr()["payment_status"] == "paid"
+    adm = [o for o in c.get("/api/admin/orders", headers=tok(c)).json() if o["id"] == b["id"]][0]
+    assert adm["payment_status"] == "paid" and adm["amount"] == b["amount"]
+
+
+def test_client_cannot_choose_the_amount(c, paymode):
+    paymode("demo")
+    r = c.post("/api/orders", json=dict(UPI, phone="9200000003", amount=1))   # extra field is ignored
+    assert r.json()["amount"] == 2 * _price(c, 1) + _price(c, 2)
+
+
+def test_wrong_phone_cannot_pay_or_restart(c, paymode):
+    paymode("demo")
+    b = c.post("/api/orders", json=dict(UPI, phone="9200000004")).json()
+    assert c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000009"}).status_code == 404
+    assert c.post(f"/api/orders/{b['id']}/pay", json={"phone": "9200000009"}).status_code == 404
+
+
+def test_closed_window_can_pay_again_with_same_provider_order(c, paymode):
+    paymode("demo")
+    b = c.post("/api/orders", json=dict(UPI, phone="9200000005")).json()
+    again = c.post(f"/api/orders/{b['id']}/pay", json={"phone": "9200000005"})
+    assert again.status_code == 200 and again.json()["provider_order_id"] == b["payment"]["provider_order_id"]
+    c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000005"})
+    assert c.post(f"/api/orders/{b['id']}/pay", json={"phone": "9200000005"}).status_code == 409
+
+
+def test_upi_refused_when_payments_off_or_item_has_no_price(c, paymode):
+    paymode("off")
+    assert c.post("/api/orders", json=dict(UPI, phone="9200000006")).status_code == 422
+    paymode("demo")
+    h = tok(c)
+    c.patch("/api/admin/menu/2", json={"price": None}, headers=h)
+    r = c.post("/api/orders", json=dict(UPI, phone="9200000006"))
+    assert r.status_code == 422 and "pay at delivery" in r.json()["detail"]
+    assert c.post("/api/orders", json=dict(UPI, pay="cod", phone="9200000006")).status_code == 201   # cash still fine
+    c.patch("/api/admin/menu/2", json={"price": 249}, headers=h)
+
+
+def test_demo_button_is_dead_once_real_payments_are_on(c, paymode):
+    paymode("demo")
+    b = c.post("/api/orders", json=dict(UPI, phone="9200000007")).json()
+    paymode("razorpay", razorpay_key_id="rzp_test_x", razorpay_key_secret="secret1")
+    assert c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000007"}).status_code == 404
+
+
+class _FakeRzp:
+    n = 0
+    def __call__(self, path, body):
+        _FakeRzp.n += 1
+        return {"id": f"order_T{_FakeRzp.n}", "amount": body["amount"]}
+
+
+def _rzp(paymode, monkeypatch):
+    paymode("razorpay", razorpay_key_id="rzp_test_abc", razorpay_key_secret="topsecret", razorpay_webhook_secret="whsec")
+    monkeypatch.setattr(_pay, "_rzp_post", _FakeRzp())
+
+
+def _sign(secret, msg):
+    return hmac.new(secret.encode(), msg, hashlib.sha256).hexdigest()
+
+
+def test_razorpay_checkout_signature_flow(c, paymode, monkeypatch):
+    _rzp(paymode, monkeypatch)
+    b = c.post("/api/orders", json=dict(UPI, phone="9200000008")).json()
+    p = b["payment"]
+    assert p["provider"] == "razorpay" and p["key_id"] == "rzp_test_abc" and p["provider_order_id"].startswith("order_T")
+    pid = "pay_123"
+    bad = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000008", "razorpay_payment_id": pid,
+                 "razorpay_order_id": p["provider_order_id"], "razorpay_signature": "0" * 64})
+    assert bad.status_code == 400
+    assert c.post("/api/orders/track", json={"order_id": b["id"], "phone": "9200000008"}).json()["payment_status"] == "pending"
+    sig = _sign("topsecret", f"{p['provider_order_id']}|{pid}".encode())
+    good = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000008", "razorpay_payment_id": pid,
+                  "razorpay_order_id": p["provider_order_id"], "razorpay_signature": sig})
+    assert good.status_code == 200 and good.json()["payment_status"] == "paid"
+    wrong_order = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000008", "razorpay_payment_id": pid,
+                         "razorpay_order_id": "order_OTHER", "razorpay_signature": sig})
+    assert wrong_order.json()["payment_status"] == "paid"   # already paid: nothing changes
+
+
+def test_razorpay_signature_for_another_order_is_rejected(c, paymode, monkeypatch):
+    _rzp(paymode, monkeypatch)
+    b = c.post("/api/orders", json=dict(UPI, phone="9200000010")).json()
+    sig = _sign("topsecret", b"order_OTHER|pay_1")
+    r = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000010", "razorpay_payment_id": "pay_1",
+               "razorpay_order_id": "order_OTHER", "razorpay_signature": sig})
+    assert r.status_code == 400
+
+
+def _hook(c, ev, secret="whsec", sig=None):
+    raw = _json.dumps(ev).encode()
+    return c.post("/api/payments/razorpay/webhook", content=raw,
+                  headers={"X-Razorpay-Signature": sig or _sign(secret, raw), "Content-Type": "application/json"})
+
+
+def test_webhook_marks_paid_once_and_checks_signature_and_amount(c, paymode, monkeypatch):
+    _rzp(paymode, monkeypatch)
+    b = c.post("/api/orders", json=dict(UPI, phone="9200000011")).json()
+    ref, amt = b["payment"]["provider_order_id"], b["amount"] * 100
+    ev = lambda a=amt, k="payment.captured": {"event": k, "payload": {"payment": {"entity": {"id": "pay_w1", "order_id": ref, "amount": a}}}}
+    st = lambda: c.post("/api/orders/track", json={"order_id": b["id"], "phone": "9200000011"}).json()["payment_status"]
+    assert _hook(c, ev(), sig="0" * 64).status_code == 400 and st() == "pending"      # fake caller
+    assert _hook(c, ev(a=100)).status_code == 200 and st() == "pending"               # wrong amount
+    assert _hook(c, ev()).status_code == 200 and st() == "paid"
+    assert _hook(c, ev()).status_code == 200 and st() == "paid"                       # Razorpay retried: still fine
+    assert _hook(c, ev(k="payment.failed")).status_code == 200 and st() == "paid"      # late failure never un-pays
+
+
+def test_webhook_failed_then_retry_paid(c, paymode, monkeypatch):
+    _rzp(paymode, monkeypatch)
+    b = c.post("/api/orders", json=dict(UPI, phone="9200000012")).json()
+    ref = b["payment"]["provider_order_id"]
+    st = lambda: c.post("/api/orders/track", json={"order_id": b["id"], "phone": "9200000012"}).json()["payment_status"]
+    _hook(c, {"event": "payment.failed", "payload": {"payment": {"entity": {"id": "pay_f", "order_id": ref}}}})
+    assert st() == "failed"
+    assert c.post(f"/api/orders/{b['id']}/pay", json={"phone": "9200000012"}).status_code == 200 and st() == "pending"
+    _hook(c, {"event": "order.paid", "payload": {"payment": {"entity": {"id": "pay_ok", "order_id": ref, "amount": b["amount"] * 100}}}})
+    assert st() == "paid"
+
+
+def test_webhook_without_secret_configured_is_refused(c, paymode):
+    paymode("demo", razorpay_webhook_secret="")
+    assert _hook(c, {"event": "payment.captured"}, secret="").status_code == 400
+
+
+def test_payment_service_down_saves_no_order(c, paymode, monkeypatch):
+    paymode("razorpay", razorpay_key_id="rzp_test_abc", razorpay_key_secret="topsecret")
+    def boom(path, body): raise OSError("down")
+    monkeypatch.setattr(_pay, "_rzp_post", boom)
+    before = len(c.get("/api/admin/orders?limit=200", headers=tok(c)).json())
+    assert c.post("/api/orders", json=dict(UPI, phone="9200000013")).status_code == 502
+    assert len(c.get("/api/admin/orders?limit=200", headers=tok(c)).json()) == before
+
+
+def test_owner_can_mark_cash_order_paid(c, paymode):
+    paymode("demo")
+    b = c.post("/api/orders", json=dict(ORDER, phone="9200000014")).json()
+    h = tok(c)
+    assert c.post(f"/api/admin/orders/{b['id']}/mark-paid").status_code == 401
+    r = c.post(f"/api/admin/orders/{b['id']}/mark-paid", headers=h)
+    assert r.status_code == 200 and r.json()["payment_status"] == "paid"
+
+
+def test_old_database_is_upgraded_in_place(tmp_path):
+    from sqlalchemy import create_engine, text, inspect
+    e = create_engine(f"sqlite:///{tmp_path/'old.db'}")
+    with e.begin() as cx:
+        cx.execute(text("CREATE TABLE menu_items (id INTEGER PRIMARY KEY, category VARCHAR(20), name VARCHAR(80))"))
+        cx.execute(text("INSERT INTO menu_items VALUES (1,'classic','A'),(2,'float','B')"))
+        cx.execute(text("CREATE TABLE orders (id INTEGER PRIMARY KEY, phone VARCHAR(20))"))
+        cx.execute(text("INSERT INTO orders VALUES (1,'9999999999')"))
+        cx.execute(text("CREATE TABLE order_lines (id INTEGER PRIMARY KEY, order_id INTEGER)"))
+    _pay.upgrade_payment_schema(e); _pay.upgrade_payment_schema(e)   # twice: must be safe
+    with e.connect() as cx:
+        assert [r[0] for r in cx.execute(text("SELECT price FROM menu_items ORDER BY id"))] == [249, 299]
+        assert cx.execute(text("SELECT payment_method, payment_status FROM orders")).one() == ("cod", "unpaid")
+    assert {"amount", "payment_ref", "paid_at"} <= {x["name"] for x in inspect(e).get_columns("orders")}

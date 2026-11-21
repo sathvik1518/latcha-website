@@ -345,6 +345,24 @@ LATCHA has more than one shop, so the site does too. Customers pick an outlet in
 - Orders can carry an `outlet`; closed, paused, "opening soon" and sold-out cases get a clear message.
 - Old orders and the old city-only order form keep working. Existing databases upgrade themselves on start (`app/outlets.py`).
 
+## UPI payments (new)
+
+Customers can pay by UPI in the order window, or choose pay at delivery as before. The total is always worked out on the server from the menu prices, never from the browser.
+
+| `PAYMENTS_MODE` | What happens |
+|---|---|
+| `demo` (default) | A pretend pay screen. No money moves. Good for showing the owner. |
+| `razorpay` | Real Razorpay Checkout, UPI only. Test keys (`rzp_test_...`) use fake money. |
+| `off` | No UPI choice. The site works exactly like before. |
+
+If `razorpay` is set but the keys are missing, the mode becomes `off` (it never falls back to the pretend screen).
+
+**Razorpay test setup:** make a free Razorpay account and stay in Test Mode. Put `PAYMENTS_MODE=razorpay`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` and `RAZORPAY_WEBHOOK_SECRET` in `.env` (and in Vercel > Settings > Environment Variables). In the Razorpay dashboard add a webhook to `https://YOUR-SITE/api/payments/razorpay/webhook` with the same secret, events `payment.captured`, `order.paid`, `payment.failed`.
+
+Prices live in Admin > Menu (the first upgrade fills placeholder prices of 249 / 279 / 199 / 299 rupees: change them to the real ones). A UPI order is only offered when every dish in it has a price.
+
+Safe by design: the server checks Razorpay's signature, a repeated payment message changes nothing, a webhook with the wrong amount is ignored, and the pretend pay button stops working as soon as real payments are on.
+
 **By Sathvik & Sunny**
 
 </div>

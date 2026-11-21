@@ -379,6 +379,33 @@ body.ordopen #chat{display:none}
 .orow.so span{opacity:.55}.soldtag{margin-left:8px;font-size:12px;font-weight:700;color:var(--crimson)}
 .stp button[disabled]{opacity:.35;cursor:not-allowed;transform:none;background:#fff;border-color:var(--line)}
 .ofields.fm{padding:0;max-width:none;background:none;border:0;box-shadow:none}
+/* UPI payment (order window only) */
+.orow .pr{font-style:normal;font-weight:600;font-size:12.5px;color:var(--mute);margin-left:8px}
+.paychoice{border:0;display:grid;gap:8px;margin:2px 0 0;min-width:0}
+.paychoice legend{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;padding:0}
+.paychoice[hidden],.paybox[hidden]{display:none}
+.obody [hidden]{display:none!important}
+.fm .pc{position:relative;display:block;gap:0}
+.fm .pc input{position:absolute;opacity:0;width:1px;height:1px;min-height:0;padding:0;border:0;margin:0}
+.pc span{display:grid;gap:2px;padding:12px 16px;border:1.5px solid var(--line);border-radius:20px;background:#fff;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
+.pc span b{font-size:14px;font-weight:700;color:var(--ink)}
+.pc span small{font-size:12.5px;font-weight:600;color:var(--mute)}
+.pc:hover span{border-color:var(--rose-deep)}
+.pc input:checked+span{border-color:var(--berry);background:var(--petal);box-shadow:0 0 0 4px rgba(229,138,166,.2)}
+.pc input:focus-visible+span{outline:2px solid var(--berry);outline-offset:3px}
+.paybox{margin-top:18px;padding:26px 22px;border-radius:28px;text-align:center;display:grid;gap:10px;justify-items:center;box-shadow:var(--shadow)}
+.pbtag{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--crimson)}
+.pbamt{font-family:var(--serif);font-size:48px;line-height:1.05;color:var(--ink)}
+.pbsub{font-size:14px;font-weight:600;color:var(--mute);line-height:1.45}
+.paybox .chip{min-width:230px;justify-content:center}
+.paybox .msg{min-height:20px}
+.pbtick{width:64px;height:64px;border-radius:50%;background:var(--matcha);color:#fff;display:grid;place-items:center;font-size:34px;font-weight:700;animation:pop .45s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+.pbspin{width:22px;height:22px;border-radius:50%;border:3px solid var(--rose);border-top-color:var(--berry);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tstat.pay{margin-top:8px}.tstat.pay.ok{color:var(--matcha)}
+#paynow{margin-top:10px}
+@media(prefers-reduced-motion:reduce){.pbtick,.pbspin{animation:none}}
 
 /* order tracking: reuses the order window look */
 .tstep{display:flex;gap:0;margin:18px 0 6px;padding:0;list-style:none}
@@ -801,7 +828,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
 <div id="toast" class="glass" role="status" aria-live="polite"></div>
 <div class="ordwrap" id="ord" hidden>
   <div class="ordbox glass" role="dialog" aria-modal="true" aria-labelledby="ordh">
-    <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="ordh">Your order</b><small>LATCHA calls to confirm · no payment here</small></div><button type="button" class="x" id="ordx" aria-label="Close order form">×</button></header>
+    <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="ordh">Your order</b><small id="ordsmall">LATCHA calls to confirm · no payment here</small></div><button type="button" class="x" id="ordx" aria-label="Close order form">×</button></header>
     <div class="obody">
       <p class="olead">Pick your sips, tell us where to send them, and we will ring you to confirm. 🍵</p>
       <div id="ordlist"></div>
@@ -814,9 +841,21 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
         <label id="clabel">City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
         <label>Delivery address<textarea name="address" maxlength="300" autocomplete="street-address" required></textarea></label>
         <label>Notes (optional)<input name="notes" maxlength="300" placeholder="Oat milk, less sweet, gate code"></label>
+        <fieldset class="paychoice" id="paychoice" hidden><legend>How would you like to pay?</legend>
+          <label class="pc"><input type="radio" name="pay" value="upi" checked><span><b>Pay by UPI</b><small id="paytot"></small></span></label>
+          <label class="pc"><input type="radio" name="pay" value="cod"><span><b>Pay at delivery</b><small>LATCHA calls to confirm</small></span></label>
+        </fieldset>
         <button class="chip" type="submit" id="osub" disabled>Send order request</button>
         <div class="msg" id="omsg" role="status"></div>
       </form>
+      <div class="paybox glass" id="paybox" hidden role="group" aria-labelledby="pbamt">
+        <div class="pbtag" id="pbtag"></div>
+        <div class="pbamt" id="pbamt"></div>
+        <div class="pbsub" id="pbsub"></div>
+        <button class="chip" type="button" id="pbpay">Pay with UPI</button>
+        <button class="chip o" type="button" id="pbcancel">Not now</button>
+        <div class="msg" id="pbmsg" role="status" aria-live="polite"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1242,7 +1281,7 @@ function applyMenu(items){
   var G={classic:CLASSIC,cloud:CLOUD,soft:SOFT,float:FLOAT},fresh={classic:[],cloud:[],soft:[],float:[]},k;
   items.forEach(function(it){var g=fresh[it.category];if(!g)return;var r=[it.name,it.description];
     if(it.category==="classic"||it.category==="cloud"){r.push(it.calories||0,it.sweetness||0);if(it.best_seller)r.push(1)}
-    r.id=it.id;r.pos=it.position;g.push(r)});
+    r.id=it.id;r.pos=it.position;r.price=it.price||0;g.push(r)});
   for(k in G){if(!fresh[k].length)return false}   /* keep the built-in menu if the database menu is incomplete */
   for(k in G){G[k].length=0;fresh[k].forEach(function(r){G[k].push(r)})}
   sel.l=0;sel.s=0;renderBoards();buildAll();
@@ -1276,13 +1315,24 @@ var ord=$("#ord"),cart={},ordFrom=null;
 function ordRender(){
   var G=[["Classic iced matcha lattes",CLASSIC],["Cloud lattes",CLOUD],["Soft serves",SOFT],["Matcha floats",FLOAT]],h="";
   G.forEach(function(g){h+='<div class="og">'+g[0]+'</div>';var so=soldHere();g[1].forEach(function(r){if(!r.id)return;var out=so.indexOf(r.id)>-1;
-    h+='<div class="orow'+(out?' so':'')+'"><span>'+esc(r[0])+(out?'<em class="soldtag">Sold out here</em>':'')+'</span><div class="stp"><button type="button" data-id="'+r.id+'" data-d="-1" aria-label="Fewer '+esc(r[0])+'">−</button><output id="q'+r.id+'">'+(cart[r.id]||0)+'</output><button type="button" data-id="'+r.id+'" data-d="1" aria-label="More '+esc(r[0])+'"'+(out?' disabled':'')+'>+</button></div></div>'})});
+    h+='<div class="orow'+(out?' so':'')+'"><span>'+esc(r[0])+(PAYMODE!=="off"&&r.price?'<em class="pr">₹'+r.price+'</em>':'')+(out?'<em class="soldtag">Sold out here</em>':'')+'</span><div class="stp"><button type="button" data-id="'+r.id+'" data-d="-1" aria-label="Fewer '+esc(r[0])+'">−</button><output id="q'+r.id+'">'+(cart[r.id]||0)+'</output><button type="button" data-id="'+r.id+'" data-d="1" aria-label="More '+esc(r[0])+'"'+(out?' disabled':'')+'>+</button></div></div>'})});
   $("#ordlist").innerHTML=h;ordSum()}
-function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});
-  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected":"Nothing selected yet";$("#osub").disabled=!n||!canOrderNow()}
+/* UPI payments: PAYMODE comes from /api/payments/config ("off" until it answers, so the old flow is always the fallback) */
+var PAYMODE="off",payCtx=null;
+function priceOf(id){var G=[CLASSIC,CLOUD,SOFT,FLOAT],a,j;for(a=0;a<G.length;a++)for(j=0;j<G[a].length;j++)if(G[a][j].id==id)return G[a][j].price||0;return 0}
+function cartMoney(){var t=0,ok=true,ids=Object.keys(cart);ids.forEach(function(i){var p=priceOf(i);if(!p)ok=false;t+=p*cart[i]});return ok&&ids.length?t:null}
+function loadPay(){return jreq("/api/payments/config").then(function(r){PAYMODE=r&&r.mode||"off";return PAYMODE},function(){return PAYMODE})}
+function payChoice(){var f=$("#oform");return f.pay&&f.pay.value==="cod"?"cod":"upi"}
+function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});var t=cartMoney(),can=PAYMODE!=="off"&&t!=null;
+  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected"+(can?" · ₹"+t:""):"Nothing selected yet";
+  $("#paychoice").hidden=!can;if(can)$("#paytot").textContent="₹"+t+(PAYMODE==="demo"?" · demo, no real money":"");
+  $("#osub").textContent=can&&payChoice()==="upi"?"Pay ₹"+t+" with UPI":"Send order request";
+  $("#ordsmall").textContent=PAYMODE!=="off"?"Pay by UPI or at delivery · LATCHA calls to confirm":"LATCHA calls to confirm · no payment here";
+  $("#osub").disabled=!n||!canOrderNow()}
+$("#paychoice").addEventListener("change",ordSum);
 $("#ordlist").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=b.dataset.id,q=Math.max(0,Math.min(20,(cart[id]||0)+(+b.dataset.d)));
   if(q)cart[id]=q;else delete cart[id];$("#q"+id).textContent=q;ordSum()});
-function showOrder(){ordFrom=document.activeElement;$("#omsg").textContent="";$("#omsg").className="msg";ordRender();ord.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";$("#ordx").focus();loadOutlets().then(outletUI)}
+function showOrder(){ordFrom=document.activeElement;$("#omsg").textContent="";$("#omsg").className="msg";payView(false);ordRender();ord.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";$("#ordx").focus();loadOutlets().then(outletUI);loadPay().then(ordRender)}
 function openOrder(){if(ORDER_OK)return showOrder();loadMenu().then(function(ok){ok?showOrder():askOrder()},function(){askOrder()})}
 function closeOrder(){if(ord.hidden)return;ord.hidden=true;document.body.classList.remove("ordopen");document.body.style.overflow="";if(ordFrom&&ordFrom.focus)ordFrom.focus()}
 $("#ordx").addEventListener("click",closeOrder);
@@ -1296,11 +1346,44 @@ function errText(e){var b=e.body||{},d=b.detail;
   return "We could not send that. Please try again, or ask LATCHI."}
 $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#omsg"),btn=$("#osub");
   var lines=Object.keys(cart).map(function(i){return {item_id:+i,quantity:cart[i]}});if(!lines.length)return;
+  var pay=!$("#paychoice").hidden&&payChoice()==="upi"?"upi":"cod";
   btn.disabled=true;msg.className="msg";msg.textContent="Sending…";
-  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(OUTLETS.length&&curOutlet()?{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,outlet:outSel,notes:f.notes.value,lines:lines}:{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,lines:lines})})
-  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};cart={};ordRender();f.reset();outletUI();msg.className="msg ok";msg.textContent="Order request #"+r.id+(r.outlet?" for "+r.outlet:"")+" received. LATCHA will call to confirm. 💗 ";
+  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(OUTLETS.length&&curOutlet()?{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,outlet:outSel,notes:f.notes.value,pay:pay,lines:lines}:{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,pay:pay,lines:lines})})
+  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};var nm=f.customer_name.value;cart={};ordRender();f.reset();outletUI();
+    if(r.payment){msg.textContent="";btn.disabled=false;startPay({id:r.id,phone:lastOrder.phone,name:nm,outlet:r.outlet,pay:r.payment});return}msg.className="msg ok";msg.textContent="Order request #"+r.id+(r.outlet?" for "+r.outlet:"")+" received. LATCHA will call to confirm. 💗 ";
     var a=document.createElement("button");a.type="button";a.className="chip o";a.id="trackthis";a.textContent="Track this order";a.addEventListener("click",function(){var p=lastOrder;closeOrder();showTrack(p)});msg.appendChild(a);btn.disabled=true})
   .catch(function(er){msg.className="msg bad";msg.textContent=errText(er);ordSum()})});
+
+/* UPI payment window (same order box, themed) */
+function payView(on){["#ordlist","#osum","#oform"].forEach(function(q){$(q).hidden=on});document.querySelector(".olead").hidden=on;$("#paybox").hidden=!on}
+function payBusy(b){$("#pbpay").disabled=b;$("#pbcancel").disabled=b}
+function startPay(c){payCtx=c;payView(true);var d=c.pay.provider==="demo";
+  $("#pbtag").textContent=d?"Demo payment · no real money":"Secure UPI payment";
+  $("#pbamt").textContent="₹"+c.pay.amount;
+  $("#pbsub").textContent="Order #"+c.id+(c.outlet?" · "+c.outlet:"");
+  $("#pbpay").hidden=false;$("#pbpay").textContent="Pay ₹"+c.pay.amount+" with UPI";$("#pbcancel").hidden=false;$("#pbcancel").textContent="Not now";
+  $("#pbmsg").className="msg";$("#pbmsg").textContent="";payBusy(false);$("#pbpay").focus()}
+function payDone(){var c=payCtx;$("#pbtag").textContent="Payment received";
+  $("#pbamt").innerHTML='<span class="pbtick" aria-hidden="true">✓</span>';
+  $("#pbsub").textContent="Order #"+c.id+" is paid. LATCHA will call you to confirm. 💗";
+  payBusy(false);$("#pbpay").hidden=true;$("#pbmsg").textContent="";$("#pbcancel").hidden=false;$("#pbcancel").textContent="Close";
+  var a=document.createElement("button");a.type="button";a.className="chip";a.textContent="Track this order";a.addEventListener("click",function(){var p={id:c.id,phone:c.phone};closeOrder();showTrack(p)});
+  $("#pbmsg").appendChild(a);$("#pbpay").hidden=true}
+function payConfirm(extra){var c=payCtx,m=$("#pbmsg");payBusy(true);
+  return jreq("/api/orders/"+c.id+"/pay/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Object.assign({phone:c.phone},extra||{}))})
+  .then(function(){payDone()},function(er){m.className="msg bad";m.textContent=(er.body&&typeof er.body.detail==="string"?er.body.detail:"We could not confirm the payment. Please try again.");payBusy(false)})}
+function loadRzp(){return new Promise(function(ok,no){if(window.Razorpay)return ok();var s=document.createElement("script");s.src="https://checkout.razorpay.com/v1/checkout.js";s.onload=ok;s.onerror=function(){no(new Error("load"))};document.head.appendChild(s)})}
+$("#pbpay").addEventListener("click",function(){var c=payCtx,m=$("#pbmsg");if(!c)return;m.className="msg";
+  if(c.pay.provider==="demo"){payBusy(true);m.innerHTML='<span class="pbspin" role="img" aria-label="Waiting"></span>';
+    setTimeout(function(){payConfirm()},1800);return}
+  payBusy(true);m.textContent="Opening payment…";
+  loadRzp().then(function(){var rz=new Razorpay({key:c.pay.key_id,amount:c.pay.amount*100,currency:"INR",name:"LATCHA",description:"Order #"+c.id,order_id:c.pay.provider_order_id,
+      prefill:{name:c.name||"",contact:c.phone},theme:{color:"#b5456a"},method:{upi:true,card:false,netbanking:false,wallet:false,emi:false,paylater:false},
+      handler:function(r){m.textContent="Confirming…";payConfirm({razorpay_payment_id:r.razorpay_payment_id,razorpay_order_id:r.razorpay_order_id,razorpay_signature:r.razorpay_signature})},
+      modal:{ondismiss:function(){m.className="msg bad";m.textContent="Payment not completed. Your order #"+c.id+" is saved. You can try again.";payBusy(false)}}});
+    rz.on("payment.failed",function(){m.className="msg bad";m.textContent="That payment did not go through. You can try again.";payBusy(false)});rz.open();m.textContent=""},
+    function(){m.className="msg bad";m.textContent="Could not open the payment window. Check your internet and try again.";payBusy(false)})});
+$("#pbcancel").addEventListener("click",function(){var c=payCtx,paid=$("#pbpay").hidden;closeOrder();if(c&&!paid)toast("Order #"+c.id+" saved. Payment pending.")});
 
 /* order tracking */
 var trk=$("#trk"),trkFrom=null,lastOrder=null;
@@ -1316,6 +1399,9 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTrack()
 function trackHtml(o){var st=o.status,steps=[["new","Received"],["confirmed","Confirmed"],["delivered","Delivered"]],at=st==="cancelled"?-1:["new","confirmed","delivered"].indexOf(st),h="";
   if(st!=="cancelled")h+='<ol class="tstep" aria-label="Order progress">'+steps.map(function(x,i){return '<li'+(i<=at?' class="on"':'')+(i===at?' aria-current="step"':'')+'>'+x[1]+'</li>'}).join("")+'</ol>';
   h+='<div class="tstat'+(st==="cancelled"?' bad':'')+'" id="tstat">Order #'+o.id+' · '+esc(TSTAT[st])+'</div><ul class="tlines">'+o.lines.map(function(l){return '<li><span>'+esc(l.item_name)+'</span><span>× '+l.quantity+'</span></li>'}).join("")+'</ul>';
+  if(o.amount&&(o.payment_method==="upi"||o.payment_status==="paid")){var pd=o.payment_status==="paid";
+    h+='<div class="tstat pay'+(pd?' ok':'')+'">'+(pd?'Paid ₹'+o.amount+(o.payment_method==="upi"?' by UPI ✓':' ✓'):'Payment pending · ₹'+o.amount)+'</div>';
+    if(!pd&&o.payment_method==="upi"&&st!=="cancelled"&&PAYMODE!=="off")h+='<button type="button" class="chip" id="paynow">Pay ₹'+o.amount+' now</button>'}
   var d=new Date(o.created_at);if(!isNaN(d))h+='<p class="tmeta">Placed '+esc(d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}))+'</p>';
   return h}
 $("#tform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#tmsg"),btn=$("#tsub"),res=$("#tres"),id=f.order_id.value.replace(/^#/,"").trim();
@@ -1323,7 +1409,10 @@ $("#tform").addEventListener("submit",function(e){e.preventDefault();var f=e.tar
   if(!/^[0-9]{1,10}$/.test(id)||+id<1){msg.className="msg bad";msg.textContent="Enter your order number, like 12.";return}
   btn.disabled=true;msg.className="msg";msg.textContent="Checking…";
   jreq("/api/orders/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({order_id:+id,phone:f.phone.value})})
-  .then(function(o){msg.textContent="";res.innerHTML=trackHtml(o);res.hidden=false})
+  .then(function(o){msg.textContent="";res.innerHTML=trackHtml(o);res.hidden=false;var pn=$("#paynow");
+    if(pn)pn.addEventListener("click",function(){pn.disabled=true;
+      jreq("/api/orders/"+o.id+"/pay",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:f.phone.value})})
+      .then(function(p){closeTrack();showOrder();startPay({id:o.id,phone:f.phone.value,name:"",outlet:"",pay:p})},function(er){pn.disabled=false;msg.className="msg bad";msg.textContent=(er.body&&typeof er.body.detail==="string")?er.body.detail:"We could not start the payment. Please try again."})})})
   .catch(function(er){msg.className="msg bad";msg.textContent=er.status===404?"We could not find that order. Check the order number and mobile number.":errText(er)})
   .then(function(){btn.disabled=false})});
 
