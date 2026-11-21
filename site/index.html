@@ -560,6 +560,23 @@ footer.site .chip:not(.o){color:var(--berry)!important}
 /* scroll story ground = same vivid pink as the home screen */
 #bgblur{filter:blur(14px) saturate(1.6)}
 #wash{background:radial-gradient(circle at 50% 45%,rgba(229,138,166,.86) 0%,rgba(246,191,208,.84) 52%,rgba(250,214,226,.82) 100%)}
+/* menu boards: equal cards, buttons on one line, short last rows centred */
+.boards{align-items:start}
+.items{--c:5;display:flex;flex-wrap:wrap;justify-content:center;align-content:flex-start;gap:12px}
+.items>.item{flex:0 0 calc((100% - (var(--c) - 1)*12px)/var(--c));max-width:calc((100% - (var(--c) - 1)*12px)/var(--c));display:flex;flex-direction:column}
+.item h4{min-height:2.3em;display:flex;align-items:flex-end;justify-content:center;text-align:center}
+.item p{text-align:center}
+.item>p{flex:1 1 auto;margin-bottom:8px}
+.item>.m,.item>.act{margin-top:auto}
+.item>p+.m,.item>p+.act{margin-top:0}
+.item .m{min-height:36px;align-content:center}
+.item .act{margin-top:10px}
+.board .note{margin-top:12px}
+.board .strip{margin-top:16px}
+.board .items+.note,.board .items+.strip,.board .items+.addon{margin-top:16px}
+.items[data-n="6"]{--c:3}.items[data-n="8"],.items[data-n="11"],.items[data-n="12"]{--c:4}
+@media(min-width:981px) and (max-width:1279px){.items,.items[data-n]{--c:3}}
+@media(max-width:760px){.items,.items[data-n]{--c:2;gap:10px}}
 </style>
 
 <script src="assets/vendor/lenis.min.js"></script>
@@ -881,7 +898,7 @@ var FLOAT=[["Vanilla Silk Float","Classic iced matcha latte + our Vanilla Silk"]
 function dots(n){var s="";for(var i=0;i<5;i++)s+='<i class="'+(i<n?"on":"")+'"></i>';return '<span class="dots" aria-label="Sweetness '+n+' of 5">'+s+'</span>'}
 function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+(o.id?'<div class="act"><button type="button" class="minus" data-id="'+o.id+'" aria-label="Remove one '+o.n.replace(/"/g,"")+' from your order" disabled>\u2212</button><button type="button" class="add" data-id="'+o.id+'" aria-label="Add '+o.n.replace(/"/g,"")+' to your order">+ Add</button></div>':'')+'</div>'}
 var LOGO='<span class="logo"><img src="assets/logo.png" alt="LATCHA"></span>';
-function board(title,sub,html,strip,note){return '<article class="board rv"><div class="bh">'+LOGO+'<span class="t2">Speciality Matcha | Soft Serves | Floats</span></div><div class="pillt">'+title+(sub?'<small>'+sub+'</small>':'')+'</div><div class="items">'+html+'</div>'+(note?'<div class="note">'+note+'</div>':'')+(strip?'<div class="strip">'+strip+'</div>':'')+'<div class="addon">MATCHA ADD ON · 1G · 2G · 3G · 4G</div></article>'}
+function board(title,sub,html,strip,note){return '<article class="board rv"><div class="bh">'+LOGO+'<span class="t2">Speciality Matcha | Soft Serves | Floats</span></div><div class="pillt">'+title+(sub?'<small>'+sub+'</small>':'')+'</div><div class="items" data-n="'+(html.match(/class="item"/g)||[]).length+'">'+html+'</div>'+(note?'<div class="note">'+note+'</div>':'')+(strip?'<div class="strip">'+strip+'</div>':'')+'<div class="addon">MATCHA ADD ON · 1G · 2G · 3G · 4G</div></article>'}
 function renderBoards(){
 var h="";
 h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/classic-"+(r.pos||i+1)+".webp"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
