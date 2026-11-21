@@ -4,7 +4,7 @@ import json, logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from . import models as m, outlets as ot, payments as pay, schemas as s
+from . import fam, models as m, outlets as ot, payments as pay, schemas as s
 from .config import get_settings
 from .db import get_db
 from .security import make_token, require_admin, verify_password
@@ -77,23 +77,37 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
             if l.item_id in view["sold_out"]:
                 raise HTTPException(422, f"{items[l.item_id].name} is sold out at {outlet.name}. Please remove it or choose another outlet.")
     total = pay.order_total([(items[l.item_id], l.quantity) for l in body.lines])
-    if body.pay == "upi":
+    discount = 0
+    if body.use_reward:   # a Latcha Fam free drink: the cheapest drink in the cart is free
+        if fam.card(db, body.phone)["rewards_available"] < 1:
+            raise HTTPException(422, "No free drink is waiting on this number yet.")
+        discount = fam.reward_discount(items, body.lines)
+        if discount is None:
+            raise HTTPException(422, "A free drink cannot be used on these items yet. Please order without it.")
+    charge = None if total is None else total - discount
+    free = charge == 0            # the whole order was the free drink: nothing to pay
+    method, pstatus = body.pay, ("pending" if body.pay == "upi" else "unpaid")
+    if free:
+        method, pstatus = "cod", "paid"
+    elif body.pay == "upi":
         if pay.mode() == "off":
             raise HTTPException(422, "Online payment is not available right now. Please choose pay at delivery.")
-        if total is None:
+        if charge is None:
             raise HTTPException(422, "Online payment is not available for these items yet. Please choose pay at delivery.")
     order = m.Order(customer_name=body.customer_name, phone=body.phone, address=body.address,
                     city=outlet.city if outlet else body.city, notes=body.notes, outlet_id=outlet.id if outlet else None,
-                    amount=total, payment_method=body.pay, payment_status="pending" if body.pay == "upi" else "unpaid")
+                    amount=charge, payment_method=method, payment_status=pstatus, fam_discount=discount)
+    if free:
+        order.payment_id, order.paid_at = "fam_reward", datetime.now(timezone.utc)
     for l in body.lines:
         order.lines.append(m.OrderLine(item_id=l.item_id, item_name=items[l.item_id].name, quantity=l.quantity,
                                        price=items[l.item_id].price))
     db.add(order)
     start = None
-    if body.pay == "upi":
+    if method == "upi":
         db.flush()  # we need the order number for the provider
         try:
-            made = pay.create_provider_order(order.id, total)
+            made = pay.create_provider_order(order.id, charge)
         except Exception:  # noqa: BLE001  (nothing is saved if the payment service is down)
             db.rollback()
             raise HTTPException(502, "The payment service is busy. Please try again, or choose pay at delivery.")
@@ -102,7 +116,7 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
     db.commit()
     msg = "Order saved. Complete the UPI payment to confirm it." if start else "Order request received. LATCHA will confirm it by phone."
     return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None, message=msg,
-                          amount=total, payment=start)
+                          amount=charge, fam_discount=discount, payment=start)
 
 
 def _own_order(db: Session, order_id: int, phone: str) -> m.Order:
@@ -110,6 +124,12 @@ def _own_order(db: Session, order_id: int, phone: str) -> m.Order:
     if o is None or o.phone != phone:   # same answer for "no such order" and "wrong phone"
         raise HTTPException(404, NOT_FOUND)
     return o
+
+
+@public.post("/fam/card", response_model=s.FamCard)
+def fam_card(body: s.FamIn, db: Session = Depends(get_db)):
+    """Sips and free drinks for one mobile number. Shows counts only: no names, addresses or orders."""
+    return fam.card(db, body.phone)
 
 
 @public.get("/payments/config", response_model=s.PayConfig)
@@ -269,6 +289,11 @@ def set_order_status(order_id: int, body: s.StatusIn, db: Session = Depends(get_
     o.status = body.status
     db.commit()
     return o
+
+
+@admin.get("/fam", response_model=list[s.FamMember])
+def admin_fam(db: Session = Depends(get_db)):
+    return fam.members(db)
 
 
 @admin.get("/stats", response_model=s.StatsOut)

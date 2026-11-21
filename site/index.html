@@ -403,6 +403,25 @@ body.ordopen #chat{display:none}
 @keyframes pop{from{transform:scale(.3);opacity:0}}
 .pbspin{width:22px;height:22px;border-radius:50%;border:3px solid var(--rose);border-top-color:var(--berry);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Latcha Fam */
+.famstrip{display:grid;gap:10px;padding:14px 16px;border-radius:22px;background:var(--petal);border:1.5px solid var(--rose)}
+.famstrip[hidden],.famcard[hidden]{display:none}
+.famtop{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:700;color:var(--ink)}
+.famtop em{font-style:normal;color:var(--berry)}
+.pearls{display:flex;gap:7px;flex-wrap:wrap}
+.pearl{width:24px;height:24px;border-radius:50%;border:2px solid var(--rose);background:#fff;transition:background .3s,transform .3s}
+.pearl.on{background:radial-gradient(circle at 32% 28%,#fff 0%,#f6bfd0 52%,#e58aa6 100%);border-color:var(--rose-deep)}
+.pearl.gift{border-color:var(--matcha)}.pearl.gift.on{background:radial-gradient(circle at 32% 28%,#f2f8e4 0%,#a7c86a 55%,var(--matcha) 100%);border-color:var(--matcha)}
+.fm .famuse{position:relative;display:block;gap:0}
+.fm .famuse input{position:absolute;opacity:0;width:1px;height:1px;min-height:0;padding:0;border:0;margin:0}
+.famuse span{display:block;padding:11px 14px;border:1.5px dashed var(--matcha);border-radius:18px;background:#fff;font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer}
+.famuse input:checked+span{background:var(--leaf-soft);border-style:solid}
+.famuse input:focus-visible+span{outline:2px solid var(--berry);outline-offset:3px}
+.famcard{display:grid;gap:14px;margin-top:6px}
+.fbig{font-family:var(--serif);font-size:44px;line-height:1.05;color:var(--ink)}
+.fbig small{font-family:var(--ui);font-size:14px;font-weight:700;color:var(--mute);margin-left:6px}
+.fgift{padding:12px 16px;border-radius:18px;background:var(--leaf-soft);color:var(--ink);font-weight:700;font-size:14px;line-height:1.5}
+.fhow{font-size:13px;line-height:1.55;color:var(--mute);margin:0}
 .tstat.pay{margin-top:8px}.tstat.pay.ok{color:var(--matcha)}
 #paynow{margin-top:10px}
 @media(prefers-reduced-motion:reduce){.pbtick,.pbspin{animation:none}}
@@ -820,7 +839,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
 <footer class="site" id="footer">
   <div class="brand"><a class="logo lg" href="#top" aria-label="LATCHA"><img src="assets/logo.png" alt="LATCHA"></a><p class="founder"><small>Founder</small><b>Rajasree Yarlagadda</b></p></div>
   <p>Speciality Matcha &amp; Premium Soft Serve<br>Your sign to slow down at Latcha.</p>
-  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button><button type="button" class="chip o" id="trackbtn">Track your order</button></div>
+  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button><button type="button" class="chip o" id="trackbtn">Track your order</button><button type="button" class="chip o" id="fambtn">Latcha Fam</button></div>
   <p style="width:100%;font-size:12px">© LATCHA™</p>
 </footer>
 
@@ -841,6 +860,11 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
         <label id="clabel">City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
         <label>Delivery address<textarea name="address" maxlength="300" autocomplete="street-address" required></textarea></label>
         <label>Notes (optional)<input name="notes" maxlength="300" placeholder="Oat milk, less sweet, gate code"></label>
+        <div class="famstrip" id="famstrip" hidden>
+          <div class="famtop"><span id="famline"></span><em id="famnum"></em></div>
+          <div class="pearls" id="famgems" aria-hidden="true"></div>
+          <label class="famuse" id="famuselab" hidden><input type="checkbox" id="famuse"><span id="famusetxt">Use my free drink</span></label>
+        </div>
         <fieldset class="paychoice" id="paychoice" hidden><legend>How would you like to pay?</legend>
           <label class="pc"><input type="radio" name="pay" value="upi" checked><span><b>Pay by UPI</b><small id="paytot"></small></span></label>
           <label class="pc"><input type="radio" name="pay" value="cod"><span><b>Pay at delivery</b><small>LATCHA calls to confirm</small></span></label>
@@ -856,6 +880,21 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
         <button class="chip o" type="button" id="pbcancel">Not now</button>
         <div class="msg" id="pbmsg" role="status" aria-live="polite"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="ordwrap" id="famwin" hidden>
+  <div class="ordbox glass" role="dialog" aria-modal="true" aria-labelledby="famh">
+    <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="famh">Latcha Fam</b><small>Sip, collect, get a free drink</small></div><button type="button" class="x" id="famx" aria-label="Close Latcha Fam">×</button></header>
+    <div class="obody">
+      <form class="fm ofields" id="fform" novalidate>
+        <label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>
+        <button class="chip" type="submit" id="famsub">Show my card</button>
+        <div class="msg" id="fmsg" role="status"></div>
+      </form>
+      <div class="famcard" id="fres" hidden></div>
+      <p class="fhow" id="fhow">Every drink we deliver to you is 1 sip. Collect sips on your mobile number and get a free drink. Sips are added when LATCHA marks your order delivered.</p>
     </div>
   </div>
 </div>
@@ -1323,13 +1362,33 @@ function priceOf(id){var G=[CLASSIC,CLOUD,SOFT,FLOAT],a,j;for(a=0;a<G.length;a++
 function cartMoney(){var t=0,ok=true,ids=Object.keys(cart);ids.forEach(function(i){var p=priceOf(i);if(!p)ok=false;t+=p*cart[i]});return ok&&ids.length?t:null}
 function loadPay(){return jreq("/api/payments/config").then(function(r){PAYMODE=r&&r.mode||"off";return PAYMODE},function(){return PAYMODE})}
 function payChoice(){var f=$("#oform");return f.pay&&f.pay.value==="cod"?"cod":"upi"}
-function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});var t=cartMoney(),can=PAYMODE!=="off"&&t!=null;
-  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected"+(can?" · ₹"+t:""):"Nothing selected yet";
-  $("#paychoice").hidden=!can;if(can)$("#paytot").textContent="₹"+t+(PAYMODE==="demo"?" · demo, no real money":"");
-  $("#osub").textContent=can&&payChoice()==="upi"?"Pay ₹"+t+" with UPI":"Send order request";
+function famDisc(){if(!famCard||!famCard.rewards_available||!$("#famuse").checked)return 0;var ids=Object.keys(cart),m=0;
+  for(var i=0;i<ids.length;i++){var p=priceOf(ids[i]);if(!p)return 0;m=m?Math.min(m,p):p}return m}
+function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});var t=cartMoney(),d=famDisc(),fin=t!=null?t-d:null,free=n&&d>0&&fin===0,can=PAYMODE!=="off"&&t!=null&&fin>0;
+  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected"+(t!=null&&(PAYMODE!=="off"||d)?(d&&PAYMODE!=="off"?" · ₹"+fin+" (Fam −₹"+d+")":d?" · free drink applied":" · ₹"+t):""):"Nothing selected yet";
+  $("#paychoice").hidden=!can;if(can)$("#paytot").textContent="₹"+fin+(PAYMODE==="demo"?" · demo, no real money":"");
+  $("#osub").textContent=free?"Place my free order":can&&payChoice()==="upi"?"Pay ₹"+fin+" with UPI":"Send order request";
   $("#ordsmall").textContent=PAYMODE!=="off"?"Pay by UPI or at delivery · LATCHA calls to confirm":"LATCHA calls to confirm · no payment here";
   $("#osub").disabled=!n||!canOrderNow()}
 $("#paychoice").addEventListener("change",ordSum);
+
+/* Latcha Fam: sips for delivered drinks, a free drink every N sips. Counts only, looked up by mobile number. */
+var famCard=null,famPhone="",famT=null;
+function cleanPhone(v){var d=String(v||"").replace(/[\s\-()]/g,"");if(d.indexOf("+91")===0)d=d.slice(3);else if(/^91\d{10}$/.test(d))d=d.slice(2);return /^[6-9]\d{9}$/.test(d)?d:""}
+function famReq(ph){return jreq("/api/fam/card",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:ph})})}
+function gems(c){var h="",n=c.per_reward;for(var i=0;i<n;i++)h+='<i class="pearl'+(i===n-1?" gift":"")+(i<c.into_card?" on":"")+'"></i>';return h}
+function famUI(){var st=$("#famstrip"),c=famCard;if(!c){st.hidden=true;$("#famuse").checked=false;return}
+  st.hidden=false;$("#famgems").innerHTML=gems(c);
+  $("#famline").textContent=c.rewards_available?"Latcha Fam · free drink ready":"Latcha Fam · "+c.to_next+" sip"+(c.to_next>1?"s":"")+" to a free drink";
+  $("#famnum").textContent=c.into_card+" / "+c.per_reward;
+  var lab=$("#famuselab");lab.hidden=!c.rewards_available;if(!c.rewards_available)$("#famuse").checked=false;
+  $("#famusetxt").textContent="Use my free drink"+(c.rewards_available>1?" ("+c.rewards_available+" ready)":"")+" · the cheapest drink in my order is free";ordSum()}
+function famLookup(){var ph=cleanPhone($("#oform").phone.value);if(ph===famPhone)return;famPhone=ph;
+  if(!ph){famCard=null;famUI();return}
+  famReq(ph).then(function(c){if(famPhone===ph){famCard=c;famUI()}},function(){if(famPhone===ph){famCard=null;famUI()}})}
+$("#oform").phone.addEventListener("input",function(){clearTimeout(famT);famT=setTimeout(famLookup,450)});
+$("#oform").phone.addEventListener("blur",famLookup);
+$("#famuse").addEventListener("change",ordSum);
 $("#ordlist").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=b.dataset.id,q=Math.max(0,Math.min(20,(cart[id]||0)+(+b.dataset.d)));
   if(q)cart[id]=q;else delete cart[id];$("#q"+id).textContent=q;ordSum()});
 function showOrder(){ordFrom=document.activeElement;$("#omsg").textContent="";$("#omsg").className="msg";payView(false);ordRender();ord.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";$("#ordx").focus();loadOutlets().then(outletUI);loadPay().then(ordRender)}
@@ -1346,11 +1405,11 @@ function errText(e){var b=e.body||{},d=b.detail;
   return "We could not send that. Please try again, or ask LATCHI."}
 $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#omsg"),btn=$("#osub");
   var lines=Object.keys(cart).map(function(i){return {item_id:+i,quantity:cart[i]}});if(!lines.length)return;
-  var pay=!$("#paychoice").hidden&&payChoice()==="upi"?"upi":"cod";
+  var pay=!$("#paychoice").hidden&&payChoice()==="upi"?"upi":"cod",reward=famDisc()>0;
   btn.disabled=true;msg.className="msg";msg.textContent="Sending…";
-  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(OUTLETS.length&&curOutlet()?{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,outlet:outSel,notes:f.notes.value,pay:pay,lines:lines}:{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,pay:pay,lines:lines})})
-  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};var nm=f.customer_name.value;cart={};ordRender();f.reset();outletUI();
-    if(r.payment){msg.textContent="";btn.disabled=false;startPay({id:r.id,phone:lastOrder.phone,name:nm,outlet:r.outlet,pay:r.payment});return}msg.className="msg ok";msg.textContent="Order request #"+r.id+(r.outlet?" for "+r.outlet:"")+" received. LATCHA will call to confirm. 💗 ";
+  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(OUTLETS.length&&curOutlet()?{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,outlet:outSel,notes:f.notes.value,pay:pay,use_reward:reward,lines:lines}:{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,pay:pay,use_reward:reward,lines:lines})})
+  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};var nm=f.customer_name.value;cart={};ordRender();f.reset();outletUI();famCard=null;famPhone="";famUI();
+    if(r.payment){msg.textContent="";btn.disabled=false;startPay({id:r.id,phone:lastOrder.phone,name:nm,outlet:r.outlet,pay:r.payment});return}msg.className="msg ok";msg.textContent="Order request #"+r.id+(r.outlet?" for "+r.outlet:"")+" received. LATCHA will call to confirm. 💗 "+(r.fam_discount?"Your free drink is on the house. ":"");
     var a=document.createElement("button");a.type="button";a.className="chip o";a.id="trackthis";a.textContent="Track this order";a.addEventListener("click",function(){var p=lastOrder;closeOrder();showTrack(p)});msg.appendChild(a);btn.disabled=true})
   .catch(function(er){msg.className="msg bad";msg.textContent=errText(er);ordSum()})});
 
@@ -1385,6 +1444,24 @@ $("#pbpay").addEventListener("click",function(){var c=payCtx,m=$("#pbmsg");if(!c
     function(){m.className="msg bad";m.textContent="Could not open the payment window. Check your internet and try again.";payBusy(false)})});
 $("#pbcancel").addEventListener("click",function(){var c=payCtx,paid=$("#pbpay").hidden;closeOrder();if(c&&!paid)toast("Order #"+c.id+" saved. Payment pending.")});
 
+/* Latcha Fam card window */
+var fam=$("#famwin"),famFrom=null;
+function showFam(pre){famFrom=document.activeElement;var f=$("#fform");f.reset();$("#fmsg").textContent="";$("#fmsg").className="msg";$("#fres").hidden=true;$("#fhow").hidden=false;
+  if(pre)f.phone.value=pre;fam.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";f.phone.focus()}
+function closeFam(){if(fam.hidden)return;fam.hidden=true;if(ord.hidden&&trk.hidden){document.body.classList.remove("ordopen");document.body.style.overflow=""}if(famFrom&&famFrom.focus)famFrom.focus()}
+$("#fambtn").addEventListener("click",function(){showFam(lastOrder?lastOrder.phone:"")});
+$("#famx").addEventListener("click",closeFam);
+fam.addEventListener("click",function(e){if(e.target===fam)closeFam()});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeFam()});
+$("#fform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,m=$("#fmsg"),b=$("#famsub"),r=$("#fres"),ph=cleanPhone(f.phone.value);
+  r.hidden=true;$("#fhow").hidden=false;if(!ph){m.className="msg bad";m.textContent="Enter a valid 10 digit mobile number.";return}
+  b.disabled=true;m.className="msg";m.textContent="Looking…";
+  famReq(ph).then(function(c){m.textContent="";$("#fhow").hidden=true;
+    r.innerHTML='<div class="fbig">'+c.into_card+' / '+c.per_reward+'<small>sips on this card</small></div><div class="pearls" aria-hidden="true">'+gems(c)+'</div>'
+      +(c.rewards_available?'<div class="fgift">🎁 You have '+c.rewards_available+' free drink'+(c.rewards_available>1?'s':'')+' ready. Tick “Use my free drink” when you order with this number.</div>':'<div class="fgift">'+c.to_next+' more sip'+(c.to_next>1?'s':'')+' to your next free drink.</div>')
+      +'<p class="fhow">'+c.sips+' sip'+(c.sips===1?'':'s')+' in total · '+c.delivered_orders+' delivered order'+(c.delivered_orders===1?'':'s')+'. Every drink we deliver is 1 sip, and '+c.per_reward+' sips is a free drink.</p>';
+    r.hidden=false},function(er){m.className="msg bad";m.textContent=errText(er)}).then(function(){b.disabled=false})});
+
 /* order tracking */
 var trk=$("#trk"),trkFrom=null,lastOrder=null;
 var TSTAT={new:"We got your order. LATCHA will call you to confirm it.",confirmed:"Confirmed. Your order is being made and sent your way.",delivered:"Delivered. We hope you enjoyed every sip! 🍵",cancelled:"This order was cancelled. Please order again or ask LATCHI if you need help."};
@@ -1399,6 +1476,8 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTrack()
 function trackHtml(o){var st=o.status,steps=[["new","Received"],["confirmed","Confirmed"],["delivered","Delivered"]],at=st==="cancelled"?-1:["new","confirmed","delivered"].indexOf(st),h="";
   if(st!=="cancelled")h+='<ol class="tstep" aria-label="Order progress">'+steps.map(function(x,i){return '<li'+(i<=at?' class="on"':'')+(i===at?' aria-current="step"':'')+'>'+x[1]+'</li>'}).join("")+'</ol>';
   h+='<div class="tstat'+(st==="cancelled"?' bad':'')+'" id="tstat">Order #'+o.id+' · '+esc(TSTAT[st])+'</div><ul class="tlines">'+o.lines.map(function(l){return '<li><span>'+esc(l.item_name)+'</span><span>× '+l.quantity+'</span></li>'}).join("")+'</ul>';
+  if(st==="delivered"){var sp=o.lines.reduce(function(a,l){return a+l.quantity},0);h+='<div class="tstat pay ok">+'+sp+' sip'+(sp>1?'s':'')+' added to your Latcha Fam card 🍵</div>'}
+  if(o.fam_discount)h+='<div class="tstat pay ok">Free drink used'+(PAYMODE!=="off"?' (−₹'+o.fam_discount+')':'')+'</div>';
   if(o.amount&&(o.payment_method==="upi"||o.payment_status==="paid")){var pd=o.payment_status==="paid";
     h+='<div class="tstat pay'+(pd?' ok':'')+'">'+(pd?'Paid ₹'+o.amount+(o.payment_method==="upi"?' by UPI ✓':' ✓'):'Payment pending · ₹'+o.amount)+'</div>';
     if(!pd&&o.payment_method==="upi"&&st!=="cancelled"&&PAYMODE!=="off")h+='<button type="button" class="chip" id="paynow">Pay ₹'+o.amount+' now</button>'}

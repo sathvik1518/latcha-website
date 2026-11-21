@@ -372,3 +372,61 @@ def test_owner_edits_a_dish_and_customers_see_the_change(page: Page, context, ad
     items = page.request.get("/api/menu").json()
     honey = [i for i in items if i["name"] == "Honey Iced Matcha Latte"][0]
     assert honey["calories"] == 180 and "edited by the owner" in honey["description"], (honey, saved.value.request.post_data, saved.value.json())
+
+
+# ---------- Latcha Fam ----------
+
+def owner_token(page: Page, password: str) -> dict:
+    r = page.request.post("/api/admin/login", data={"username": "owner", "password": password})
+    assert r.ok
+    return {"Authorization": "Bearer " + r.json()["access_token"]}
+
+
+def deliver_sips(page: Page, password: str, phone: str, drinks: int):
+    """Order `drinks` drinks on this number and mark the order Delivered, like the owner would."""
+    hdr = owner_token(page, password)
+    r = page.request.post("/api/orders", data={"customer_name": "Fam E2E", "phone": phone, "address": "12 MG Road, Indiranagar",
+                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": drinks}]})
+    assert r.ok, r.text()
+    oid = r.json()["id"]
+    ok = page.request.patch(f"/api/admin/orders/{oid}", data={"status": "delivered"}, headers=hdr)
+    assert ok.ok, ok.text()
+    return oid
+
+
+def test_fam_card_from_the_footer_shows_sips(page: Page, admin_password):
+    phone = "98765 4" + str(uuid.uuid4().int)[:4]
+    deliver_sips(page, admin_password, phone, 3)
+    page.goto("/")
+    page.click("#fambtn")
+    expect(page.locator("#famwin")).to_be_visible()
+    page.fill("#fform [name=phone]", phone)
+    page.click("#famsub")
+    expect(page.locator("#fres")).to_be_visible()
+    expect(page.locator("#fres")).to_contain_text("3")
+    expect(page.locator("#fres .pearl.on")).to_have_count(3)
+
+
+def test_free_drink_is_used_in_the_order_window_and_order_costs_nothing(page: Page, admin_password):
+    phone = "98765 5" + str(uuid.uuid4().int)[:4]
+    deliver_sips(page, admin_password, phone, 8)                     # 8 sips = 1 free drink
+    fill_order(page, unique("E2E Fam"), phone)
+    expect(page.locator("#famstrip")).to_be_visible(timeout=8000)
+    expect(page.locator("#famuselab")).to_be_visible()
+    page.locator("#famuselab").click()
+    expect(page.locator("#osub")).to_contain_text("free order")      # one cheap drink in the cart is fully covered
+    page.click("#osub")
+    expect(page.locator("#omsg")).to_contain_text("received", timeout=8000)
+    card = page.request.post("/api/fam/card", data={"phone": phone}).json()
+    assert card["rewards_available"] == 0 and card["rewards_used"] == 1
+
+
+def test_owner_sees_fam_members_and_the_free_drink_badge(page: Page, context, admin_password):
+    phone = "98765 6" + str(uuid.uuid4().int)[:4]
+    deliver_sips(page, admin_password, phone, 8)
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    owner.click("#tabs button[data-t=fam]")
+    row = owner.locator("#list .card", has_text=phone.replace(" ", ""))
+    expect(row).to_be_visible()
+    expect(row).to_contain_text("1 free drink ready")

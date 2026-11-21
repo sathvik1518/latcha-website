@@ -22,6 +22,8 @@ DEMO_PRICE = {"classic": 249, "cloud": 279, "soft": 199, "float": 299}
 
 def upgrade_payment_schema(engine) -> None:
     """Safe to run many times. Adds the payment columns and, once, placeholder prices."""
+    from .fam import upgrade_fam_schema
+    upgrade_fam_schema(engine)
     insp = inspect(engine)
     ocols = {c["name"] for c in insp.get_columns("orders")}
     adds = [

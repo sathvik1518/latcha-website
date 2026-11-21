@@ -62,6 +62,10 @@ button.d{background:var(--crimson);color:#fff;box-shadow:0 8px 20px rgba(181,48,
 .stat b{display:block;font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.1;color:var(--ink)}
 .stat span{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
 .stat.hot b{color:var(--crimson)}
+.pearls{display:flex;gap:6px;flex-wrap:wrap}
+.pearl{width:22px;height:22px;border-radius:50%;border:2px solid var(--rose);background:#fff}
+.pearl.on{background:radial-gradient(circle at 32% 28%,#fff 0%,#f6bfd0 52%,#e58aa6 100%);border-color:var(--rose-deep)}
+.pearl.gift{border-color:var(--matcha)}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chips button{min-height:36px;padding:7px 14px;font-size:13px;background:rgba(255,255,255,.7);color:var(--ink);border:1.5px solid var(--rose);box-shadow:none}
 .chips button:hover{transform:none;border-color:var(--berry)}
@@ -107,7 +111,7 @@ button.sm{min-height:36px;padding:7px 14px;font-size:13px}
 </form>
 <section id="app" hidden>
   <div class="row"><div class="tabs" id="tabs">
-    <button data-t="orders" class="on">Orders</button><button data-t="reviews" class="o">Reviews</button><button data-t="menu" class="o">Menu</button><button data-t="outlets" class="o">Outlets</button>
+    <button data-t="orders" class="on">Orders</button><button data-t="reviews" class="o">Reviews</button><button data-t="menu" class="o">Menu</button><button data-t="outlets" class="o">Outlets</button><button data-t="fam" class="o">Fam</button>
   </div><button class="o" id="out">Log out</button></div>
   <div id="bar" hidden>
     <div class="stats" id="stats"></div>
@@ -137,8 +141,10 @@ function load(){$("err").textContent="";$("flash").hidden=true;$("bar").hidden=t
   if(tab==="orders"){first=true;seen=0;sig="";l.textContent="Loading…";fetchOrders(false).catch(function(er){l.textContent="";fail(er)});return}
   l.textContent="Loading…";
   if(tab==="outlets"){Promise.all([api("GET","/api/admin/outlets"),api("GET","/api/admin/menu")]).then(function(r){l.textContent="";r[0].forEach(function(o){l.appendChild(outletCard(o,r[1]))})}).catch(function(er){l.textContent="";$("err").textContent=er.message});return}
-  var path={reviews:"/api/admin/reviews",menu:"/api/admin/menu"}[tab];
-  api("GET",path).then(function(d){l.textContent="";if(!d.length)l.appendChild(el("p",{class:"mute",text:"Nothing here yet."}));d.forEach(function(x){l.appendChild(tab==="reviews"?reviewCard(x):menuCard(x))});$("msearch").value=""}).catch(function(er){l.textContent="";$("err").textContent=er.message})}
+  var path={reviews:"/api/admin/reviews",menu:"/api/admin/menu",fam:"/api/admin/fam"}[tab];
+  api("GET",path).then(function(d){l.textContent="";if(!d.length)l.appendChild(el("p",{class:"mute",text:tab==="fam"?"No Latcha Fam members yet. A mobile number joins after its first delivered order.":"Nothing here yet."}));
+    if(tab==="fam"&&d.length)l.appendChild(el("p",{class:"mute",text:"Every drink delivered is 1 sip. "+d[0].per_reward+" sips = 1 free drink. Counted from orders you mark Delivered."}));
+    d.forEach(function(x){l.appendChild(tab==="reviews"?reviewCard(x):tab==="fam"?famRow(x):menuCard(x))});$("msearch").value=""}).catch(function(er){l.textContent="";$("err").textContent=er.message})}
 $("msearch").oninput=function(){var q=this.value.trim().toLowerCase();[].forEach.call($("list").children,function(c){c.style.display=!q||(c.dataset.q||"").indexOf(q)>-1?"":"none"})};
 
 /* ---------- live order screen ---------- */
@@ -195,9 +201,14 @@ function orderCard(o,isNew){
     o.notes?el("div",{class:"mute",text:"Note: "+o.notes}):"",
     el("div",{class:"mute",text:utc(o.created_at).toLocaleString()}),payRow(o),acts]);
   return card}
+function famRow(f){
+  var gems=el("div",{class:"pearls","aria-hidden":"true"});for(var i=0;i<f.per_reward;i++)gems.appendChild(el("i",{class:"pearl"+(i===f.per_reward-1?" gift":"")+(i<f.into_card?" on":"")}));
+  var kids=[el("span",{class:"badge"+(f.rewards_available?" ok":""),text:f.rewards_available?f.rewards_available+" free drink"+(f.rewards_available>1?"s":"")+" ready":f.to_next+" to go"})];
+  return el("div",{class:"card"},[el("div",{class:"row"},[el("b",{},[el("a",{href:"tel:"+f.phone,text:f.phone,style:"color:inherit"})]),el("span",{class:"mute",text:f.sips+" sips · "+f.delivered_orders+" orders · "+f.rewards_used+" free used"})]),
+    el("div",{class:"row",style:"justify-content:space-between;margin-top:10px"},[gems].concat(kids))])}
 function payRow(o){
   var paid=o.payment_status==="paid",lab=paid?"Paid":o.payment_status==="pending"?"Waiting for payment":o.payment_status==="failed"?"Payment failed":"Pay at delivery";
-  var kids=[el("span",{class:"badge "+(paid?"ok":o.payment_status==="unpaid"?"":"warn"),text:(o.amount!=null?"₹"+o.amount+" · ":"")+(o.payment_method==="upi"?"UPI · ":"")+lab})];
+  var kids=[el("span",{class:"badge "+(paid?"ok":o.payment_status==="unpaid"?"":"warn"),text:(o.fam_discount?"Fam free drink −₹"+o.fam_discount+" · ":"")+(o.amount!=null?"₹"+o.amount+" · ":"")+(o.payment_method==="upi"?"UPI · ":"")+lab})];
   if(!paid)kids.push(el("button",{class:"o sm",text:"Mark as paid",onclick:function(){api("POST","/api/admin/orders/"+o.id+"/mark-paid").then(function(){return fetchOrders(false)}).catch(fail)}}));
   return el("div",{class:"row payrow",style:"justify-content:flex-start;margin-top:10px"},kids)}
 function reviewCard(r){

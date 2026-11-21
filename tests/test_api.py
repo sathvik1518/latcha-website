@@ -81,7 +81,7 @@ def test_track_shows_status_and_items_but_no_private_details(c):
     body = r.json()
     assert body["id"] == oid and body["status"] == "new"
     assert body["lines"] == [{"item_name": "Pure Iced Matcha Latte", "quantity": 2}]
-    assert set(body) == {"id", "created_at", "status", "lines", "payment_method", "payment_status", "amount"}  # no phone, address or name
+    assert set(body) == {"id", "created_at", "status", "lines", "payment_method", "payment_status", "amount", "fam_discount"}  # no phone, address or name
     h = tok(c)
     c.patch(f"/api/admin/orders/{oid}", json={"status": "delivered"}, headers=h)
     assert c.post("/api/orders/track", json={"order_id": oid, "phone": "9100000001"}).json()["status"] == "delivered"
@@ -493,7 +493,9 @@ def test_old_database_is_upgraded_in_place(tmp_path):
     with e.connect() as cx:
         assert [r[0] for r in cx.execute(text("SELECT price FROM menu_items ORDER BY id"))] == [249, 299]
         assert cx.execute(text("SELECT payment_method, payment_status FROM orders")).one() == ("cod", "unpaid")
-    assert {"amount", "payment_ref", "paid_at"} <= {x["name"] for x in inspect(e).get_columns("orders")}
+    assert {"amount", "payment_ref", "paid_at", "fam_discount"} <= {x["name"] for x in inspect(e).get_columns("orders")}
+    with e.connect() as cx:
+        assert cx.execute(text("SELECT fam_discount FROM orders")).scalar() == 0
 
 
 # ---------------- live order screen numbers ----------------
@@ -528,3 +530,111 @@ def test_menu_editor_can_change_text_fields_but_not_break_rules(c):
     assert c.patch("/api/admin/menu/3", json={"name": ""}, headers=h).status_code == 422
     assert c.patch("/api/admin/menu/3", json={"calories": -5}, headers=h).status_code == 422
     c.patch("/api/admin/menu/3", json={"calories": 128, "sweetness": 2}, headers=h)
+
+
+# ---------------- Latcha Fam loyalty ----------------
+def _fam(c, phone):
+    r = c.post("/api/fam/card", json={"phone": phone})
+    assert r.status_code == 200
+    return r.json()
+
+
+def _order(c, phone, lines, **kw):
+    return c.post("/api/orders", json=dict(ORDER, phone=phone, city="Hyderabad", lines=lines, **kw))
+
+
+def _deliver(c, oid, to="delivered"):
+    return c.patch(f"/api/admin/orders/{oid}", json={"status": to}, headers=tok(c))
+
+
+def _earn(c, phone, sips):
+    """Place and deliver orders until the number has this many sips."""
+    while sips > 0:
+        q = min(sips, 20)
+        _deliver(c, _order(c, phone, [dict(item_id=1, quantity=q)]).json()["id"])
+        sips -= q
+
+
+def test_fam_card_starts_empty_and_needs_a_valid_phone(c):
+    card = _fam(c, "9400000001")
+    assert card == dict(sips=0, per_reward=8, into_card=0, to_next=8, rewards_available=0, rewards_used=0, delivered_orders=0)
+    assert c.post("/api/fam/card", json={"phone": "123"}).status_code == 422
+
+
+def test_sips_are_added_only_when_the_owner_marks_the_order_delivered(c):
+    o = _order(c, "9400000002", [dict(item_id=1, quantity=3)]).json()
+    assert _fam(c, "9400000002")["sips"] == 0
+    _deliver(c, o["id"], "confirmed"); assert _fam(c, "9400000002")["sips"] == 0
+    _deliver(c, o["id"]); k = _fam(c, "9400000002")
+    assert k["sips"] == 3 and k["into_card"] == 3 and k["to_next"] == 5 and k["delivered_orders"] == 1
+    _deliver(c, o["id"], "cancelled"); assert _fam(c, "9400000002")["sips"] == 0
+    assert _fam(c, "9400000009")["sips"] == 0   # other numbers are separate
+
+
+def test_eight_sips_unlock_a_free_drink_and_the_cheapest_drink_is_free(c, paymode):
+    paymode("demo")
+    _earn(c, "9400000003", 8)
+    assert _fam(c, "9400000003")["rewards_available"] == 1
+    lines = [dict(item_id=1, quantity=2), dict(item_id=25, quantity=1)]
+    cheap = min(_price(c, 1), _price(c, 25))
+    r = _order(c, "9400000003", lines, use_reward=True)
+    assert r.status_code == 201
+    b = r.json()
+    assert b["fam_discount"] == cheap and b["amount"] == 2 * _price(c, 1) + _price(c, 25) - cheap
+    assert _fam(c, "9400000003")["rewards_available"] == 0                              # reserved straight away
+    again = _order(c, "9400000003", lines, use_reward=True)
+    assert again.status_code == 422 and "free drink" in again.json()["detail"]
+    _deliver(c, b["id"], "cancelled")                                                   # cancelled: the free drink comes back
+    assert _fam(c, "9400000003")["rewards_available"] == 1
+
+
+def test_reward_cannot_be_used_without_enough_sips(c):
+    _earn(c, "9400000004", 7)
+    r = _order(c, "9400000004", [dict(item_id=1, quantity=1)], use_reward=True)
+    assert r.status_code == 422
+    assert _order(c, "9400000004", [dict(item_id=1, quantity=1)]).status_code == 201      # a normal order is fine
+
+
+def test_free_drink_alone_makes_a_free_order_that_needs_no_payment(c, paymode):
+    paymode("demo")
+    _earn(c, "9400000005", 8)
+    r = _order(c, "9400000005", [dict(item_id=1, quantity=1)], use_reward=True, pay="upi")
+    assert r.status_code == 201
+    b = r.json()
+    assert b["amount"] == 0 and b["payment"] is None and b["fam_discount"] == _price(c, 1)
+    o = c.post("/api/orders/track", json={"order_id": b["id"], "phone": "9400000005"}).json()
+    assert o["payment_status"] == "paid" and o["amount"] == 0 and o["fam_discount"] == _price(c, 1)
+
+
+def test_free_drink_with_upi_charges_only_the_rest(c, paymode):
+    paymode("demo")
+    _earn(c, "9400000006", 8)
+    b = _order(c, "9400000006", [dict(item_id=1, quantity=2)], use_reward=True, pay="upi").json()
+    assert b["payment"]["amount"] == _price(c, 1) == b["amount"]
+
+
+def test_reward_refused_when_an_item_has_no_price(c):
+    _earn(c, "9400000007", 8)
+    h = tok(c)
+    c.patch("/api/admin/menu/2", json={"price": None}, headers=h)
+    r = _order(c, "9400000007", [dict(item_id=2, quantity=1)], use_reward=True)
+    c.patch("/api/admin/menu/2", json={"price": 249}, headers=h)
+    assert r.status_code == 422 and _fam(c, "9400000007")["rewards_available"] == 1
+
+
+def test_second_card_starts_after_a_reward(c):
+    _earn(c, "9400000008", 16)
+    k = _fam(c, "9400000008")
+    assert k["rewards_available"] == 2 and k["into_card"] == 0
+    assert _order(c, "9400000008", [dict(item_id=1, quantity=1)], use_reward=True).status_code == 201
+    assert _fam(c, "9400000008")["rewards_available"] == 1
+
+
+def test_owner_sees_fam_members(c):
+    assert c.get("/api/admin/fam").status_code == 401
+    _earn(c, "9400000010", 9)
+    rows = c.get("/api/admin/fam", headers=tok(c)).json()
+    me = [r for r in rows if r["phone"] == "9400000010"][0]
+    assert me["sips"] == 9 and me["rewards_available"] == 1
+    sips = [r["sips"] for r in rows]
+    assert sips == sorted(sips, reverse=True)

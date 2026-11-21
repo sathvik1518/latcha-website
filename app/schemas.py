@@ -69,6 +69,7 @@ class OrderIn(BaseModel):
     outlet: str | None = Field(None, max_length=40)           # outlet slug, e.g. "jp-nagar"
     notes: str = Field("", max_length=300)
     pay: Literal["cod", "upi"] = "cod"                        # cod = pay at delivery (the old way)
+    use_reward: bool = False                                  # spend a Latcha Fam free drink on this order
     lines: list[LineIn] = Field(min_length=1, max_length=20)
 
     @model_validator(mode="after")
@@ -110,6 +111,7 @@ class OrderOut(BaseModel):
     payment_method: str = "cod"
     payment_status: str = "unpaid"
     amount: int | None = None
+    fam_discount: int = 0
     lines: list[LineOut]
 
 
@@ -126,6 +128,7 @@ class OrderReceipt(BaseModel):
     message: str
     outlet: str | None = None
     amount: int | None = None
+    fam_discount: int = 0
     payment: PaymentStart | None = None
 
 
@@ -149,6 +152,29 @@ class StatsOut(BaseModel):
     today_orders: int        # placed today (Indian time), not cancelled
     today_paid: int          # rupees paid today
     latest_order_id: int
+
+
+class FamIn(BaseModel):
+    phone: str
+
+    @field_validator("phone")
+    @classmethod
+    def phone_ok(cls, v: str) -> str:
+        return clean_phone(v)
+
+
+class FamCard(BaseModel):
+    sips: int                # drinks delivered so far
+    per_reward: int          # sips needed for a free drink
+    into_card: int           # sips on the current card (0 to per_reward - 1)
+    to_next: int             # sips left to the next free drink
+    rewards_available: int   # free drinks ready to use
+    rewards_used: int
+    delivered_orders: int
+
+
+class FamMember(FamCard):
+    phone: str
 
 
 class PayConfig(BaseModel):
@@ -186,6 +212,7 @@ class TrackOut(BaseModel):
     payment_method: str = "cod"
     payment_status: str = "unpaid"
     amount: int | None = None
+    fam_discount: int = 0
     lines: list[TrackLine]
 
 

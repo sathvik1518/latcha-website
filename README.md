@@ -373,6 +373,17 @@ Admin > Orders now updates by itself every 12 seconds (and the moment you return
 - Admin > Menu: search box, and **Edit details** on each dish (name, description, calories, sweetness) next to the price, on-the-menu and best-seller switches. Order history keeps the old dish name.
 - The menu boards on the home page use fixed pictures and a fixed layout, so this editor changes existing dishes only. It does not add or delete dishes.
 
+## Latcha Fam loyalty (new)
+
+Every drink that LATCHA marks **Delivered** is 1 sip on the customer's mobile number. 8 sips = 1 free drink (change the number with `FAM_SIPS_PER_REWARD` in `.env`).
+
+- Customers see their card from the footer button **Latcha Fam**, and a small strip with pearls inside the order window once the mobile number is typed.
+- "Use my free drink" takes off the cheapest drink in the cart. If that makes the total ₹0, no payment is asked and the order is marked paid.
+- A cancelled order gives the free drink back. Nothing extra is stored: sips are counted from the orders table.
+- Owner: Admin → **Fam** lists every member (sips, orders, free drinks ready or used). Order cards show "Fam free drink −₹…".
+- Limit: there is no OTP, so anyone who knows a mobile number can see its sips or reserve its free drink. The owner's confirmation call is the safeguard.
+- Free drinks need prices. The prices are placeholders until you set the real ones in Admin → Menu.
+
 **By Sathvik & Sunny**
 
 </div>

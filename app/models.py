@@ -71,6 +71,7 @@ class Order(Base):
     payment_ref: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)   # provider order id
     payment_id: Mapped[str | None] = mapped_column(String(64), nullable=True)        # provider payment id once paid
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fam_discount: Mapped[int] = mapped_column(Integer, default=0, server_default="0")   # rupees off from a Latcha Fam free drink
     lines: Mapped[list["OrderLine"]] = relationship(back_populates="order", cascade="all, delete-orphan")
 
     @property
