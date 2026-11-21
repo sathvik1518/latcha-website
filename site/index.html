@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,viewport-fit=cover">
 <title>LATCHA — Speciality Matcha & Premium Soft Serve</title>
 <meta name="description" content="LATCHA: speciality matcha, cloud lattes, premium soft serve and floats. Delivery on Zomato and Swiggy.">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -522,6 +522,7 @@ nav.past .bag{display:inline-flex;align-items:center}
 @media(prefers-reduced-motion:reduce){.h2word i,.h2rise,.fcard .sh i{animation:none}}
 html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!important}.lenis.lenis-stopped{overflow:hidden}
 
+html,body{overflow-x:clip;max-width:100%;touch-action:pan-x pan-y}
 /* ================= THICK ROSE THEME — every page matches the new home page ================= */
 html,body{background:#f6bfd0}
 #wash{background:linear-gradient(180deg,rgba(246,191,208,.38),rgba(229,138,166,.5))}
@@ -1133,8 +1134,12 @@ function bubTick(dt){if(bubResize())bubs.length=0;bSince+=dt;while(bSince>=.4){b
 /* the per-frame loop: runs only while the hero is on screen */
 var hp={x:0,y:0,px:-1e5,py:-1e5},hcur={x:0,y:0},hlast=0,ht=0,hrun=false;
 if(!reduce)addEventListener("pointermove",function(e){if(e.pointerType!=="mouse")return;hp.x=e.clientX/innerWidth-.5;hp.y=e.clientY/innerHeight-.5;hp.px=e.clientX;hp.py=e.clientY},{passive:true});
-function measure(){berries.forEach(function(o){var e=o.el;o.rest={cx:e.offsetLeft+e.offsetWidth/2,cy:e.offsetTop+e.offsetHeight/2}})}
-measure();addEventListener("resize",measure);
+/* phones: keep the cherries and leaves around the cup, not spread over the whole tall page */
+var h2box=hero.querySelector(".h2cupbox");
+function placeLayers(){var on=innerWidth<1280&&h2box,hr=hero.getBoundingClientRect(),br=on?h2box.getBoundingClientRect():null;
+  [lfL,bgL,fgL].forEach(function(L){if(on){var padY=Math.round(br.height*.12);L.style.top=Math.round(br.top-hr.top-padY)+"px";L.style.height=Math.round(br.height+padY*2)+"px";L.style.bottom="auto"}else{L.style.top="";L.style.height="";L.style.bottom=""}})}
+function measure(){placeLayers();berries.forEach(function(o){var e=o.el,L=e.parentNode;o.rest={cx:e.offsetLeft+e.offsetWidth/2,cy:L.offsetTop+e.offsetTop+e.offsetHeight/2}})}
+measure();addEventListener("resize",measure);addEventListener("load",function(){setTimeout(measure,200)});if(window.ResizeObserver)new ResizeObserver(function(){measure()}).observe(hero);
 function heroFrame(now){if(!hrun)return;requestAnimationFrame(heroFrame);
   var dt=hlast?Math.min((now-hlast)/1000,.1):.016;hlast=now;ht+=dt;var t=ht,box=hero.getBoundingClientRect(),R=RU(),tx=hp.x,ty=hp.y;
   if(tl.on){var tt=readTilt(dt);tx=tt.x*.5;ty=tt.y*.5}
@@ -1162,11 +1167,10 @@ async function showFlavour(i){i=(i+2)%2;if(i===hi||hbusy)return;hbusy=true;
   hcards.forEach(function(c,k){c.classList.toggle("on",k===i);c.setAttribute("aria-pressed",k===i?"true":"false")});hero.classList.toggle("is-matcha",i===1);
   if(reduce||!hrun){setCup(i);setModels(i);hi=i;hbusy=false;return}
   switching=true;
-  var W=hero.clientWidth,H=hero.clientHeight;
   var cup=(async function(){await tw(hs,{spin:360,blur:15},600,power2In);setCup(i);hi=i;await tw(hs,{spin:720,blur:0},1500,backOut(.7));hs.spin=0})();
   var models=wait(500).then(function(){setModels(i)});
   var bs=berries.map(async function(o){var el=o.el,st=o.st;if(el.style.display==="none")return;
-    var cx=W/2-(el.offsetLeft+el.offsetWidth/2),cy=H/2-(el.offsetTop+el.offsetHeight/2);
+    var LY=el.parentNode,cx=LY.clientWidth/2-(el.offsetLeft+el.offsetWidth/2),cy=LY.clientHeight/2-(el.offsetTop+el.offsetHeight/2);
     var s=o.sp={x:st.baseX,y:st.baseY,rot:st.angle,scale:1,opacity:1};
     await tw(s,{x:cx,y:cy,rot:st.angle+45,scale:.1,opacity:0},500,power2In);await wait(300);
     var nx=(Math.random()-.5)*200,ny=(Math.random()-.5)*200;
