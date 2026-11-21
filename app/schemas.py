@@ -141,6 +141,16 @@ class PayIn(BaseModel):
         return clean_phone(v)
 
 
+class StatsOut(BaseModel):
+    """Numbers for the owner's live screen. All counts are real orders; money is rupees actually paid."""
+    new_orders: int          # waiting for the owner to confirm
+    being_made: int          # confirmed, not yet delivered
+    awaiting_payment: int    # UPI orders not paid yet (not cancelled)
+    today_orders: int        # placed today (Indian time), not cancelled
+    today_paid: int          # rupees paid today
+    latest_order_id: int
+
+
 class PayConfig(BaseModel):
     mode: Literal["demo", "razorpay", "off"]
 

@@ -363,6 +363,16 @@ Prices live in Admin > Menu (the first upgrade fills placeholder prices of 249 /
 
 Safe by design: the server checks Razorpay's signature, a repeated payment message changes nothing, a webhook with the wrong amount is ignored, and the pretend pay button stops working as soon as real payments are on.
 
+## Live order screen and menu editor (new)
+
+Admin > Orders now updates by itself every 12 seconds (and the moment you return to the tab). When a new order arrives you see a banner, the new card flashes, and the tab title shows `(2) LATCHA Owner`. Press **Sound off** once to turn on a soft beep (browsers only allow sound after a click).
+
+- Tiles: new, being made, waiting for payment, today's orders, rupees paid today (Indian time, cancelled orders not counted).
+- Filters: Active (new and confirmed), Delivered, Cancelled, All, plus an outlet filter.
+- One-tap buttons: Confirm order, Mark delivered, Cancel order (asks first). The phone number is a tap-to-call link.
+- Admin > Menu: search box, and **Edit details** on each dish (name, description, calories, sweetness) next to the price, on-the-menu and best-seller switches. Order history keeps the old dish name.
+- The menu boards on the home page use fixed pictures and a fixed layout, so this editor changes existing dishes only. It does not add or delete dishes.
+
 **By Sathvik & Sunny**
 
 </div>

@@ -494,3 +494,37 @@ def test_old_database_is_upgraded_in_place(tmp_path):
         assert [r[0] for r in cx.execute(text("SELECT price FROM menu_items ORDER BY id"))] == [249, 299]
         assert cx.execute(text("SELECT payment_method, payment_status FROM orders")).one() == ("cod", "unpaid")
     assert {"amount", "payment_ref", "paid_at"} <= {x["name"] for x in inspect(e).get_columns("orders")}
+
+
+# ---------------- live order screen numbers ----------------
+def test_stats_need_login(c):
+    assert c.get("/api/admin/stats").status_code == 401
+
+
+def test_stats_count_new_being_made_unpaid_and_todays_money(c, paymode):
+    paymode("demo")
+    h = tok(c)
+    s0 = c.get("/api/admin/stats", headers=h).json()
+    a = c.post("/api/orders", json=dict(ORDER, phone="9300000001")).json()                  # cash order
+    b = c.post("/api/orders", json=dict(UPI, phone="9300000002")).json()                    # UPI, unpaid
+    s1 = c.get("/api/admin/stats", headers=h).json()
+    assert s1["new_orders"] == s0["new_orders"] + 2 and s1["today_orders"] == s0["today_orders"] + 2
+    assert s1["awaiting_payment"] == s0["awaiting_payment"] + 1 and s1["latest_order_id"] == b["id"]
+    c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9300000002"})              # pays
+    c.patch(f"/api/admin/orders/{a['id']}", json={"status": "confirmed"}, headers=h)
+    s2 = c.get("/api/admin/stats", headers=h).json()
+    assert s2["today_paid"] == s0["today_paid"] + b["amount"]
+    assert s2["awaiting_payment"] == s0["awaiting_payment"] and s2["being_made"] == s0["being_made"] + 1
+    c.patch(f"/api/admin/orders/{b['id']}", json={"status": "cancelled"}, headers=h)         # cancelled money is not counted
+    s3 = c.get("/api/admin/stats", headers=h).json()
+    assert s3["today_paid"] == s0["today_paid"] and s3["today_orders"] == s0["today_orders"] + 1
+
+
+def test_menu_editor_can_change_text_fields_but_not_break_rules(c):
+    h = tok(c)
+    r = c.patch("/api/admin/menu/3", json={"name": "Vanilla Silk", "description": "Vanilla + matcha", "calories": 130, "sweetness": 2}, headers=h)
+    assert r.status_code == 200 and r.json()["calories"] == 130 and r.json()["sweetness"] == 2
+    assert c.patch("/api/admin/menu/3", json={"calories": None, "sweetness": None}, headers=h).json()["calories"] is None
+    assert c.patch("/api/admin/menu/3", json={"name": ""}, headers=h).status_code == 422
+    assert c.patch("/api/admin/menu/3", json={"calories": -5}, headers=h).status_code == 422
+    c.patch("/api/admin/menu/3", json={"calories": 128, "sweetness": 2}, headers=h)

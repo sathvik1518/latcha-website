@@ -271,6 +271,20 @@ def set_order_status(order_id: int, body: s.StatusIn, db: Session = Depends(get_
     return o
 
 
+@admin.get("/stats", response_model=s.StatsOut)
+def admin_stats(db: Session = Depends(get_db)):
+    day = ot.now_ist().replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc)   # start of today in India
+    O = m.Order
+    cnt = lambda *w: db.scalar(select(func.count(O.id)).where(*w)) or 0
+    return s.StatsOut(
+        new_orders=cnt(O.status == "new"),
+        being_made=cnt(O.status == "confirmed"),
+        awaiting_payment=cnt(O.payment_method == "upi", O.payment_status.in_(("pending", "failed")), O.status != "cancelled"),
+        today_orders=cnt(O.created_at >= day, O.status != "cancelled"),
+        today_paid=db.scalar(select(func.coalesce(func.sum(O.amount), 0)).where(O.payment_status == "paid", O.paid_at >= day, O.status != "cancelled")) or 0,
+        latest_order_id=db.scalar(select(func.coalesce(func.max(O.id), 0))) or 0)
+
+
 @admin.post("/orders/{order_id}/mark-paid", response_model=s.OrderOut)
 def mark_order_paid(order_id: int, db: Session = Depends(get_db)):
     """For cash or a UPI payment the owner saw land in their own app."""

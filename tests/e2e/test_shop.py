@@ -311,3 +311,64 @@ def test_owner_can_mark_a_cash_order_as_paid(page: Page, context, admin_password
     expect(card).to_contain_text("Pay at delivery")
     card.get_by_role("button", name="Mark as paid").click()
     expect(card).to_contain_text("Paid")
+
+
+def api_order(page: Page, name: str, phone: str):
+    """Place an order straight through the API (like a customer on another phone)."""
+    r = page.request.post("/api/orders", data={"customer_name": name, "phone": phone, "address": "12 MG Road, Indiranagar",
+                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 1}]})
+    assert r.ok, r.text()
+    return r.json()["id"]
+
+
+def test_owner_screen_shows_a_new_order_by_itself_and_moves_it_along(page: Page, context, admin_password):
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    name = unique("E2E Live")
+    order_no = api_order(page, name, "98765 43214")
+    owner.locator("#flash").wait_for(state="visible", timeout=25000)       # arrives without pressing anything
+    expect(owner.locator("#flash")).to_contain_text(f"#{order_no}")
+    card = owner.locator("#list .card", has_text=name)
+    expect(card).to_be_visible()
+    expect(owner).to_have_title(re.compile(r"^\(\d+\) LATCHA Owner"))
+
+    card.get_by_role("button", name="Confirm order").click()
+    card = owner.locator("#list .card", has_text=name)
+    expect(card.get_by_role("button", name="Mark delivered")).to_be_visible()
+    card.get_by_role("button", name="Mark delivered").click()
+    expect(owner.locator("#list .card", has_text=name)).to_have_count(0)    # finished orders leave the Active list
+    owner.locator("#chips button", has_text="Delivered").click()
+    expect(owner.locator("#list .card", has_text=name)).to_be_visible()
+
+
+def test_owner_can_cancel_an_order_after_confirming_the_question(page: Page, context, admin_password):
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    name = unique("E2E Cancel")
+    api_order(page, name, "98765 43215")
+    owner.reload()
+    owner.once("dialog", lambda d: d.accept())
+    owner.locator("#list .card", has_text=name).get_by_role("button", name="Cancel order").click()
+    expect(owner.locator("#list .card", has_text=name)).to_have_count(0)
+    owner.locator("#chips button", has_text="Cancelled").click()
+    expect(owner.locator("#list .card", has_text=name)).to_be_visible()
+
+
+def test_owner_edits_a_dish_and_customers_see_the_change(page: Page, context, admin_password):
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    owner.click("#tabs button[data-t=menu]")
+    card = owner.locator("#list .card", has_text="Honey Iced Matcha Latte")
+    expect(card).to_be_visible()                      # the menu has loaded
+    owner.fill("#msearch", "Honey Iced")
+    expect(owner.locator("#list .card:visible")).to_have_count(1)   # the search box hides the other dishes
+    card.locator("summary").click()
+    card.get_by_label("Calories").fill("180")
+    card.get_by_label("Description").fill("Sweetened with local honey, edited by the owner")
+    with owner.expect_response(lambda r: r.request.method == "PATCH" and "/api/admin/menu/" in r.url) as saved:
+        card.get_by_role("button", name="Save details").click()
+    assert saved.value.ok
+    expect(card).to_contain_text("180 kcal")
+    items = page.request.get("/api/menu").json()
+    honey = [i for i in items if i["name"] == "Honey Iced Matcha Latte"][0]
+    assert honey["calories"] == 180 and "edited by the owner" in honey["description"], (honey, saved.value.request.post_data, saved.value.json())
