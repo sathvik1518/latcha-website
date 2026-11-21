@@ -298,3 +298,74 @@ class OutletPatch(BaseModel):
 
 class SoldOutIn(BaseModel):
     sold_out: bool
+
+
+# ---------- owner dashboard ----------
+class DashHead(BaseModel):
+    orders: int
+    orders_change: int | None
+    sales: int
+    sales_change: int | None
+    collected: int
+    average_order: int
+    delivered: int
+    cancelled: int
+    unpriced_orders: int
+    fam_free_drinks: int
+    fam_discount: int
+
+
+class DashDay(BaseModel):
+    date: str
+    orders: int
+    sales: int
+
+
+class DashDish(BaseModel):
+    name: str
+    quantity: int
+    sales: int
+
+
+class DashOutlet(BaseModel):
+    name: str
+    orders: int
+    sales: int
+
+
+class DashHour(BaseModel):
+    hour: int
+    orders: int
+
+
+class DashBucket(BaseModel):
+    orders: int
+    sales: int
+
+
+class DashPayments(BaseModel):
+    upi_paid: DashBucket
+    upi_waiting: DashBucket
+    cash_paid: DashBucket
+    cash_on_delivery: DashBucket
+
+
+class DashCustomers(BaseModel):
+    total: int
+    new: int
+    returning: int
+    ordered_twice_or_more: int
+
+
+class DashOut(BaseModel):
+    days: int
+    from_date: str
+    to_date: str
+    head: DashHead
+    daily: list[DashDay]
+    dishes: list[DashDish]
+    outlets: list[DashOutlet]
+    hours: list[DashHour]
+    payments: DashPayments
+    customers: DashCustomers
+    pending_reviews: int

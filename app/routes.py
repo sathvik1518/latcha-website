@@ -4,7 +4,7 @@ import json, logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from . import fam, models as m, outlets as ot, payments as pay, schemas as s
+from . import dashboard, fam, models as m, outlets as ot, payments as pay, schemas as s
 from .config import get_settings
 from .db import get_db
 from .security import make_token, require_admin, verify_password
@@ -308,6 +308,11 @@ def admin_stats(db: Session = Depends(get_db)):
         today_orders=cnt(O.created_at >= day, O.status != "cancelled"),
         today_paid=db.scalar(select(func.coalesce(func.sum(O.amount), 0)).where(O.payment_status == "paid", O.paid_at >= day, O.status != "cancelled")) or 0,
         latest_order_id=db.scalar(select(func.coalesce(func.max(O.id), 0))) or 0)
+
+
+@admin.get("/dashboard", response_model=s.DashOut)
+def admin_dashboard(days: int = Query(7, ge=1, le=90), db: Session = Depends(get_db)):
+    return dashboard.build(db, days)
 
 
 @admin.post("/orders/{order_id}/mark-paid", response_model=s.OrderOut)

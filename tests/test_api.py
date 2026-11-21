@@ -638,3 +638,16 @@ def test_owner_sees_fam_members(c):
     assert me["sips"] == 9 and me["rewards_available"] == 1
     sips = [r["sips"] for r in rows]
     assert sips == sorted(sips, reverse=True)
+
+
+def test_dashboard_needs_login_and_checks_the_range(c):
+    assert c.get("/api/admin/dashboard").status_code == 401
+    h = tok(c)
+    assert c.get("/api/admin/dashboard?days=0", headers=h).status_code == 422
+    assert c.get("/api/admin/dashboard?days=91", headers=h).status_code == 422
+    r = c.get("/api/admin/dashboard?days=30", headers=h)
+    assert r.status_code == 200
+    d = r.json()
+    assert d["days"] == 30 and len(d["daily"]) == 30 and len(d["hours"]) == 24
+    assert set(d) >= {"head", "daily", "dishes", "outlets", "hours", "payments", "customers", "pending_reviews"}
+    assert d["head"]["orders"] >= 1 and d["dishes"]                       # earlier tests placed orders

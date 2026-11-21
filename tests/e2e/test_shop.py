@@ -500,3 +500,48 @@ def test_quiz_skips_a_dish_that_is_sold_out_at_the_chosen_outlet(page: Page, adm
         expect(page.locator("#quizbody .qname")).to_have_text("Raspberry")
     finally:
         set_it(False)
+
+
+# ---------- Owner dashboard ----------
+
+def dash_api(page: Page, hdr: dict, days: int = 7) -> dict:
+    r = page.request.get(f"/api/admin/dashboard?days={days}", headers=hdr)
+    assert r.ok, r.text()
+    return r.json()
+
+
+def test_dashboard_counts_a_new_order_and_the_owner_can_switch_period(page: Page, context, admin_password):
+    hdr = owner_token(page, admin_password)
+    before = dash_api(page, hdr)["head"]
+    phone = "98765 7" + str(uuid.uuid4().int)[:4]
+    r = page.request.post("/api/orders", data={"customer_name": unique("E2E Dash"), "phone": phone, "address": "12 MG Road, Indiranagar",
+                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 2}]})
+    assert r.ok, r.text()
+    after = dash_api(page, hdr)["head"]
+    assert after["orders"] == before["orders"] + 1
+    assert after["sales"] == before["sales"] + 2 * 249                       # 2 cups at the placeholder price
+
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    owner.click("#tabs button[data-t=dash]")
+    expect(owner.locator(".stat", has_text="Sales")).to_be_visible()
+    expect(owner.locator(".stat", has_text="Orders")).to_contain_text(str(after["orders"]))
+    expect(owner.locator(".dbars").first.locator("i")).to_have_count(7)
+    expect(owner.locator("#list .card", has_text="Top dishes")).to_be_visible()
+    owner.locator("[data-d='30']").click()
+    expect(owner.locator(".dbars").first.locator("i")).to_have_count(30)
+    owner.locator("[data-m='orders']").click()
+    expect(owner.locator("[data-m='orders']")).to_have_class(re.compile("on"))
+    expect(owner.locator("#list .card", has_text="How people pay")).to_be_visible()
+
+
+def test_dashboard_leaves_cancelled_orders_out(page: Page, admin_password):
+    hdr = owner_token(page, admin_password)
+    phone = "98765 8" + str(uuid.uuid4().int)[:4]
+    r = page.request.post("/api/orders", data={"customer_name": "Dash Cancel", "phone": phone, "address": "12 MG Road, Indiranagar",
+                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 1}]})
+    oid = r.json()["id"]
+    live = dash_api(page, hdr)["head"]
+    assert page.request.patch(f"/api/admin/orders/{oid}", data={"status": "cancelled"}, headers=hdr).ok
+    gone = dash_api(page, hdr)["head"]
+    assert gone["orders"] == live["orders"] - 1 and gone["sales"] == live["sales"] - 249 and gone["cancelled"] == live["cancelled"] + 1

@@ -395,6 +395,18 @@ A 4-tap quiz (format, flavour, sweetness, light or treat) that picks one dish an
 - "Add" puts the dish in the cart; "Open my order" goes straight to the order window.
 - Nothing is stored and there is no new database table or API.
 
+## Owner dashboard (new)
+
+Admin → **Dashboard** shows how the shop is doing over the last 7, 30 or 90 days. Everything is counted from real orders; nothing extra is stored.
+
+- Top row: sales, orders (each compared with the period before), money collected, average order, customers.
+- Charts: sales or orders by day, top dishes, busiest hours, outlets, how people pay, new and returning customers, Fam free drinks given.
+- **Sales** is the value of orders placed. **Collected** is only what is marked Paid. Cancelled orders are never counted.
+- An order with no price adds to the order count but not to rupees. The page tells you how many such orders there are.
+- Days and hours are Indian time. A customer is one mobile number.
+- Sales are only as true as your prices. Set the real prices in Admin → Menu first.
+- It reads orders from the last 90 days at most, which is fine for a few thousand orders. If LATCHA grows far beyond that, the sums should move into the database.
+
 **By Sathvik & Sunny**
 
 </div>
