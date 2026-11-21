@@ -374,6 +374,10 @@ body.ordopen #chat{display:none}
 .stp output{min-width:22px;text-align:center;font-weight:700;font-size:14px}
 .osum{display:inline-block;margin:20px 0 6px;padding:9px 16px;border-radius:99px;background:var(--petal);color:var(--berry);font-weight:700;font-size:13px}
 .ofields{margin-top:12px}
+.fm label[hidden],.fm .ostat[hidden]{display:none}
+.ostat{margin:-6px 0 0;font-size:13px;font-weight:700;line-height:1.4;color:var(--mute)}.ostat.ok{color:var(--matcha)}.ostat.bad{color:var(--crimson)}
+.orow.so span{opacity:.55}.soldtag{margin-left:8px;font-size:12px;font-weight:700;color:var(--crimson)}
+.stp button[disabled]{opacity:.35;cursor:not-allowed;transform:none;background:#fff;border-color:var(--line)}
 .ofields.fm{padding:0;max-width:none;background:none;border:0;box-shadow:none}
 
 /* order tracking: reuses the order window look */
@@ -805,7 +809,9 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
       <form class="fm ofields" id="oform" novalidate>
         <label>Your name<input name="customer_name" maxlength="80" autocomplete="name" required></label>
         <label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>
-        <label>City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
+        <label id="olabel" hidden>Outlet<select name="outlet" id="osel"></select></label>
+        <div class="ostat" id="ostat" role="status" aria-live="polite" hidden></div>
+        <label id="clabel">City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
         <label>Delivery address<textarea name="address" maxlength="300" autocomplete="street-address" required></textarea></label>
         <label>Notes (optional)<input name="notes" maxlength="300" placeholder="Oat milk, less sweet, gate code"></label>
         <button class="chip" type="submit" id="osub" disabled>Send order request</button>
@@ -987,8 +993,8 @@ function ask(raw){say(raw,true);
   else if(has("oat","vegan","dairy","milk","lactose","plant")){r="Every latte can be made with <b>regular milk or oat milk</b>. Just tell the barista. 🌾"}
   else if(has("caffeine","coffee","energy","jitter")){r="Matcha has caffeine, but it comes with L-theanine for a calmer, steadier lift than coffee. 🍃"}
   else if(has("deliver","zomato","swiggy","order online","home")){r="We deliver on <b>Zomato</b> and <b>Swiggy</b>, and we pack every order with care. 🛍️ You can also send us an order request right here, and we will call to confirm.";chips=["Open order form","Best sellers","Opening hours"]}
-  else if(has("open","hour","time","timing","close","till")){r="We’re open daily till late (Bengaluru till 1AM, Hyderabad till 12AM). 🌙"}
-  else if(has("where","location","address","outlet","near","city","bengaluru","bangalore","hyderabad","hyd","map")){r="We’re in <b>Bengaluru</b> and <b>Hyderabad</b>. For the exact outlet and map pin, check our <a href='https://www.instagram.com/siplatcha/' target='_blank' rel='noopener'>Instagram</a>."}
+  else if(has("open","hour","time","timing","close","till")){r=OUTLETS.length?"Right now: "+OUTLETS.filter(function(o){return !o.coming_soon}).map(function(o){return "<b>"+esc(o.area||o.name)+"</b> · "+esc(o.status)}).join(" · ")+" 🌙":"We’re open daily till late (Bengaluru till 1AM, Hyderabad till 12AM). 🌙"}
+  else if(has("where","location","address","outlet","near","city","bengaluru","bangalore","hyderabad","hyd","map")){r=(OUTLETS.length?"Find us at "+OUTLETS.map(function(o){return "<b>"+esc(o.area||o.name)+"</b> ("+esc(o.city)+(o.coming_soon?", opening soon":"")+")"}).join(", ")+". ":"We’re in <b>Bengaluru</b> and <b>Hyderabad</b>. ")+"For the exact outlet and map pin, check our <a href='https://www.instagram.com/siplatcha/' target='_blank' rel='noopener'>Instagram</a>."}
   else if(has("uji","kyoto","japan","shade","shading","stone","origin","harvest","quality","ceremonial")){r="Our matcha comes from the fields of <b>Uji, Kyoto</b>: shaded for 28 days, first spring harvest, then stone-ground. 🍵"}
   else if(has("hojicha")){r="Our Hojicha menu is new: roasted, smooth and full of comforting flavours. 🤎"}
   else if(has("ube")){r="Ube lovers, we got you 💜: <b>Ube latte</b>, <b>Ube Cloud</b>, <b>Filipino Ube</b> soft serve, <b>Ube Swirl</b> and <b>Matcha &amp; Ube</b>."}
@@ -1245,18 +1251,38 @@ function applyMenu(items){
   ORDER_OK=true;cartUI();return true}
 function loadMenu(){return jreq("/api/menu").then(applyMenu)}
 
+/* outlets: the order drawer lets people pick a LATCHA shop (falls back to the old city list if the API is asleep) */
+var OUTLETS=[],outSel=null;
+function loadOutlets(){return jreq("/api/outlets").then(function(r){if(Array.isArray(r)&&r.length)OUTLETS=r;return OUTLETS},function(){return OUTLETS})}
+function curOutlet(){for(var i=0;i<OUTLETS.length;i++)if(OUTLETS[i].slug===outSel)return OUTLETS[i];return null}
+function soldHere(){var o=curOutlet();return o?o.sold_out:[]}
+function canOrderNow(){if(!OUTLETS.length)return true;var o=curOutlet();return !!(o&&o.can_order)}
+function outletUI(){var lab=$("#olabel"),cl=$("#clabel"),st=$("#ostat");
+  if(!OUTLETS.length){lab.hidden=true;st.hidden=true;cl.hidden=false;return}
+  cl.hidden=true;lab.hidden=false;st.hidden=false;
+  if(!curOutlet()){var saved="";try{saved=localStorage.getItem("latcha_outlet")||""}catch(e){}outSel=null;
+    OUTLETS.forEach(function(o){if(o.slug===saved&&!o.coming_soon)outSel=o.slug});
+    if(!outSel)OUTLETS.forEach(function(o){if(!outSel&&o.can_order)outSel=o.slug});
+    if(!outSel)OUTLETS.forEach(function(o){if(!outSel&&!o.coming_soon)outSel=o.slug})}
+  var sel=$("#osel");sel.innerHTML=OUTLETS.map(function(o){return '<option value="'+esc(o.slug)+'"'+(o.slug===outSel?' selected':'')+(o.coming_soon?' disabled':'')+'>'+esc(o.name)+(o.coming_soon?' (opening soon)':'')+'</option>'}).join("");
+  var o=curOutlet();if(o){st.textContent=o.status+(o.address?" · "+o.address:"");st.className="ostat"+(o.can_order?" ok":" bad")}
+  var gone=[];Object.keys(cart).forEach(function(i){if(soldHere().indexOf(+i)>-1){delete cart[i];gone.push(i)}});
+  ordRender();if(gone.length){st.textContent+=" · Some items are sold out here and were removed."}}
+addEventListener("load",function(){setTimeout(loadOutlets,3000)});
+$("#osel").addEventListener("change",function(){outSel=this.value;try{localStorage.setItem("latcha_outlet",outSel)}catch(e){}outletUI()});
+
 /* order drawer */
 var ord=$("#ord"),cart={},ordFrom=null;
 function ordRender(){
   var G=[["Classic iced matcha lattes",CLASSIC],["Cloud lattes",CLOUD],["Soft serves",SOFT],["Matcha floats",FLOAT]],h="";
-  G.forEach(function(g){h+='<div class="og">'+g[0]+'</div>';g[1].forEach(function(r){if(!r.id)return;
-    h+='<div class="orow"><span>'+esc(r[0])+'</span><div class="stp"><button type="button" data-id="'+r.id+'" data-d="-1" aria-label="Fewer '+esc(r[0])+'">−</button><output id="q'+r.id+'">'+(cart[r.id]||0)+'</output><button type="button" data-id="'+r.id+'" data-d="1" aria-label="More '+esc(r[0])+'">+</button></div></div>'})});
+  G.forEach(function(g){h+='<div class="og">'+g[0]+'</div>';var so=soldHere();g[1].forEach(function(r){if(!r.id)return;var out=so.indexOf(r.id)>-1;
+    h+='<div class="orow'+(out?' so':'')+'"><span>'+esc(r[0])+(out?'<em class="soldtag">Sold out here</em>':'')+'</span><div class="stp"><button type="button" data-id="'+r.id+'" data-d="-1" aria-label="Fewer '+esc(r[0])+'">−</button><output id="q'+r.id+'">'+(cart[r.id]||0)+'</output><button type="button" data-id="'+r.id+'" data-d="1" aria-label="More '+esc(r[0])+'"'+(out?' disabled':'')+'>+</button></div></div>'})});
   $("#ordlist").innerHTML=h;ordSum()}
 function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});
-  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected":"Nothing selected yet";$("#osub").disabled=!n}
+  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected":"Nothing selected yet";$("#osub").disabled=!n||!canOrderNow()}
 $("#ordlist").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;var id=b.dataset.id,q=Math.max(0,Math.min(20,(cart[id]||0)+(+b.dataset.d)));
   if(q)cart[id]=q;else delete cart[id];$("#q"+id).textContent=q;ordSum()});
-function showOrder(){ordFrom=document.activeElement;$("#omsg").textContent="";$("#omsg").className="msg";ordRender();ord.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";$("#ordx").focus()}
+function showOrder(){ordFrom=document.activeElement;$("#omsg").textContent="";$("#omsg").className="msg";ordRender();ord.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";$("#ordx").focus();loadOutlets().then(outletUI)}
 function openOrder(){if(ORDER_OK)return showOrder();loadMenu().then(function(ok){ok?showOrder():askOrder()},function(){askOrder()})}
 function closeOrder(){if(ord.hidden)return;ord.hidden=true;document.body.classList.remove("ordopen");document.body.style.overflow="";if(ordFrom&&ordFrom.focus)ordFrom.focus()}
 $("#ordx").addEventListener("click",closeOrder);
@@ -1271,8 +1297,8 @@ function errText(e){var b=e.body||{},d=b.detail;
 $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#omsg"),btn=$("#osub");
   var lines=Object.keys(cart).map(function(i){return {item_id:+i,quantity:cart[i]}});if(!lines.length)return;
   btn.disabled=true;msg.className="msg";msg.textContent="Sending…";
-  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,lines:lines})})
-  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};cart={};ordRender();f.reset();msg.className="msg ok";msg.textContent="Order request #"+r.id+" received. LATCHA will call to confirm. 💗 ";
+  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(OUTLETS.length&&curOutlet()?{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,outlet:outSel,notes:f.notes.value,lines:lines}:{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,lines:lines})})
+  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};cart={};ordRender();f.reset();outletUI();msg.className="msg ok";msg.textContent="Order request #"+r.id+(r.outlet?" for "+r.outlet:"")+" received. LATCHA will call to confirm. 💗 ";
     var a=document.createElement("button");a.type="button";a.className="chip o";a.id="trackthis";a.textContent="Track this order";a.addEventListener("click",function(){var p=lastOrder;closeOrder();showTrack(p)});msg.appendChild(a);btn.disabled=true})
   .catch(function(er){msg.className="msg bad";msg.textContent=errText(er);ordSum()})});
 

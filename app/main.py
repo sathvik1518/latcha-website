@@ -1,13 +1,20 @@
+import logging
 import os
 import pathlib
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from .config import get_settings
-from .db import engine
+from .db import Base, SessionLocal, engine
+from .outlets import ensure_schema
 from .routes import admin, auth, public
 
-app = FastAPI(title="LATCHA", version="1.1.0")
+try:  # one-time, safe upgrade: outlets tables + orders.outlet_id (never blocks the site if the database is asleep)
+    ensure_schema(engine, SessionLocal, Base)
+except Exception:  # noqa: BLE001
+    logging.getLogger("latcha").exception("Outlet schema upgrade failed; will retry on next start")
+
+app = FastAPI(title="LATCHA", version="1.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().origins,
@@ -22,6 +29,8 @@ async def headers(request: Request, call_next):
     p = request.url.path
     if p.startswith("/api/admin"):
         resp.headers["Cache-Control"] = "no-store"          # never cache owner data
+    elif p == "/api/outlets" and request.method == "GET":
+        resp.headers["Cache-Control"] = "public, max-age=0, s-maxage=20"  # shared cache 20 s; browsers always re-check, so open/closed stays fresh
     elif p == "/api/menu" and request.method == "GET":
         # shared cache: fast menu even while Neon is waking up; edits show within ~1 minute
         resp.headers["Cache-Control"] = "public, s-maxage=60, stale-while-revalidate=300"

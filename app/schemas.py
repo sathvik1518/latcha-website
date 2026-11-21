@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 Category = Literal["classic", "cloud", "soft", "float"]
 Status = Literal["new", "confirmed", "delivered", "cancelled"]
@@ -62,9 +62,16 @@ class OrderIn(BaseModel):
     customer_name: str = Field(min_length=2, max_length=80)
     phone: str
     address: str = Field(min_length=5, max_length=300)
-    city: Literal["Bengaluru", "Hyderabad"]
+    city: Literal["Bengaluru", "Hyderabad"] | None = None   # optional when an outlet is chosen (the outlet knows its city)
+    outlet: str | None = Field(None, max_length=40)           # outlet slug, e.g. "jp-nagar"
     notes: str = Field("", max_length=300)
     lines: list[LineIn] = Field(min_length=1, max_length=20)
+
+    @model_validator(mode="after")
+    def city_or_outlet(self):
+        if not self.city and not self.outlet:
+            raise ValueError("Choose an outlet or a city")
+        return self
 
     @field_validator("customer_name", "address", "notes")
     @classmethod
@@ -94,6 +101,8 @@ class OrderOut(BaseModel):
     city: str
     notes: str
     status: Status
+    outlet_id: int | None = None
+    outlet_name: str | None = None
     lines: list[LineOut]
 
 
@@ -101,6 +110,7 @@ class OrderReceipt(BaseModel):
     id: int
     status: Status
     message: str
+    outlet: str | None = None
 
 
 class TrackIn(BaseModel):
@@ -165,3 +175,48 @@ class LoginIn(BaseModel):
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+HHMM = r"^([01]\d|2[0-3]):[0-5]\d$"
+
+
+class OutletOut(BaseModel):
+    """What the website sees. `status` is a ready sentence; `can_order` says if the order form should accept it now."""
+    slug: str
+    name: str
+    city: str
+    area: str
+    address: str
+    phone: str
+    maps_url: str
+    opens: str
+    closes: str
+    coming_soon: bool
+    open_now: bool
+    can_order: bool
+    status: str
+    sold_out: list[int]
+
+
+class OutletAdminOut(OutletOut):
+    id: int
+    accepting_orders: bool
+
+
+class OutletPatch(BaseModel):
+    accepting_orders: bool | None = None
+    coming_soon: bool | None = None
+    opens: str | None = Field(None, pattern=HHMM)
+    closes: str | None = Field(None, pattern=HHMM)
+    phone: str | None = Field(None, max_length=20)
+    maps_url: str | None = Field(None, max_length=300)
+    address: str | None = Field(None, max_length=200)
+
+    @field_validator("phone")
+    @classmethod
+    def phone_ok(cls, v):
+        return v if v in (None, "") else clean_phone(v)
+
+
+class SoldOutIn(BaseModel):
+    sold_out: bool

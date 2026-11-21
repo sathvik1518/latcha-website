@@ -26,6 +26,31 @@ class MenuItem(Base):
     )
 
 
+class Outlet(Base):
+    """One LATCHA shop. Hours are Indian time as "HH:MM"; closing before opening means "after midnight"."""
+    __tablename__ = "outlets"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    slug: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    city: Mapped[str] = mapped_column(String(20))            # Bengaluru | Hyderabad
+    area: Mapped[str] = mapped_column(String(60), default="")
+    address: Mapped[str] = mapped_column(String(200), default="")
+    phone: Mapped[str] = mapped_column(String(20), default="")
+    maps_url: Mapped[str] = mapped_column(String(300), default="")
+    opens: Mapped[str] = mapped_column(String(5), default="11:00")
+    closes: Mapped[str] = mapped_column(String(5), default="23:00")
+    accepting_orders: Mapped[bool] = mapped_column(Boolean, default=True)   # owner pause switch
+    coming_soon: Mapped[bool] = mapped_column(Boolean, default=False)
+    position: Mapped[int] = mapped_column(Integer, default=0)
+
+
+class OutletSoldOut(Base):
+    """A row here means: this dish is sold out at this outlet (other outlets are not affected)."""
+    __tablename__ = "outlet_sold_out"
+    outlet_id: Mapped[int] = mapped_column(ForeignKey("outlets.id", ondelete="CASCADE"), primary_key=True)
+    item_id: Mapped[int] = mapped_column(ForeignKey("menu_items.id", ondelete="CASCADE"), primary_key=True)
+
+
 class Order(Base):
     __tablename__ = "orders"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -36,7 +61,13 @@ class Order(Base):
     city: Mapped[str] = mapped_column(String(20))
     notes: Mapped[str] = mapped_column(String(300), default="")
     status: Mapped[str] = mapped_column(String(20), default="new", index=True)
+    outlet_id: Mapped[int | None] = mapped_column(ForeignKey("outlets.id"), nullable=True, index=True)
+    outlet: Mapped["Outlet | None"] = relationship()
     lines: Mapped[list["OrderLine"]] = relationship(back_populates="order", cascade="all, delete-orphan")
+
+    @property
+    def outlet_name(self) -> str | None:
+        return self.outlet.name if self.outlet else None
 
 
 class OrderLine(Base):

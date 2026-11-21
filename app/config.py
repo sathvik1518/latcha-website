@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     admin_password_hash: str = ""
     jwt_secret: str = ""
     token_minutes: int = 120
+    enforce_outlet_hours: bool = True   # refuse delivery requests while an outlet is closed
 
     @property
     def db_url(self) -> str:

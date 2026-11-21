@@ -337,6 +337,14 @@ Made with matcha and stubbornness for **LATCHA** · founder **Rajasree Yarlagadd
 
 <br>
 
+## Outlets (new)
+
+LATCHA has more than one shop, so the site does too. Customers pick an outlet in the order window and see if it is open right now. The owner can pause an outlet, change its hours, or mark a dish **sold out at one outlet only**, all from `/admin.html` → **Outlets**.
+
+- `GET /api/outlets` lists outlets with a ready "Open now · until 1:00 AM" sentence.
+- Orders can carry an `outlet`; closed, paused, "opening soon" and sold-out cases get a clear message.
+- Old orders and the old city-only order form keep working. Existing databases upgrade themselves on start (`app/outlets.py`).
+
 **By Sathvik & Sunny**
 
 </div>

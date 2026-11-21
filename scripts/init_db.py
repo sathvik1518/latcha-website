@@ -4,6 +4,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 from sqlalchemy import select, func
 from app.db import Base, SessionLocal, engine
 from app import models as m
+from app.outlets import ensure_schema
 
 
 def seed(db):
@@ -23,5 +24,6 @@ def seed(db):
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
+    ensure_schema(engine, SessionLocal, Base)  # outlets, per-outlet sold-out, orders.outlet_id
     with SessionLocal() as db:
         print("Tables ready. Items seeded:", seed(db))
