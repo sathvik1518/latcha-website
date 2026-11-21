@@ -9,7 +9,7 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: "3.13" }
       - run: pip install -r requirements-dev.txt
-      - run: python -m pytest tests/test_api.py -q
+      - run: python -m pytest tests/test_api.py tests/test_dashboard.py -q
 
   e2e:
     needs: api                      # the browser test runs only if the API tests are green
