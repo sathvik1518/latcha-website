@@ -384,6 +384,17 @@ Every drink that LATCHA marks **Delivered** is 1 sip on the customer's mobile nu
 - Limit: there is no OTP, so anyone who knows a mobile number can see its sips or reserve its free drink. The owner's confirmation call is the safeguard.
 - Free drinks need prices. The prices are placeholders until you set the real ones in Admin → Menu.
 
+## Find my matcha quiz (new)
+
+A 4-tap quiz (format, flavour, sweetness, light or treat) that picks one dish and two more ideas from the live menu. A button sits under the menu heading and another in the footer.
+
+- It is plain rules, not AI. A dish scores points for the chosen format, the flavour mood (found from the dish name and description), how close its sweetness is, and its calories. Best sellers get a small tie-break bonus.
+- It reads the menu from the database, so new or edited dishes are used automatically. For a new dish to match a flavour mood, put words like strawberry, caramel, ube, vanilla or matcha in its name or description.
+- Dishes marked sold out at the customer's chosen outlet are skipped.
+- Soft serves and floats have no sweetness or calorie numbers yet, so those two questions do not change their score.
+- "Add" puts the dish in the cart; "Open my order" goes straight to the order window.
+- Nothing is stored and there is no new database table or API.
+
 **By Sathvik & Sunny**
 
 </div>

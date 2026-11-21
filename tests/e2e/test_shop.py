@@ -430,3 +430,73 @@ def test_owner_sees_fam_members_and_the_free_drink_badge(page: Page, context, ad
     row = owner.locator("#list .card", has_text=phone.replace(" ", ""))
     expect(row).to_be_visible()
     expect(row).to_contain_text("1 free drink ready")
+
+
+# ---------- Find my matcha quiz ----------
+
+def take_quiz(page: Page, *answers: str):
+    page.goto("/")
+    page.locator("#menu").scroll_into_view_if_needed()
+    page.click("#quizbtn")
+    expect(page.locator("#quizwin")).to_be_visible()
+    for a in answers:
+        page.locator("#quizbody .qopt", has_text=a).first.click()
+
+
+def test_quiz_recommends_a_fruity_light_iced_latte_and_adds_it(page: Page):
+    take_quiz(page, "Iced latte", "Fruity", "Barely sweet", "Keep it light")
+    top = page.locator("#quizbody .qwin")
+    expect(top).to_be_visible()
+    expect(top.locator(".qname")).to_have_text("Strawberry")          # fruity, low sweetness, 146 kcal, best seller
+    expect(top).to_contain_text("Iced latte")
+    expect(top).to_contain_text("kcal")
+    expect(page.locator("#quizbody .qrun")).to_have_count(2)         # two more ideas
+    top.get_by_role("button", name="+ Add").click()
+    expect(top.get_by_role("button", name="Added ✓ ×1")).to_be_visible()
+    expect(page.locator("#orderbtn")).to_have_text("Order (1)")
+    top.get_by_role("button", name="Open my order").click()
+    expect(page.locator("#quizwin")).to_be_hidden()
+    expect(page.locator("#ord")).to_be_visible()
+    expect(page.locator("#ordlist")).to_contain_text("Strawberry")
+
+
+def test_quiz_soft_serve_and_pure_matcha(page: Page):
+    take_quiz(page, "Soft serve", "Pure matcha", "Balanced", "No preference")
+    expect(page.locator("#quizbody .qname")).to_have_text("Uji Matcha")
+    expect(page.locator("#quizbody .qfacts")).to_contain_text("Soft serve")
+
+
+def test_quiz_back_retake_and_escape(page: Page):
+    page.goto("/")
+    page.locator("#menu").scroll_into_view_if_needed()
+    page.click("#quizbtn")
+    page.locator("#quizbody .qopt", has_text="Float").click()
+    expect(page.locator("#quizbody .qq")).to_have_text("Which flavour sounds good?")
+    page.click("#quizbody .qback")
+    expect(page.locator("#quizbody .qq")).to_have_text("What are you in the mood for?")
+    for a in ("Float", "Fruity", "Sweet tooth", "No preference"):
+        page.locator("#quizbody .qopt", has_text=a).first.click()
+    expect(page.locator("#quizbody .qname")).to_contain_text("Strawberry Crush Float")
+    page.get_by_role("button", name="Take the quiz again").click()
+    expect(page.locator("#quizbody .qq")).to_have_text("What are you in the mood for?")
+    page.keyboard.press("Escape")
+    expect(page.locator("#quizwin")).to_be_hidden()
+    expect(page.locator("body")).not_to_have_class(re.compile("ordopen"))
+
+
+def test_quiz_skips_a_dish_that_is_sold_out_at_the_chosen_outlet(page: Page, admin_password):
+    hdr = owner_token(page, admin_password)
+    outlets = page.request.get("/api/admin/outlets", headers=hdr).json()
+    open_one = next(o for o in outlets if not o["coming_soon"])
+    menu = page.request.get("/api/menu").json()
+    straw = next(i for i in menu if i["name"] == "Strawberry" and i["category"] == "classic")
+    set_it = lambda flag: page.request.put(f"/api/admin/outlets/{open_one['id']}/sold-out/{straw['id']}", data={"sold_out": flag}, headers=hdr)
+    assert set_it(True).ok
+    try:
+        page.goto("/")
+        page.evaluate("localStorage.setItem('latcha_outlet', %r)" % open_one["slug"])
+        take_quiz(page, "Iced latte", "Fruity", "Barely sweet", "Keep it light")
+        expect(page.locator("#quizbody .qname")).not_to_have_text("Strawberry")
+        expect(page.locator("#quizbody .qname")).to_have_text("Raspberry")
+    finally:
+        set_it(False)

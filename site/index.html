@@ -422,6 +422,28 @@ body.ordopen #chat{display:none}
 .fbig small{font-family:var(--ui);font-size:14px;font-weight:700;color:var(--mute);margin-left:6px}
 .fgift{padding:12px 16px;border-radius:18px;background:var(--leaf-soft);color:var(--ink);font-weight:700;font-size:14px;line-height:1.5}
 .fhow{font-size:13px;line-height:1.55;color:var(--mute);margin:0}
+.qprog{display:flex;gap:6px;margin:2px 0 16px}.qprog i{flex:1;height:5px;border-radius:9px;background:var(--line);transition:background .25s}.qprog i.on{background:var(--berry)}
+.qq{font-family:var(--serif);font-size:25px;line-height:1.2;color:var(--ink);margin:0 0 4px;font-weight:400}
+.qhint{font-size:13px;line-height:1.5;color:var(--mute);margin:0 0 14px}
+.qopts{display:grid;gap:10px}
+.qopt{display:grid;gap:2px;text-align:left;font:inherit;padding:13px 16px;min-height:56px;border:1.5px solid var(--line);border-radius:20px;background:#fff;cursor:pointer;transition:border-color .2s,background .2s,box-shadow .2s}
+.qopt b{font-size:14.5px;font-weight:700;color:var(--ink)}.qopt small{font-size:12.5px;font-weight:600;color:var(--mute)}
+.qopt:hover{border-color:var(--rose-deep);background:var(--petal)}.qopt:focus-visible{outline:2px solid var(--berry);outline-offset:3px}
+.qback{margin:14px 0 0;padding:6px 2px;background:none;border:0;font:inherit;font-size:13px;font-weight:700;color:var(--berry);cursor:pointer;min-height:44px}
+.qwin{display:grid;gap:10px;padding:0 0 16px;border-radius:22px;background:var(--petal);border:1.5px solid var(--rose);overflow:hidden}
+.qwin img{display:block;width:100%;height:190px;object-fit:cover;object-position:50% 40%;background:var(--line)}
+.qwin>*:not(img){margin-left:16px;margin-right:16px}
+.qtag{font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--berry);margin-top:6px!important}
+.qname{font-family:var(--serif);font-size:27px;line-height:1.1;color:var(--ink);margin-top:0!important;margin-bottom:0!important;font-weight:400}
+.qwhy{font-size:13.5px;line-height:1.5;color:var(--ink);margin-top:0!important;margin-bottom:0!important}
+.qfacts{display:flex;flex-wrap:wrap;gap:6px}.qfacts span{padding:5px 11px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute)}
+.qbtns{display:flex;flex-wrap:wrap;gap:8px}.qbtns .chip{margin:0}
+.qrun{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:8px 10px 8px 8px;border:1.5px solid var(--line);border-radius:18px;background:#fff}
+.qrun img{width:56px;height:56px;border-radius:14px;object-fit:cover;background:var(--line)}
+.qrun b{display:block;font-size:14px;color:var(--ink)}.qrun small{display:block;font-size:12px;font-weight:600;color:var(--mute);line-height:1.35}
+.qrun button{font:inherit;font-size:13px;font-weight:700;padding:9px 14px;min-height:44px;border-radius:99px;border:1.5px solid var(--rose);background:#fff;color:var(--berry);cursor:pointer}
+.qrun button.in{background:var(--leaf-soft);border-color:var(--matcha);color:var(--matcha)}
+.qsub{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px}
 .tstat.pay{margin-top:8px}.tstat.pay.ok{color:var(--matcha)}
 #paynow{margin-top:10px}
 @media(prefers-reduced-motion:reduce){.pbtick,.pbspin{animation:none}}
@@ -775,6 +797,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
   <div class="eyebrow rv">Speciality Matcha | Soft Serves | Floats</div>
   <h2 class="h1 rv"><span class="sc">Our</span> Menu</h2>
   <p class="lead rv">Ceremonial Uji matcha whisked to order, cloud lattes, premium soft serve and build-your-own floats. Sweetness and calories on every cup, so you can pick your pour.</p>
+  <p class="rv"><button type="button" class="chip" id="quizbtn">Not sure? Find my matcha</button></p>
   <div class="fav">
     <figure class="rv" data-tilt style="--i:0"><img data-a="gen-ube.webp" alt="An iced ube matcha latte with lilac cold foam beside a pink ribbon bow and rose petals" loading="lazy"><figcaption class="glass"><span>Ube Cloud<small>Fluffy, creamy ube</small></span></figcaption></figure>
     <figure class="rv" data-tilt style="--i:1"><img data-a="gen-softserve.webp" alt="A hand holding a cup of matcha and strawberry swirl soft serve against a blush wall" loading="lazy"><figcaption class="glass"><span>Swirl Soft Serve<small>Premium, slow-churned</small></span></figcaption></figure>
@@ -839,7 +862,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
 <footer class="site" id="footer">
   <div class="brand"><a class="logo lg" href="#top" aria-label="LATCHA"><img src="assets/logo.png" alt="LATCHA"></a><p class="founder"><small>Founder</small><b>Rajasree Yarlagadda</b></p></div>
   <p>Speciality Matcha &amp; Premium Soft Serve<br>Your sign to slow down at Latcha.</p>
-  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button><button type="button" class="chip o" id="trackbtn">Track your order</button><button type="button" class="chip o" id="fambtn">Latcha Fam</button></div>
+  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button><button type="button" class="chip o" id="trackbtn">Track your order</button><button type="button" class="chip o" id="fambtn">Latcha Fam</button><button type="button" class="chip o" id="quizbtn2">Find my matcha</button></div>
   <p style="width:100%;font-size:12px">© LATCHA™</p>
 </footer>
 
@@ -896,6 +919,13 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
       <div class="famcard" id="fres" hidden></div>
       <p class="fhow" id="fhow">Every drink we deliver to you is 1 sip. Collect sips on your mobile number and get a free drink. Sips are added when LATCHA marks your order delivered.</p>
     </div>
+  </div>
+</div>
+
+<div class="ordwrap" id="quizwin" hidden>
+  <div class="ordbox glass" role="dialog" aria-modal="true" aria-labelledby="quizh">
+    <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="quizh">Find my matcha</b><small>4 quick taps, no typing</small></div><button type="button" class="x" id="quizx" aria-label="Close">×</button></header>
+    <div class="obody" id="quizbody" aria-live="polite"></div>
   </div>
 </div>
 
@@ -1461,6 +1491,68 @@ $("#fform").addEventListener("submit",function(e){e.preventDefault();var f=e.tar
       +(c.rewards_available?'<div class="fgift">🎁 You have '+c.rewards_available+' free drink'+(c.rewards_available>1?'s':'')+' ready. Tick “Use my free drink” when you order with this number.</div>':'<div class="fgift">'+c.to_next+' more sip'+(c.to_next>1?'s':'')+' to your next free drink.</div>')
       +'<p class="fhow">'+c.sips+' sip'+(c.sips===1?'':'s')+' in total · '+c.delivered_orders+' delivered order'+(c.delivered_orders===1?'':'s')+'. Every drink we deliver is 1 sip, and '+c.per_reward+' sips is a free drink.</p>';
     r.hidden=false},function(er){m.className="msg bad";m.textContent=errText(er)}).then(function(){b.disabled=false})});
+
+/* Find my matcha: four taps, then the best matches from today's menu */
+var quizwin=$("#quizwin"),quizFrom=null,qa={},qstep=0;
+var QCAT={classic:"Iced latte",cloud:"Cloud latte",soft:"Soft serve",float:"Float"};
+var QFLV={fruity:"fruity",nutty:"nutty and dessert-y",ube:"ube and floral",matcha:"pure matcha",vanilla:"creamy vanilla"};
+var QS=[
+ {k:"fmt",q:"What are you in the mood for?",h:"",o:[["classic","Iced latte","Light and refreshing"],["cloud","Cloud latte","Fluffy cream on top"],["soft","Soft serve","A cup of premium soft serve"],["float","Float","Iced latte with soft serve on top"],["any","Surprise me","Show me the best of everything"]]},
+ {k:"flv",q:"Which flavour sounds good?",h:"",o:[["fruity","Fruity","Strawberry, cherry, mango, berries"],["nutty","Nutty and dessert-y","Coconut, caramel, pistachio, cookie"],["ube","Ube and floral","Ube and rose"],["matcha","Pure matcha","Earthy and umami"],["vanilla","Creamy vanilla","Soft and mellow"],["any","No idea","Anything goes"]]},
+ {k:"swt",q:"How sweet?",h:"Soft serves and floats have no sweetness score yet",o:[["low","Barely sweet","Let the matcha speak"],["mid","Balanced","Not too much, not too little"],["high","Sweet tooth","Bring on the sugar"]]},
+ {k:"lite",q:"Light or a treat?",h:"Calories are shown for iced and cloud lattes",o:[["light","Keep it light","Lower calories"],["treat","Treat myself","Rich and indulgent"],["any","No preference","Either is fine"]]}
+];
+function quizPool(){var out=[];[["classic",CLASSIC],["cloud",CLOUD],["soft",SOFT],["float",FLOAT]].forEach(function(g){var lat=g[0]==="classic"||g[0]==="cloud";
+  g[1].forEach(function(r,i){if(!r.id)return;out.push({id:r.id,cat:g[0],name:r[0],desc:r[1]||"",cal:lat?(r[2]||null):null,sw:lat?r[3]:null,best:!!(lat&&r[4]),pos:r.pos||i+1,price:r.price||0})})});return out}
+function quizTags(it){var n=it.name.toLowerCase(),t=(n+" "+it.desc.toLowerCase()).replace(/classic iced matcha latte/g,""),g={};
+  if(/ube|rose|floral/.test(t))g.ube=1;
+  if(/strawberr|cherry|raspberr|mango|blueberr|berry|fruit|tropical/.test(t))g.fruity=1;
+  if(!g.ube&&/coconut|pistachio|nutty|toffe|caramel|cookie|biscuit|butter|banana|pudding|almond|hazelnut|peanut/.test(t))g.nutty=1;
+  if(/vanilla|silk/.test(t))g.vanilla=1;
+  if(/uji|pure|honey|unsweetened|umami|matcha swirl/.test(n+" "+it.desc.toLowerCase().replace(/classic iced matcha latte/g,"")))g.matcha=1;
+  return g}
+function quizScore(it,a,soldOut){var sc=0,why=[],tg=quizTags(it);
+  if(soldOut.indexOf(it.id)>-1)return null;
+  if(a.fmt!=="any"&&it.cat===a.fmt)sc+=20;
+  if(a.flv!=="any"&&tg[a.flv]){sc+=5;why.push("Fits your "+QFLV[a.flv]+" mood.")}
+  if(it.sw!=null){var tgt={low:.5,mid:3,high:4.5}[a.swt],d=Math.abs(it.sw-tgt);sc+=3-Math.min(3,d*1.1);if(d<=1)why.push("Sweetness "+it.sw+" out of 5, just what you asked for.")}else sc+=1.5;
+  if(it.cal!=null){var c=it.cal;
+    if(a.lite==="light"){sc+=c<=150?3:c<=190?2:c<=250?.5:-1.5;if(c<=190)why.push("Only "+c+" kcal.")}
+    else if(a.lite==="treat"){sc+=c>=290?3:c>=210?1.5:0;if(c>=210)why.push("A proper treat at "+c+" kcal.")}}
+  if(it.best)sc+=.4;
+  return {it:it,sc:sc,why:why}}
+function quizRank(a){var so=(typeof soldHere==="function")?soldHere():[];
+  return quizPool().map(function(it){return quizScore(it,a,so)}).filter(Boolean).sort(function(x,y){return y.sc-x.sc||x.it.pos-y.it.pos})}
+function qimg(it){return '<img src="assets/menu/'+it.cat+'-'+it.pos+'.webp" alt="'+esc(it.name)+'" loading="lazy" onerror="this.style.display=\'none\'">'}
+function qaddLabel(id){return cart[id]?"Added ✓ ×"+cart[id]:"+ Add"}
+function quizStep(){var q=QS[qstep];
+  $("#quizbody").innerHTML='<div class="qprog" aria-hidden="true">'+QS.map(function(_,i){return '<i'+(i<=qstep?' class="on"':'')+'></i>'}).join("")+'</div><h3 class="qq">'+esc(q.q)+'</h3><p class="qhint">Question '+(qstep+1)+' of '+QS.length+(q.h?' · '+esc(q.h):'')+'</p><div class="qopts">'
+    +q.o.map(function(o){return '<button type="button" class="qopt" data-v="'+o[0]+'"><b>'+esc(o[1])+'</b><small>'+esc(o[2])+'</small></button>'}).join("")+'</div>'
+    +(qstep?'<button type="button" class="qback" data-back="1">← Back</button>':'');
+  var f=$("#quizbody .qopt");if(f)f.focus({preventScroll:true});quizwin.querySelector(".obody").scrollTop=0}
+function quizResult(){var r=quizRank(qa),top=r[0];
+  if(!top){$("#quizbody").innerHTML='<h3 class="qq">Everything is sold out here right now</h3><p class="qhint">Please pick another LATCHA outlet in the order window, or try again later.</p><button type="button" class="chip" data-retake="1">Start again</button>';return}
+  var t=top.it,facts=['<span>'+QCAT[t.cat]+'</span>'];if(t.sw!=null)facts.push('<span>Sweetness '+t.sw+'/5</span>');if(t.cal!=null)facts.push('<span>'+t.cal+' kcal</span>');if(PAYMODE!=="off"&&t.price)facts.push('<span>₹'+t.price+'</span>');
+  var h='<div class="qwin">'+qimg(t)+'<div class="qtag">Your match</div><h3 class="qname">'+esc(t.name)+'</h3><p class="qwhy">'+esc(t.desc)+(top.why.length?'. '+esc(top.why.join(" ")):'.')+'</p><div class="qfacts">'+facts.join("")+'</div>'
+    +'<div class="qbtns"><button type="button" class="chip" data-add="'+t.id+'" id="qadd'+t.id+'">'+qaddLabel(t.id)+'</button><button type="button" class="chip o" data-order="1">Open my order</button></div></div>';
+  if(r.length>1){h+='<div class="qsub">Also try</div><div class="qopts">'+r.slice(1,3).map(function(x){var i=x.it;
+    return '<div class="qrun">'+qimg(i)+'<div><b>'+esc(i.name)+'</b><small>'+QCAT[i.cat]+(i.sw!=null?' · sweetness '+i.sw+'/5':'')+(i.cal!=null?' · '+i.cal+' kcal':'')+'</small></div><button type="button" data-add="'+i.id+'" id="qadd'+i.id+'" class="'+(cart[i.id]?'in':'')+'">'+qaddLabel(i.id)+'</button></div>'}).join("")+'</div>'}
+  h+='<button type="button" class="qback" data-retake="1">↺ Take the quiz again</button>';
+  $("#quizbody").innerHTML=h;quizwin.querySelector(".obody").scrollTop=0;var b=$("#quizbody .qbtns .chip");if(b)b.focus({preventScroll:true})}
+function showQuiz(){quizFrom=document.activeElement;qa={};qstep=0;quizStep();quizwin.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden"}
+function openQuiz(){var go=function(){loadOutlets().then(function(){outletUI();showQuiz()},showQuiz)};if(ORDER_OK)return go();
+  loadMenu().then(function(ok){if(ok)go();else{showQuiz();$("#quizbody").innerHTML='<h3 class="qq">The menu is waking up</h3><p class="qhint">Please try again in a few seconds.</p>'}},function(){showQuiz();$("#quizbody").innerHTML='<h3 class="qq">The menu is waking up</h3><p class="qhint">Please try again in a few seconds.</p>'})}
+function closeQuiz(){if(quizwin.hidden)return;quizwin.hidden=true;if(ord.hidden&&trk.hidden&&fam.hidden){document.body.classList.remove("ordopen");document.body.style.overflow=""}if(quizFrom&&quizFrom.focus)quizFrom.focus()}
+$("#quizbtn").addEventListener("click",openQuiz);$("#quizbtn2").addEventListener("click",openQuiz);
+$("#quizx").addEventListener("click",closeQuiz);
+quizwin.addEventListener("click",function(e){if(e.target===quizwin)return closeQuiz();
+  var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.v!==undefined){qa[QS[qstep].k]=b.dataset.v;qstep++;if(qstep<QS.length)quizStep();else quizResult();return}
+  if(b.dataset.back){qstep=Math.max(0,qstep-1);quizStep();return}
+  if(b.dataset.retake){qa={};qstep=0;quizStep();return}
+  if(b.dataset.add){var id=+b.dataset.add;addToCart(id);b.textContent=qaddLabel(id);b.classList.add("in");return}
+  if(b.dataset.order){closeQuiz();openOrder()}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeQuiz()});
 
 /* order tracking */
 var trk=$("#trk"),trkFrom=null,lastOrder=null;
