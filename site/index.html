@@ -504,7 +504,7 @@ nav.past .bag{display:inline-flex;align-items:center}
 .burger{display:inline-flex}
 #mnav{top:76px}
 @media(min-width:1024px){nav{height:calc(var(--r)*6.5);padding:0 calc(var(--r)*4)}nav .logo img{height:calc(var(--r)*2.5)}#mnav{top:calc(var(--r)*6.5)}}
-@media(min-width:1024px){#mnav{left:auto;right:calc(var(--r)*4);width:min(320px,90vw);top:calc(var(--r)*6.5 + 6px);border-radius:22px;border:1px solid var(--line);padding:8px 18px 12px}}
+
 .follow,.bag{white-space:nowrap}
 @media(max-width:480px){.follow{padding:0 14px;font-size:12.5px;height:40px}.bag{height:40px;padding:0 14px;font-size:13px}.navr{gap:6px}nav .logo img{height:28px}}
 
@@ -669,6 +669,69 @@ footer.site{gap:28px}
 .ordbox{max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);min-height:0}
 .obody{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
 @media(max-width:759px){.obody{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}}
+
+/* ================= MENU DASHBOARD (burger) ================= */
+#mnav{left:12px;right:12px;width:auto;top:70px;padding:0;background:none;border:0;border-radius:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;display:block;max-height:calc(100vh - 82px);max-height:calc(100dvh - 82px);overflow:auto;overscroll-behavior:contain;transform:translateY(-10px) scale(.97);transform-origin:top right;scrollbar-width:none}
+#mnav::-webkit-scrollbar{display:none}
+#mnav.open{transform:none}
+@media(min-width:760px){#mnav{left:auto;right:16px;width:350px;top:82px}}
+@media(min-width:1024px){#mnav{right:calc(var(--r)*4);top:calc(var(--r)*6.5 + 6px)}}
+#mnav .mn{position:relative;overflow:hidden;border-radius:30px;padding:14px 14px 16px;background:linear-gradient(165deg,rgba(255,255,255,.95) 0%,rgba(253,227,236,.95) 55%,rgba(246,191,208,.95) 100%);border:1px solid var(--glass-line);box-shadow:0 30px 70px rgba(122,46,69,.3),inset 0 0 0 1px rgba(255,255,255,.6)}
+#mnav .mn::before{content:"";position:absolute;right:-46px;top:-46px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0,rgba(255,255,255,.0) 28%),radial-gradient(circle,rgba(229,138,166,.45),rgba(229,138,166,0) 70%);pointer-events:none}
+#mnav .mn::after{content:"";position:absolute;right:20px;top:18px;width:18px;height:18px;background:var(--rose-deep);clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:mnsp 3.4s ease-in-out infinite;pointer-events:none}
+@keyframes mnsp{0%,100%{transform:scale(.7) rotate(0);opacity:.6}50%{transform:scale(1.15) rotate(90deg);opacity:1}}
+#mnav .mnh{position:relative;display:flex;align-items:center;gap:12px;padding:4px 40px 12px 4px}
+#mnav .mnav-av{width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none;box-shadow:0 8px 18px rgba(181,69,106,.28),inset 0 0 0 2px var(--petal)}
+#mnav .mnav-av svg{width:28px;height:32px}
+#mnav .mnh em{display:block;font-family:var(--script);font-style:normal;font-size:32px;line-height:.95;color:var(--berry)}
+#mnav .mnh small{display:block;margin-top:4px;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+#mnav .mn a.ml{--d:0s;position:relative;display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 14px 8px 8px;margin-top:7px;border:0;border-radius:20px;background:rgba(255,255,255,.62);box-shadow:0 4px 12px rgba(181,69,106,.08);font-weight:400;font-size:16px;color:var(--ink);opacity:0;transform:translateY(10px);transition:background .2s,color .2s,box-shadow .2s,opacity .4s ease var(--d),transform .4s cubic-bezier(.2,.8,.2,1) var(--d)}
+#mnav.open .mn a.ml{--d:calc(.06s + var(--i)*.045s);opacity:1;transform:none}
+#mnav .ml .ic{width:42px;height:42px;border-radius:15px;background:var(--petal);color:var(--berry);display:grid;place-items:center;flex:none;transition:background .2s,color .2s,transform .3s}
+#mnav .ml .ic svg{width:21px;height:21px}
+#mnav .ml span{min-width:0}
+#mnav .ml b{display:block;font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.1}
+#mnav .ml small{display:block;margin-top:2px;font-size:12px;color:var(--mute);transition:color .2s}
+#mnav .ml u{margin-left:auto;text-decoration:none;font-size:18px;color:var(--rose-deep);transition:transform .25s,color .2s}
+#mnav .mn a.ml:hover,#mnav .mn a.ml.on,#mnav .mn a.ml:focus-visible{background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff;box-shadow:0 12px 24px rgba(181,69,106,.35)}
+#mnav .ml:hover .ic,#mnav .ml.on .ic,#mnav .ml:focus-visible .ic{background:rgba(255,255,255,.24);color:#fff;transform:rotate(-6deg) scale(1.06)}
+#mnav .ml:hover small,#mnav .ml.on small,#mnav .ml:focus-visible small{color:rgba(255,255,255,.86)}
+#mnav .ml:hover u,#mnav .ml.on u,#mnav .ml:focus-visible u{color:#fff;transform:translateX(4px)}
+#mnav .mnf{display:flex;gap:10px;margin-top:14px;position:relative}
+#mnav .mn a.mnb,#mnav .mnb{flex:1;min-height:50px;height:50px;padding:0 10px;border:0;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font:700 14px var(--ui);white-space:nowrap;transition:transform .2s,background .2s}
+#mnav .mnb:hover{transform:translateY(-2px)}
+#mnav .mnb.p{background:var(--berry);color:var(--blush);box-shadow:0 12px 22px rgba(181,69,106,.35)}
+#mnav .mnb.d{background:var(--ink);color:var(--blush)}
+@media(max-width:360px){#mnav .mnf{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){#mnav .mn::after{animation:none}#mnav .mn a.ml{transition:none;opacity:1;transform:none}}
+
+/* ---- order window: Drinks / Cart / Details tabs (no long scrolling) ---- */
+.otabs{display:flex;gap:6px;margin:12px 16px 0;padding:5px;border-radius:999px;background:var(--petal);flex:none;box-shadow:inset 0 0 0 1px var(--line)}
+.otabs button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 10px;border:0;border-radius:999px;background:transparent;color:var(--berry);font:700 13.5px/1 var(--ui);transition:background .2s,color .2s,box-shadow .2s}
+.otabs button i{font-style:normal;width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;background:#fff;color:var(--berry);font-size:11px}
+.otabs button b{min-width:20px;height:20px;border-radius:99px;display:inline-grid;place-items:center;padding:0 5px;background:#ff4d6d;color:#fff;font-size:11px;border:2px solid #fff;box-sizing:content-box}
+.otabs button b:empty,.otabs button b[data-n="0"]{display:none}
+.otabs button[aria-selected=true]{background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff;box-shadow:0 8px 16px rgba(181,69,106,.3)}
+.otabs button[aria-selected=true] i{background:rgba(255,255,255,.28);color:#fff}
+.otabs[hidden],.ofoot[hidden]{display:none!important}
+.ordbox[data-tab="drinks"] [data-pane]:not([data-pane~="drinks"]),.ordbox[data-tab="cart"] [data-pane]:not([data-pane~="cart"]),.ordbox[data-tab="details"] [data-pane]:not([data-pane~="details"]){display:none!important}
+#ord .obody{padding-bottom:18px}
+#ocart{display:grid;gap:10px;margin-top:16px}
+.crow{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:12px 14px;border-radius:22px;background:#fff;border:1.5px solid var(--line);box-shadow:0 6px 16px rgba(229,138,166,.14)}
+.crow b{font-family:var(--serif);font-weight:400;font-size:17px;line-height:1.15;color:var(--ink)}
+.crow small{grid-column:1;font-size:12.5px;font-weight:700;color:var(--mute)}
+.crow .stp{grid-column:2;grid-row:1/3}
+.ctot{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-radius:22px;background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff;font-weight:700;box-shadow:0 12px 22px rgba(181,69,106,.28)}
+.ctot span{font-size:13px;letter-spacing:.08em;text-transform:uppercase;opacity:.92}.ctot b{font-family:var(--serif);font-weight:400;font-size:26px}
+.cempty{text-align:center;padding:26px 18px 22px;border-radius:26px;border:1.5px dashed var(--rose);background:rgba(255,255,255,.6);display:grid;gap:12px;justify-items:center}
+.cempty svg{width:56px;height:64px}
+.cempty h3{font-family:var(--serif);font-weight:400;font-size:22px;color:var(--ink)}
+.cempty p{font-size:14px;color:var(--mute);line-height:1.5;margin:0}
+.cempty .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.ofoot{flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(255,245,248,.96);border-top:1px solid var(--line);box-shadow:0 -10px 24px rgba(181,69,106,.1)}
+.oft small{display:block;font-size:12px;font-weight:700;color:var(--mute)}.oft b{font-family:var(--serif);font-weight:400;font-size:21px;color:var(--ink)}
+.ofoot .chip{margin:0;min-height:48px;padding:0 24px;white-space:nowrap}
+.ofoot .chip[disabled]{opacity:.45;cursor:not-allowed}
 </style>
 
 <script src="assets/vendor/lenis.min.js"></script>
@@ -684,7 +747,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
   <div class="links" id="navlinks"><a href="#top" class="on" aria-current="page">Home</a><a href="#menu">Menu</a><a href="#matcha">Matcha</a><a href="#builder">Floats</a></div>
   <div class="navr"><button type="button" class="bag" id="orderbtn">Order</button><a class="follow" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener noreferrer">Follow @siplatcha</a><button type="button" class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i><i></i></button></div>
 </nav>
-<div id="mnav" inert><a href="#top">Home</a><a href="#menu">Menu</a><a href="#matcha">Matcha</a><a href="#builder">Build a float</a><a href="#fam">Latcha Fam</a><a href="#reviews">Reviews</a><a href="#footer">Contact</a></div>
+<div id="mnav" inert><div class="mn"><div class="mnh"><span class="mnav-av"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><em>Sip &amp; explore</em><small>Your sign to slow down</small></div></div><a class="ml" href="#top" style="--i:0"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></i><span><b>Home</b><small>Back to the top</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#menu" style="--i:1"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.6 12H6.6z"/><path d="M4 8h16"/><path d="M13 8l2-5"/></svg></i><span><b>Menu</b><small>Lattes, clouds &amp; swirls</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#matcha" style="--i:2"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4C9 4 4 9 4 15c0 3 2 5 5 5 6 0 11-5 11-16z"/><path d="M4 20c3-6 7-9 11-11"/></svg></i><span><b>Matcha</b><small>From the fields of Uji</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#builder" style="--i:3"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 11a4 4 0 018 0"/><path d="M6.5 11h11L16 21H8z"/><path d="M12 4v1"/></svg></i><span><b>Build a float</b><small>Latte + soft serve</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#fam" style="--i:4"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.600-7 10-7 10z"/></svg></i><span><b>Latcha Fam</b><small>Sips for free drinks</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#reviews" style="--i:5"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6L12 16.600 6.600 19.500l1.200-6L3.300 9.300l6.100-.700z"/></svg></i><span><b>Reviews</b><small>What sippers say</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#footer" style="--i:6"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/></svg></i><span><b>Contact</b><small>Hours, delivery &amp; more</small></span><u aria-hidden="true">→</u></a><div class="mnf"><button type="button" class="mnb p" id="mnorder">Order now</button><button type="button" class="mnb d" id="mnquiz">Find my matcha</button></div></div></div>
 
 <section id="top" class="hero2" aria-labelledby="hero-title">
   <div class="h2bg" aria-hidden="true"><div class="ube"></div><div class="mat"></div></div>
@@ -879,11 +942,13 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
 <div class="ordwrap" id="ord" hidden>
   <div class="ordbox glass" role="dialog" aria-modal="true" aria-labelledby="ordh">
     <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="ordh">Your order</b><small id="ordsmall">LATCHA calls to confirm · no payment here</small></div><button type="button" class="x" id="ordx" aria-label="Close order form">×</button></header>
+    <div class="otabs" id="otabs" role="tablist" aria-label="Order steps"><button type="button" role="tab" data-t="drinks" aria-selected="true"><i>1</i>Drinks</button><button type="button" role="tab" data-t="cart" aria-selected="false"><i>2</i>Cart<b id="otn">0</b></button><button type="button" role="tab" data-t="details" aria-selected="false"><i>3</i>Details</button></div>
     <div class="obody">
-      <p class="olead">Pick your sips, tell us where to send them, and we will ring you to confirm. 🍵</p>
-      <div id="ordlist"></div>
-      <div class="osum" id="osum">Nothing selected yet</div>
-      <form class="fm ofields" id="oform" novalidate>
+      <p class="olead" data-pane="drinks">Pick your sips, tell us where to send them, and we will ring you to confirm. 🍵</p>
+      <div id="ordlist" data-pane="drinks"></div>
+      <div id="ocart" data-pane="cart"></div>
+      <div class="osum" id="osum" data-pane="cart details">Nothing selected yet</div>
+      <form class="fm ofields" id="oform" data-pane="details" novalidate>
         <label>Your name<input name="customer_name" maxlength="80" autocomplete="name" required></label>
         <label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>
         <label id="olabel" hidden>Outlet<select name="outlet" id="osel"></select></label>
@@ -912,6 +977,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
         <div class="msg" id="pbmsg" role="status" aria-live="polite"></div>
       </div>
     </div>
+    <div class="ofoot" id="ofoot"><div class="oft"><small id="oft">Your cart is empty</small><b id="ofm"></b></div><button type="button" class="chip" id="ofgo">View cart</button></div>
   </div>
 </div>
 
@@ -1136,7 +1202,14 @@ mnav.addEventListener("click",function(e){if(e.target.closest("a"))setNav(false)
 document.addEventListener("click",function(e){if(!e.target.closest("#mnav,#burger"))setNav(false)});
 addEventListener("resize",function(){if(innerWidth>900)setNav(false)});
 function askOrder(){var wasG=greeted;openChat();setTimeout(function(){ask("Delivery")},wasG?300:1300)}
-$("#orderbtn").addEventListener("click",function(){openOrder()});$("#orderbtn2").addEventListener("click",askOrder);
+$("#orderbtn").addEventListener("click",function(){openOrder()});
+/* menu dashboard: order button + highlight the section you are on */
+$("#mnorder").addEventListener("click",function(){setNav(false);openOrder()});$("#mnquiz").addEventListener("click",function(){setNav(false);$("#quizbtn2").click()});
+(function(){var ml=[].slice.call(document.querySelectorAll("#mnav a.ml")),ids=ml.map(function(a){return a.getAttribute("href").slice(1)}),tk=false;
+  function spy(){tk=false;var y=innerHeight*.35,cur=0;ids.forEach(function(id,i){var e=document.getElementById(id);if(e&&e.getBoundingClientRect().top<=y)cur=i});
+    if(scrollY+innerHeight>=document.documentElement.scrollHeight-8)cur=ids.length-1;ml.forEach(function(a,i){a.classList.toggle("on",i===cur)})}
+  addEventListener("scroll",function(){if(!tk){tk=true;requestAnimationFrame(spy)}},{passive:true});spy()})();
+$("#orderbtn2").addEventListener("click",askOrder);
 
 /* ---------- math ---------- */
 var clamp=function(v){return v<0?0:v>1?1:v};
@@ -1638,6 +1711,35 @@ $("#cartbar").addEventListener("click",function(){openOrder()});
 /* keep the order form and the cart bar in step */
 var _ordSum=ordSum;ordSum=function(){_ordSum();cartUI()};
 var _showOrder=showOrder;showOrder=function(){_showOrder();var n=$("#oform").notes;if(!n.value&&floatNotes.length)n.value=floatNotes.join("; ").slice(0,300)};
+
+/* order window tabs: Drinks / Cart / Details */
+var ordBox=ord.querySelector(".ordbox"),wantTab=null,curTab="drinks";
+function setOTab(t){curTab=t;ordBox.dataset.tab=t;$$("#otabs button").forEach(function(b){b.setAttribute("aria-selected",b.dataset.t===t?"true":"false")});
+  ord.querySelector(".obody").scrollTop=0;oFoot()}
+function oFoot(){var n=cartTotal(),m=cartMoney(),go=$("#ofgo"),f=$("#ofoot");
+  f.hidden=(curTab==="details");
+  $("#oft").textContent=n?n+" item"+(n>1?"s":"")+" in your cart":"Your cart is empty";
+  $("#ofm").textContent=n&&m!=null&&PAYMODE!=="off"?"₹"+m:"";
+  if(curTab==="drinks"){go.textContent=n?"View cart":"Pick a drink";go.disabled=!n}
+  else{go.textContent="Continue";go.disabled=!n}}
+function renderCart(){var ids=Object.keys(cart),h="",m=cartMoney();
+  if(!ids.length){h='<div class="cempty"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg><h3>Your cart is empty</h3><p>Add a few sips and they show up here.</p><div class="row"><button type="button" class="chip" data-go="drinks">Browse drinks</button><button type="button" class="chip o" data-quiz="1">Find my matcha</button></div></div>'}
+  else{ids.forEach(function(id){var p=priceOf(id);h+='<div class="crow"><b>'+esc(itemName(id))+'</b><div class="stp"><button type="button" data-id="'+id+'" data-d="-1" aria-label="Fewer '+esc(itemName(id))+'">−</button><output>'+cart[id]+'</output><button type="button" data-id="'+id+'" data-d="1" aria-label="More '+esc(itemName(id))+'">+</button></div>'+(p&&PAYMODE!=="off"?'<small>₹'+p+' each · ₹'+(p*cart[id])+'</small>':'<small>× '+cart[id]+'</small>')+'</div>'});
+    if(m!=null&&PAYMODE!=="off")h+='<div class="ctot"><span>Total</span><b>₹'+m+'</b></div>'}
+  $("#ocart").innerHTML=h}
+var _ordSum2=ordSum;ordSum=function(){_ordSum2();var n=cartTotal(),t=$("#otn");t.textContent=n;t.dataset.n=n;renderCart();oFoot()};
+$("#otabs").addEventListener("click",function(e){var b=e.target.closest("button");if(b)setOTab(b.dataset.t)});
+$("#ofgo").addEventListener("click",function(){setOTab(curTab==="drinks"?"cart":"details")});
+$("#ocart").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.go){setOTab(b.dataset.go);return}
+  if(b.dataset.quiz){closeOrder();$("#quizbtn2").click();return}
+  var id=b.dataset.id;if(!id)return;var q=Math.max(0,Math.min(20,(cart[id]||0)+(+b.dataset.d)));if(q)cart[id]=q;else delete cart[id];
+  var o=$("#q"+id);if(o)o.textContent=q;ordSum()});
+var _showOrder2=showOrder;showOrder=function(){_showOrder2();setOTab(wantTab||"drinks");wantTab=null};
+var _payView=payView;payView=function(on){_payView(on);$("#otabs").hidden=on;$("#ofoot").hidden=on||curTab==="details";$("#ocart").hidden=on};
+$("#cartbar").addEventListener("click",function(){wantTab="cart"},true);
+$("#orderbtn").addEventListener("click",function(){wantTab=cartTotal()?"cart":"drinks"},true);
+$("#mnorder").addEventListener("click",function(){wantTab=cartTotal()?"cart":"drinks"},true);
 /* after a successful order the cart is empty again */
 new MutationObserver(function(){if(/received/.test($("#omsg").textContent)){floatNotes=[];cartUI()}}).observe($("#omsg"),{childList:true,characterData:true,subtree:true});
 
