@@ -4,10 +4,10 @@ import json, logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from . import dashboard, fam, models as m, outlets as ot, payments as pay, schemas as s
+from . import dashboard, fam, loyalty, models as m, outlets as ot, payments as pay, schemas as s
 from .config import get_settings
 from .db import get_db
-from .security import make_token, require_admin, verify_password
+from .security import hash_password, make_token, require_admin, verify_password
 
 public = APIRouter(prefix="/api")
 admin = APIRouter(prefix="/api/admin", dependencies=[Depends(require_admin)])
@@ -51,7 +51,7 @@ def list_outlets(db: Session = Depends(get_db)):
 
 
 @public.post("/orders", response_model=s.OrderReceipt, status_code=201)
-def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
+def place_order(body: s.OrderIn, db: Session = Depends(get_db), cust: m.Customer | None = Depends(loyalty.optional_customer)):
     since = datetime.now(timezone.utc) - timedelta(hours=1)
     recent = db.scalar(select(func.count(m.Order.id)).where(
         m.Order.phone == body.phone, m.Order.created_at >= since))
@@ -84,7 +84,17 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
         discount = fam.reward_discount(items, body.lines)
         if discount is None:
             raise HTTPException(422, "A free drink cannot be used on these items yet. Please order without it.")
-    charge = None if total is None else total - discount
+    pts_used = pts_disc = 0
+    if body.use_points:   # Latcha points: whole blocks (500 points = Rs 50 by default), never more than the bill
+        if cust is None:
+            raise HTTPException(401, "Please sign in to use your Latcha points.")
+        if total is None:
+            raise HTTPException(422, "Points cannot be used on these items yet. Please order without them.")
+        pts_used, pts_disc = loyalty.redeem(db, cust, total - discount)
+        if not pts_disc:
+            r = loyalty.rules(db)
+            raise HTTPException(422, f"You need at least {r['redeem_points']} Latcha points (and a bill of Rs {r['redeem_rupees']} or more) to use them.")
+    charge = None if total is None else total - discount - pts_disc
     free = charge == 0            # the whole order was the free drink: nothing to pay
     method, pstatus = body.pay, ("pending" if body.pay == "upi" else "unpaid")
     if free:
@@ -96,13 +106,17 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
             raise HTTPException(422, "Online payment is not available for these items yet. Please choose pay at delivery.")
     order = m.Order(customer_name=body.customer_name, phone=body.phone, address=body.address,
                     city=outlet.city if outlet else body.city, notes=body.notes, outlet_id=outlet.id if outlet else None,
-                    amount=charge, payment_method=method, payment_status=pstatus, fam_discount=discount)
+                    amount=charge, payment_method=method, payment_status=pstatus, fam_discount=discount,
+                    customer_id=cust.id if cust else None, points_used=pts_used, points_discount=pts_disc)
     if free:
-        order.payment_id, order.paid_at = "fam_reward", datetime.now(timezone.utc)
+        order.payment_id, order.paid_at = "reward", datetime.now(timezone.utc)
     for l in body.lines:
         order.lines.append(m.OrderLine(item_id=l.item_id, item_name=items[l.item_id].name, quantity=l.quantity,
                                        price=items[l.item_id].price))
     db.add(order)
+    if pts_used:
+        db.flush()
+        loyalty.add_tx(db, cust, -pts_used, "redeem", f"Order #{order.id}")
     start = None
     if method == "upi":
         db.flush()  # we need the order number for the provider
@@ -116,7 +130,8 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db)):
     db.commit()
     msg = "Order saved. Complete the UPI payment to confirm it." if start else "Order request received. LATCHA will confirm it by phone."
     return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None, message=msg,
-                          amount=charge, fam_discount=discount, payment=start)
+                          amount=charge, fam_discount=discount, points_used=pts_used, points_discount=pts_disc,
+                          points=cust.points if cust else None, payment=start)
 
 
 def _own_order(db: Session, order_id: int, phone: str) -> m.Order:
@@ -221,16 +236,87 @@ def reviews(limit: int = Query(20, ge=1, le=50), db: Session = Depends(get_db)):
 
 
 @public.post("/reviews", status_code=202)
-def submit_review(body: s.ReviewIn, db: Session = Depends(get_db)):
+def submit_review(body: s.ReviewIn, db: Session = Depends(get_db), cust: m.Customer | None = Depends(loyalty.optional_customer)):
     ok = {"message": "Thanks! Your review will appear after the owner approves it."}
     if body.website:  # bot filled the honeypot: pretend success, store nothing
         return ok
     pending = db.scalar(select(func.count(m.Review.id)).where(m.Review.approved.is_(False)))
     if pending >= MAX_PENDING_REVIEWS:
         raise HTTPException(429, "Review queue is full. Please try again later.")
-    db.add(m.Review(author=body.author, rating=body.rating, text=body.text))
+    db.add(m.Review(author=body.author, rating=body.rating, text=body.text, customer_id=cust.id if cust else None))
     db.commit()
     return ok
+
+
+# ---------- customers: accounts and Latcha points ----------
+def _rules_out(db: Session) -> dict:
+    r = loyalty.rules(db)
+    return {**r, "enabled": bool(r["enabled"])}
+
+
+def _me(db: Session, c: m.Customer, awarded: int = 0) -> s.MeOut:
+    r = loyalty.rules(db)
+    orders = db.scalars(select(m.Order).where(m.Order.customer_id == c.id).order_by(m.Order.created_at.desc()).limit(50)).all()
+    hist = db.scalars(select(m.PointTx).where(m.PointTx.customer_id == c.id).order_by(m.PointTx.id.desc()).limit(60)).all()
+    revs = db.scalars(select(m.Review).where(m.Review.customer_id == c.id).order_by(m.Review.created_at.desc()).limit(30)).all()
+    return s.MeOut(id=c.id, name=c.name, phone=c.phone, points=c.points, visits=c.visits, member_since=c.created_at,
+                   rules=_rules_out(db), worth_rupees=(c.points // r["redeem_points"]) * r["redeem_rupees"], visit_awarded=awarded,
+                   fam=fam.card(db, c.phone), orders=orders, history=hist, reviews=revs)
+
+
+@public.post("/customers/register", response_model=s.SignedIn, status_code=201)
+def customer_register(body: s.RegisterIn, db: Session = Depends(get_db)):
+    if db.scalar(select(m.Customer.id).where(m.Customer.phone == body.phone)):
+        raise HTTPException(409, "This number already has an account. Please sign in.")
+    c = m.Customer(phone=body.phone, name=body.name, pw_hash=hash_password(body.password))
+    db.add(c)
+    db.flush()
+    r = loyalty.rules(db)
+    got = 0
+    if r["enabled"] and r["signup_bonus"]:
+        got += loyalty.add_tx(db, c, r["signup_bonus"], "welcome", "Welcome bonus")
+    got += loyalty.award_visit(db, c)
+    tok = loyalty.make_token(c)   # raises 503 before saving anything if accounts are not configured
+    db.commit()
+    return s.SignedIn(access_token=tok, me=_me(db, c, got))
+
+
+@public.post("/customers/login", response_model=s.SignedIn)
+def customer_login(body: s.CustLoginIn, db: Session = Depends(get_db)):
+    c = db.scalar(select(m.Customer).where(m.Customer.phone == body.phone))
+    if c is None or not verify_password(body.password, c.pw_hash):
+        time.sleep(1)   # slows password guessing; same answer for "no account" and "wrong password"
+        raise HTTPException(401, "Wrong mobile number or password")
+    got = loyalty.award_visit(db, c)
+    tok = loyalty.make_token(c)
+    db.commit()
+    return s.SignedIn(access_token=tok, me=_me(db, c, got))
+
+
+@public.get("/me", response_model=s.MeOut)
+def my_account(db: Session = Depends(get_db), c: m.Customer = Depends(loyalty.require_customer)):
+    """Opening the site while signed in counts as a visit (once per day), so this also hands out the daily points."""
+    got = loyalty.award_visit(db, c)
+    db.commit()
+    return _me(db, c, got)
+
+
+@public.patch("/me", response_model=s.MeOut)
+def edit_me(body: s.MeEdit, db: Session = Depends(get_db), c: m.Customer = Depends(loyalty.require_customer)):
+    if body.name:
+        c.name = body.name.strip()
+    if body.new_password:
+        if not body.current_password or not verify_password(body.current_password, c.pw_hash):
+            raise HTTPException(422, "Your current password is not right.")
+        c.pw_hash = hash_password(body.new_password)
+    db.commit()
+    return _me(db, c)
+
+
+@public.get("/loyalty", response_model=s.PointRules)
+def public_rules(db: Session = Depends(get_db)):
+    """The current points rules, so the sign-up page always shows the owner's real numbers."""
+    return _rules_out(db)
 
 
 # ---------- admin ----------
@@ -287,6 +373,7 @@ def set_order_status(order_id: int, body: s.StatusIn, db: Session = Depends(get_
     if not o:
         raise HTTPException(404, "Not found")
     o.status = body.status
+    loyalty.refund_if_cancelled(db, o, body.status)
     db.commit()
     return o
 
@@ -384,3 +471,40 @@ def set_sold_out(outlet_id: int, item_id: int, body: s.SoldOutIn, db: Session = 
         db.delete(row)
     db.commit()
     return _outlet_view(o, _sold_out_map(db), ot.now_ist())
+
+
+# ---------- admin: Latcha points ----------
+@admin.get("/loyalty", response_model=s.PointRules)
+def admin_rules(db: Session = Depends(get_db)):
+    return _rules_out(db)
+
+
+@admin.patch("/loyalty", response_model=s.PointRules)
+def edit_rules(body: s.PointRulesPatch, db: Session = Depends(get_db)):
+    patch = {k: int(v) for k, v in body.model_dump(exclude_unset=True).items() if v is not None}
+    loyalty.save_rules(db, patch)
+    return _rules_out(db)
+
+
+@admin.get("/customers", response_model=list[s.AdminCustomer])
+def admin_customers(q: str = Query("", max_length=40), db: Session = Depends(get_db)):
+    counts = dict(db.execute(select(m.Order.customer_id, func.count(m.Order.id)).where(m.Order.customer_id.is_not(None))
+                             .group_by(m.Order.customer_id)).all())
+    sel = select(m.Customer).order_by(m.Customer.points.desc(), m.Customer.id).limit(300)
+    if q.strip():
+        like = f"%{q.strip()}%"
+        sel = select(m.Customer).where(m.Customer.name.ilike(like) | m.Customer.phone.like(like)).order_by(m.Customer.points.desc()).limit(300)
+    return [s.AdminCustomer(id=c.id, name=c.name, phone=c.phone, points=c.points, visits=c.visits, orders=counts.get(c.id, 0),
+                            last_visit=c.last_visit, created_at=c.created_at) for c in db.scalars(sel)]
+
+
+@admin.post("/customers/{cid}/adjust", response_model=s.AdminCustomer)
+def adjust_points(cid: int, body: s.AdjustIn, db: Session = Depends(get_db)):
+    c = db.get(m.Customer, cid)
+    if not c:
+        raise HTTPException(404, "Not found")
+    loyalty.add_tx(db, c, body.delta, "adjust", body.note.strip() or "Added by LATCHA")
+    db.commit()
+    n = db.scalar(select(func.count(m.Order.id)).where(m.Order.customer_id == c.id)) or 0
+    return s.AdminCustomer(id=c.id, name=c.name, phone=c.phone, points=c.points, visits=c.visits, orders=n,
+                           last_visit=c.last_visit, created_at=c.created_at)

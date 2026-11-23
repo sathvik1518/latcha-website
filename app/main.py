@@ -18,7 +18,7 @@ app = FastAPI(title="LATCHA", version="1.2.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().origins,
-    allow_methods=["GET", "POST", "PATCH", "DELETE"],
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -27,7 +27,7 @@ app.add_middleware(
 async def headers(request: Request, call_next):
     resp = await call_next(request)
     p = request.url.path
-    if p.startswith("/api/admin"):
+    if p.startswith("/api/admin") or p == "/api/me" or p.startswith("/api/customers"):
         resp.headers["Cache-Control"] = "no-store"          # never cache owner data
     elif p == "/api/outlets" and request.method == "GET":
         resp.headers["Cache-Control"] = "public, max-age=0, s-maxage=20"  # shared cache 20 s; browsers always re-check, so open/closed stays fresh

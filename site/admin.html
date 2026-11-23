@@ -222,6 +222,27 @@ button svg{width:16px;height:16px}
   .pb{margin-left:0}
   #flash{top:58px}
 }
+
+/* loyalty: Latcha points rules + customers */
+.lyr{padding:20px}.lyr h3{margin:0 0 4px}
+.lyr .sub{margin:0 0 14px;font-size:13.5px;color:var(--mute)}
+.lyg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:6px}
+.lyg label{display:grid;align-content:start;gap:5px;font-size:12px;font-weight:800;color:var(--mute);letter-spacing:.03em}
+.lyg label small{font-weight:600;letter-spacing:0;font-size:12px;line-height:1.35}
+.lyg input{width:100%}
+.lyprev{margin-top:14px;padding:14px 16px;border-radius:20px;background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff;font-weight:700;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;box-shadow:0 14px 28px rgba(181,69,106,.28)}
+.lyprev b{font-family:var(--serif);font-weight:400;font-size:22px}
+.lyprev span{font-size:13px;opacity:.95}
+.lysw{display:flex;align-items:center;gap:12px;margin:2px 0 12px;font-weight:800;font-size:15px}
+.cu{padding:14px 16px}
+.cu .cr{display:flex;gap:12px;align-items:center}.cu a{color:var(--berry);font-weight:700}
+.cu .av{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;font:400 20px var(--serif);color:#fff;background:linear-gradient(135deg,var(--berry),var(--rose-deep))}
+.cu .bd{flex:1;min-width:0}.cu .bd b{display:block;font-size:16px}.cu .bd small{display:block;color:var(--mute);font-size:12.5px;font-weight:600}
+.cu .pts{font:400 26px var(--serif);color:var(--berry);text-align:right;line-height:1}.cu .pts small{display:block;font:700 10px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-top:3px}
+.adj{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin-top:10px}
+.adj label{flex:1;min-width:120px}
+.lysec{margin:20px 4px 8px;font:800 12px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--berry);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lysec input{max-width:230px;font-size:14px}
 </style>
 </head>
 <body>
@@ -237,7 +258,7 @@ button svg{width:16px;height:16px}
 </form>
 <section id="app" hidden>
   <div class="nav"><div class="tabs" id="tabs">
-    <button data-t="orders" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12l2 4v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/><path d="M4 6h16"/><path d="M9 10a3 3 0 006 0"/></svg>Orders<span class="nb" id="nbo" data-n="0"></span></button><button data-t="dash" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Dashboard</button><button data-t="reviews" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6L12 16.600 6.600 19.500l1.200-6L3.300 9.300l6.100-.700z"/></svg>Reviews</button><button data-t="menu" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.600 12H6.600z"/><path d="M4 8h16"/><path d="M13 8l2-5"/></svg>Menu</button><button data-t="outlets" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/></svg>Outlets</button><button data-t="fam" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.400-7-10a4 4 0 017-2.600A4 4 0 0119 10c0 5.600-7 10-7 10z"/></svg>Fam</button>
+    <button data-t="orders" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12l2 4v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/><path d="M4 6h16"/><path d="M9 10a3 3 0 006 0"/></svg>Orders<span class="nb" id="nbo" data-n="0"></span></button><button data-t="dash" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Dashboard</button><button data-t="reviews" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6L12 16.600 6.600 19.500l1.200-6L3.300 9.300l6.100-.700z"/></svg>Reviews</button><button data-t="menu" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.600 12H6.600z"/><path d="M4 8h16"/><path d="M13 8l2-5"/></svg>Menu</button><button data-t="outlets" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/></svg>Outlets</button><button data-t="fam" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.400-7-10a4 4 0 017-2.600A4 4 0 0119 10c0 5.600-7 10-7 10z"/></svg>Loyalty</button>
   </div></div>
   <div id="bar" hidden>
     <div class="stats" id="stats"></div>
@@ -279,6 +300,7 @@ function load(){$("err").textContent="";$("flash").hidden=true;$("bar").hidden=t
   if(tab==="dash"){loadDash();return}
   l.innerHTML=SK;
   if(tab==="outlets"){Promise.all([api("GET","/api/admin/outlets"),api("GET","/api/admin/menu")]).then(function(r){l.textContent="";r[0].forEach(function(o){l.appendChild(outletCard(o,r[1]))})}).catch(function(er){l.textContent="";$("err").textContent=er.message});return}
+  if(tab==="fam"){loadLoyalty(l);return}
   var path={reviews:"/api/admin/reviews",menu:"/api/admin/menu",fam:"/api/admin/fam"}[tab];
   api("GET",path).then(function(d){l.textContent="";if(!d.length)l.appendChild(empty(tab==="fam"?"💗":tab==="reviews"?"⭐":"🍵",tab==="fam"?"No Latcha Fam members yet":tab==="reviews"?"No reviews yet":"Nothing here yet",tab==="fam"?"A mobile number joins after its first delivered order.":"They will show up here."));
     if(tab==="fam"&&d.length)l.appendChild(el("div",{class:"card",style:"display:flex;gap:12px;align-items:center;padding:14px 18px"},[el("span",{class:"hic",html:ic("gift")}),el("span",{class:"mute",text:"Every drink delivered is 1 sip. "+d[0].per_reward+" sips = 1 free drink. Counted from orders you mark Delivered."})]));
@@ -401,6 +423,43 @@ function orderCard(o,isNew){
     steps,info,items,
     o.notes?el("div",{class:"note",text:"Note: "+o.notes}):"",
     el("div",{class:"ots",text:utc(o.created_at).toLocaleString()}),payRow(o),acts])}
+
+/* ---------- Loyalty tab: Latcha points rules, customers, Fam ---------- */
+function loadLoyalty(l){
+  Promise.all([api("GET","/api/admin/loyalty"),api("GET","/api/admin/customers"),api("GET","/api/admin/fam")]).then(function(r){
+    l.textContent="";l.appendChild(rulesCard(r[0]));
+    var box=el("div",{}),q=el("input",{type:"search",placeholder:"Search name or number","aria-label":"Search customers",style:"max-width:230px"});
+    l.appendChild(el("div",{class:"lysec"},[el("span",{text:"Customers · "+r[1].length}),q]));l.appendChild(box);
+    function paint(rows){box.textContent="";if(!rows.length)box.appendChild(empty("✦","No customers yet","People appear here when they create a Latcha Club account on the website."));rows.forEach(function(c){box.appendChild(custCard(c))})}
+    paint(r[1]);var t;q.oninput=function(){clearTimeout(t);t=setTimeout(function(){api("GET","/api/admin/customers?q="+encodeURIComponent(q.value.trim())).then(paint).catch(fail)},300)};
+    l.appendChild(el("div",{class:"lysec"},[el("span",{text:"Latcha Fam · sips"})]));
+    if(!r[2].length)l.appendChild(empty("💗","No Latcha Fam members yet","A mobile number joins after its first delivered order."));
+    else{l.appendChild(el("div",{class:"card",style:"display:flex;gap:12px;align-items:center;padding:14px 18px"},[el("span",{class:"hic",html:ic("gift")}),el("span",{class:"mute",text:"Every drink delivered is 1 sip. "+r[2][0].per_reward+" sips = 1 free drink. Counted from orders you mark Delivered."})]));r[2].forEach(function(x){l.appendChild(famRow(x))})}
+  }).catch(function(er){l.textContent="";$("err").textContent=er.message})}
+function rulesCard(r){
+  var on=el("input",{type:"checkbox",class:"sw"});on.checked=r.enabled;
+  function num(k,label,hint,min,max){var i=el("input",{type:"number",min:String(min),max:String(max),step:"1",value:String(r[k]),"aria-label":label,inputmode:"numeric"});i.oninput=prev;return [i,el("label",{},[label,i,el("small",{text:hint})])]}
+  var F={signup_bonus:num("signup_bonus","Welcome points","Given once when a customer creates an account.",0,5000),visit_points:num("visit_points","Points per visit day","Given once a day when a signed-in customer opens the site.",0,1000),
+    redeem_points:num("redeem_points","Points needed","How many points make one reward.",1,100000),redeem_rupees:num("redeem_rupees","Rupees off per reward","Discount for each block of points at checkout.",1,5000)};
+  var pv=el("div",{class:"lyprev"}),ok=el("span",{class:"mute"});
+  function v(k){return parseInt(F[k][0].value,10)||0}
+  function prev(){pv.textContent="";pv.appendChild(el("b",{text:v("redeem_points").toLocaleString("en-IN")+" points = ₹"+v("redeem_rupees")}));pv.appendChild(el("span",{text:"A customer visiting every day earns that in about "+(v("visit_points")?Math.ceil(v("redeem_points")/v("visit_points"))+" days":"never (visit points are 0)")+"."}))}
+  on.onchange=function(){api("PATCH","/api/admin/loyalty",{enabled:on.checked}).then(function(){ok.textContent=on.checked?"Points are on ✓":"Points are paused ✓";setTimeout(function(){ok.textContent=""},2200)}).catch(function(er){on.checked=!on.checked;fail(er)})};
+  var save=el("button",{type:"button",text:"Save rules",onclick:function(){
+    api("PATCH","/api/admin/loyalty",{signup_bonus:v("signup_bonus"),visit_points:v("visit_points"),redeem_points:Math.max(1,v("redeem_points")),redeem_rupees:Math.max(1,v("redeem_rupees"))})
+    .then(function(x){r=x;$("err").textContent="";ok.textContent="Saved ✓ The website uses these numbers now.";setTimeout(function(){ok.textContent=""},3000)}).catch(fail)}});
+  prev();
+  return el("div",{class:"card lyr"},[el("div",{class:"row"},[el("div",{},[el("h3",{class:"dh",html:'<i class="hic">'+ic("gift")+'</i>Latcha points rules'}),el("p",{class:"sub",text:"Every number here is yours to change. The website follows them straight away."})])]),
+    el("label",{class:"lysw"},[on," Points programme is on"]),
+    el("div",{class:"lyg"},[F.signup_bonus[1],F.visit_points[1],F.redeem_points[1],F.redeem_rupees[1]]),pv,el("div",{class:"acts",style:"margin-top:14px"},[save,ok])])}
+function custCard(c){
+  var pts=el("div",{class:"pts"},[String(c.points.toLocaleString("en-IN")),el("small",{text:"points"})]);
+  var d=el("input",{type:"number",step:"1",min:"-100000",max:"100000",placeholder:"+100 or -50","aria-label":"Points to add or remove",inputmode:"numeric"}),n=el("input",{maxlength:"100",placeholder:"Reason (optional)","aria-label":"Reason"}),ok=el("span",{class:"mute"});
+  var go=el("button",{type:"button",class:"o sm",text:"Apply",onclick:function(){var v=parseInt(d.value,10);if(!v)return;
+    api("POST","/api/admin/customers/"+c.id+"/adjust",{delta:v,note:n.value.trim()}).then(function(x){c=x;pts.firstChild.nodeValue=x.points.toLocaleString("en-IN");d.value="";n.value="";$("err").textContent="";ok.textContent="Done ✓";setTimeout(function(){ok.textContent=""},2000)}).catch(fail)}});
+  var meta=c.orders+" order"+(c.orders===1?"":"s")+" · "+c.visits+" visit day"+(c.visits===1?"":"s")+(c.last_visit?" · last "+c.last_visit:"");
+  return el("div",{class:"card cu"},[el("div",{class:"cr"},[el("div",{class:"av",text:who2(c.name)}),el("div",{class:"bd"},[el("b",{text:c.name}),el("small",{},[el("a",{href:"tel:"+c.phone,text:c.phone}),document.createTextNode(" · "+meta)])]),pts]),
+    el("details",{class:"edit"},[el("summary",{text:"Add or remove points"}),el("div",{class:"adj"},[el("label",{},["Points",d]),el("label",{style:"flex:2"},["Reason",n]),go,ok])])])}
 function famRow(f){
   var gems=el("div",{class:"pearls","aria-hidden":"true"});for(var i=0;i<f.per_reward;i++)gems.appendChild(el("i",{class:"pearl"+(i===f.per_reward-1?" gift":"")+(i<f.into_card?" on":"")}));
   var badge=el("span",{class:"badge"+(f.rewards_available?" ok":""),text:f.rewards_available?"🎁 "+f.rewards_available+" free drink"+(f.rewards_available>1?"s":"")+" ready":f.to_next+" to go"});

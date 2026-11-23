@@ -75,5 +75,7 @@ def ensure_schema(engine, SessionLocal, Base) -> None:
             c.execute(text("CREATE INDEX IF NOT EXISTS ix_orders_outlet_id ON orders (outlet_id)"))
     from .payments import upgrade_payment_schema
     upgrade_payment_schema(engine)
+    from .loyalty import upgrade_schema
+    upgrade_schema(engine)
     with SessionLocal() as db:
         seed_outlets(db)

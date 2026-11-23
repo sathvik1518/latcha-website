@@ -72,6 +72,10 @@ class Order(Base):
     payment_id: Mapped[str | None] = mapped_column(String(64), nullable=True)        # provider payment id once paid
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     fam_discount: Mapped[int] = mapped_column(Integer, default=0, server_default="0")   # rupees off from a Latcha Fam free drink
+    customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), nullable=True, index=True)   # set when placed while signed in
+    points_used: Mapped[int] = mapped_column(Integer, default=0, server_default="0")        # Latcha points spent on this order
+    points_discount: Mapped[int] = mapped_column(Integer, default=0, server_default="0")    # rupees off from those points
+    points_refunded: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")   # points given back after a cancel
     lines: Mapped[list["OrderLine"]] = relationship(back_populates="order", cascade="all, delete-orphan")
 
     @property
@@ -99,4 +103,35 @@ class Review(Base):
     rating: Mapped[int] = mapped_column(Integer)
     text: Mapped[str] = mapped_column(Text)
     approved: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
+    customer_id: Mapped[int | None] = mapped_column(ForeignKey("customers.id"), nullable=True, index=True)
     __table_args__ = (CheckConstraint("rating BETWEEN 1 AND 5", name="ck_rating"),)
+
+
+class Customer(Base):
+    """A signed-up customer. Points live here; every change is also written to point_tx so the history always adds up."""
+    __tablename__ = "customers"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    phone: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    pw_hash: Mapped[str] = mapped_column(String(200))
+    points: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    visits: Mapped[int] = mapped_column(Integer, default=0, server_default="0")        # days with a visit reward
+    last_visit: Mapped[str | None] = mapped_column(String(10), nullable=True)           # "YYYY-MM-DD" Indian date
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class PointTx(Base):
+    __tablename__ = "point_tx"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id", ondelete="CASCADE"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, index=True)
+    delta: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[str] = mapped_column(String(12))      # welcome | visit | redeem | refund | adjust
+    note: Mapped[str] = mapped_column(String(120), default="")
+
+
+class Setting(Base):
+    """Owner-editable numbers (loyalty rules). One row per value."""
+    __tablename__ = "settings"
+    key: Mapped[str] = mapped_column(String(40), primary_key=True)
+    value: Mapped[str] = mapped_column(String(40))

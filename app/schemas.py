@@ -70,6 +70,7 @@ class OrderIn(BaseModel):
     notes: str = Field("", max_length=300)
     pay: Literal["cod", "upi"] = "cod"                        # cod = pay at delivery (the old way)
     use_reward: bool = False                                  # spend a Latcha Fam free drink on this order
+    use_points: bool = False                                  # spend Latcha points (needs a signed-in customer)
     lines: list[LineIn] = Field(min_length=1, max_length=20)
 
     @model_validator(mode="after")
@@ -112,6 +113,7 @@ class OrderOut(BaseModel):
     payment_status: str = "unpaid"
     amount: int | None = None
     fam_discount: int = 0
+    points_discount: int = 0
     lines: list[LineOut]
 
 
@@ -129,6 +131,9 @@ class OrderReceipt(BaseModel):
     outlet: str | None = None
     amount: int | None = None
     fam_discount: int = 0
+    points_used: int = 0
+    points_discount: int = 0
+    points: int | None = None
     payment: PaymentStart | None = None
 
 
@@ -369,3 +374,122 @@ class DashOut(BaseModel):
     payments: DashPayments
     customers: DashCustomers
     pending_reviews: int
+
+
+# ---------- customers (Latcha points) ----------
+class RegisterIn(BaseModel):
+    name: str = Field(min_length=2, max_length=80)
+    phone: str
+    password: str = Field(min_length=6, max_length=72)
+
+    @field_validator("name")
+    @classmethod
+    def strip(cls, v: str) -> str:
+        return v.strip()
+
+    @field_validator("phone")
+    @classmethod
+    def phone_ok(cls, v: str) -> str:
+        return clean_phone(v)
+
+
+class CustLoginIn(BaseModel):
+    phone: str
+    password: str = Field(max_length=72)
+
+    @field_validator("phone")
+    @classmethod
+    def phone_ok(cls, v: str) -> str:
+        return clean_phone(v)
+
+
+class MeEdit(BaseModel):
+    name: str | None = Field(None, min_length=2, max_length=80)
+    current_password: str | None = Field(None, max_length=72)
+    new_password: str | None = Field(None, min_length=6, max_length=72)
+
+
+class PointRules(BaseModel):
+    enabled: bool
+    signup_bonus: int
+    visit_points: int
+    redeem_points: int
+    redeem_rupees: int
+
+
+class PointRulesPatch(BaseModel):
+    enabled: bool | None = None
+    signup_bonus: int | None = Field(None, ge=0, le=5000)
+    visit_points: int | None = Field(None, ge=0, le=1000)
+    redeem_points: int | None = Field(None, ge=1, le=100000)
+    redeem_rupees: int | None = Field(None, ge=1, le=5000)
+
+
+class MyOrder(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
+    status: Status
+    outlet_name: str | None = None
+    payment_method: str = "cod"
+    payment_status: str = "unpaid"
+    amount: int | None = None
+    fam_discount: int = 0
+    points_discount: int = 0
+    lines: list[TrackLine]
+
+
+class MyTx(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
+    delta: int
+    reason: str
+    note: str
+
+
+class MyReview(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    created_at: datetime
+    rating: int
+    text: str
+    approved: bool
+
+
+class MeOut(BaseModel):
+    id: int
+    name: str
+    phone: str
+    points: int
+    visits: int
+    member_since: datetime
+    rules: PointRules
+    worth_rupees: int          # what the current points are worth right now
+    visit_awarded: int = 0     # points given by this very call (a "welcome back" toast)
+    fam: FamCard
+    orders: list[MyOrder]
+    history: list[MyTx]
+    reviews: list[MyReview]
+
+
+class SignedIn(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    me: MeOut
+
+
+class AdminCustomer(BaseModel):
+    id: int
+    name: str
+    phone: str
+    points: int
+    visits: int
+    orders: int
+    last_visit: str | None = None
+    created_at: datetime
+
+
+class AdjustIn(BaseModel):
+    delta: int = Field(ge=-100000, le=100000)
+    note: str = Field("", max_length=100)

@@ -732,6 +732,72 @@ footer.site{gap:28px}
 .oft small{display:block;font-size:12px;font-weight:700;color:var(--mute)}.oft b{font-family:var(--serif);font-weight:400;font-size:21px;color:var(--ink)}
 .ofoot .chip{margin:0;min-height:48px;padding:0 24px;white-space:nowrap}
 .ofoot .chip[disabled]{opacity:.45;cursor:not-allowed}
+/* ---------- Latcha Club: accounts + points ---------- */
+.acct{display:inline-flex;align-items:center;gap:7px;height:44px;padding:0 15px 0 11px;border-radius:99px;border:1.5px solid var(--rose);background:rgba(255,255,255,.72);color:var(--berry);font:700 13px var(--ui);white-space:nowrap;transition:transform .2s,box-shadow .2s,background .2s}
+.acct:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(181,69,106,.22);background:#fff}
+.acct svg{width:19px;height:19px;flex:none}
+.acct.in{background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(181,69,106,.28)}
+.acct.in:hover{background:linear-gradient(135deg,var(--berry),var(--rose-deep))}
+.acct.pop{animation:acpop .7s cubic-bezier(.34,1.56,.64,1)}
+@keyframes acpop{0%{transform:scale(1)}40%{transform:scale(1.18) rotate(-3deg)}100%{transform:scale(1)}}
+@media(max-width:600px){.acct.out span{display:none}.acct.out{padding:0 11px;width:44px;justify-content:center}.acct{height:40px}.acct.out{width:40px}}
+.lp-card{position:relative;overflow:hidden;border-radius:26px;padding:20px 20px 18px;color:#fff;background:linear-gradient(135deg,var(--berry) 0%,var(--rose-deep) 100%);box-shadow:0 18px 36px rgba(181,69,106,.3);margin-top:14px}
+.lp-card::before,.lp-card::after{content:"";position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.7),rgba(255,255,255,0) 70%)}
+.lp-card::before{width:170px;height:170px;right:-46px;top:-60px}
+.lp-card::after{width:100px;height:100px;right:70px;bottom:-46px;opacity:.65}
+.lp-card small{display:block;font:700 11px var(--ui);letter-spacing:.2em;text-transform:uppercase;opacity:.92}
+.lp-big{display:flex;align-items:baseline;gap:8px;margin:8px 0 6px;font:400 58px/1 var(--serif);letter-spacing:.01em}
+.lp-big span{font:700 14px var(--ui);opacity:.92}
+.lp-worth{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.24);font:700 13px var(--ui);box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+.lp-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.3);overflow:hidden;margin-top:16px}
+.lp-bar i{display:block;height:100%;width:0;border-radius:inherit;background:#fff;box-shadow:0 0 12px rgba(255,255,255,.8);transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.lp-next{margin-top:9px;font-size:12.5px;font-weight:700}
+.lp-perks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 4px}
+.lp-perk{padding:13px 6px 11px;border-radius:20px;background:#fff;border:1.5px solid var(--line);text-align:center}
+.lp-perk b{display:block;font:400 24px/1.1 var(--serif);color:var(--berry)}
+.lp-perk span{display:block;margin-top:4px;font-size:11.5px;font-weight:700;line-height:1.3;color:var(--mute)}
+.lp-hello{text-align:center;margin:10px 0 0;font:400 22px/1.2 var(--serif);color:var(--ink)}
+.lp-hello em{font-style:normal;color:var(--berry)}
+.lp-sub{text-align:center;margin:4px 0 0;font-size:13px;font-weight:600;color:var(--mute)}
+.otabs.lp{margin:14px 0 12px;overflow-x:auto;scrollbar-width:none}
+.otabs.lp::-webkit-scrollbar{display:none}
+.otabs.lp button{padding:0 14px;white-space:nowrap;min-width:max-content}
+.lp-streak{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:7px 13px;border-radius:99px;background:#fff;border:1.5px solid var(--line);font:700 12.5px var(--ui);color:var(--berry)}
+.lp-streak.done{border-color:var(--matcha);color:var(--matcha)}
+.lp-row{display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:20px;background:#fff;border:1.5px solid var(--line);margin-bottom:8px;animation:lpin .4s both}
+@keyframes lpin{from{opacity:0;transform:translateY(8px)}}
+.lp-ic{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--petal);font-size:18px;flex:none}
+.lp-row .bd{flex:1;min-width:0}
+.lp-row b{display:block;font-size:14px;color:var(--ink);overflow-wrap:anywhere}
+.lp-row small{display:block;margin-top:2px;font-size:12px;line-height:1.4;color:var(--mute);overflow-wrap:anywhere}
+.lp-amt{font:400 22px var(--serif);color:var(--matcha);white-space:nowrap}
+.lp-amt.neg{color:var(--berry)}
+.lp-st{padding:4px 11px;border-radius:99px;font:700 11px var(--ui);text-transform:capitalize;background:var(--petal);color:var(--berry);white-space:nowrap}
+.lp-st.delivered{background:#e8f3d6;color:#4a7a12}.lp-st.cancelled{background:#fde0e3;color:var(--crimson)}.lp-st.confirmed{background:#fff2cf;color:#8a5a00}
+.lp-trk{margin-top:6px;padding:0;border:0;background:none;font:700 12.5px var(--ui);color:var(--berry);text-decoration:underline;min-height:28px}
+.lp-empty{text-align:center;padding:30px 12px;color:var(--mute);font-weight:700;line-height:1.5}
+.lp-empty big{display:block;font-size:34px;margin-bottom:6px}
+.lp-stars{color:#f0a21b;letter-spacing:2px;font-size:14px}.lp-stars s{color:#ecd9df;text-decoration:none}
+.lp-pw{position:relative}
+.lp-pw input{padding-right:50px}
+.lp-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:var(--berry);display:grid;place-items:center}
+.lp-eye svg{width:20px;height:20px}.lp-eye .off{display:none}.lp-eye.on .on{display:none}.lp-eye.on .off{display:block}
+.lp-out{margin-top:14px;width:100%;justify-content:center}
+.lp-sec{margin:16px 0 8px;font:700 11px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:var(--berry)}
+.loyal{display:grid;gap:10px;padding:14px 16px;border-radius:22px;background:linear-gradient(135deg,#fff 0%,var(--petal) 100%);border:1.5px solid var(--rose)}
+.loyal[hidden],.loyal [hidden]{display:none!important}
+.loyal .lt{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:700;line-height:1.45;color:var(--ink)}
+.loyal .lt em{font-style:normal;color:var(--berry)}
+.loyal .lg{font-size:18px;line-height:1.2}
+.loyal .lb{display:flex;gap:8px;flex-wrap:wrap}
+.loyal .lb .chip{margin:0;padding:9px 16px;min-height:40px;font-size:13px}
+.loyal .lnote{font-size:12.5px;font-weight:600;color:var(--mute)}
+.loyal .famuse span{border-color:var(--berry)}
+.loyal .famuse input:checked+span{background:var(--petal)}
+.lp-confetti{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden}
+.lp-confetti i{position:absolute;top:-20px;width:10px;height:10px;border-radius:50%;background:var(--rose-deep);animation:lpfall 1.9s ease-in forwards}
+@keyframes lpfall{to{transform:translateY(110vh) rotate(540deg);opacity:.2}}
+@media(prefers-reduced-motion:reduce){.lp-confetti,.lp-row,.acct.pop{animation:none}.lp-bar i{transition:none}}
 </style>
 
 <script src="assets/vendor/lenis.min.js"></script>
@@ -745,9 +811,9 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
 <nav id="nav" aria-label="Main">
   <a class="logo" href="#top" aria-label="LATCHA home"><img src="assets/logo.png" alt=""></a>
   <div class="links" id="navlinks"><a href="#top" class="on" aria-current="page">Home</a><a href="#menu">Menu</a><a href="#matcha">Matcha</a><a href="#builder">Floats</a></div>
-  <div class="navr"><button type="button" class="bag" id="orderbtn">Order</button><a class="follow" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener noreferrer">Follow @siplatcha</a><button type="button" class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i><i></i></button></div>
+  <div class="navr"><button type="button" class="bag" id="orderbtn">Order</button><button type="button" class="acct out" id="acctbtn" aria-label="Sign in to Latcha Club"></button><a class="follow" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener noreferrer">Follow @siplatcha</a><button type="button" class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="mnav"><i></i><i></i><i></i></button></div>
 </nav>
-<div id="mnav" inert><div class="mn"><div class="mnh"><span class="mnav-av"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><em>Sip &amp; explore</em><small>Your sign to slow down</small></div></div><a class="ml" href="#top" style="--i:0"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></i><span><b>Home</b><small>Back to the top</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#menu" style="--i:1"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.6 12H6.6z"/><path d="M4 8h16"/><path d="M13 8l2-5"/></svg></i><span><b>Menu</b><small>Lattes, clouds &amp; swirls</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#matcha" style="--i:2"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4C9 4 4 9 4 15c0 3 2 5 5 5 6 0 11-5 11-16z"/><path d="M4 20c3-6 7-9 11-11"/></svg></i><span><b>Matcha</b><small>From the fields of Uji</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#builder" style="--i:3"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 11a4 4 0 018 0"/><path d="M6.5 11h11L16 21H8z"/><path d="M12 4v1"/></svg></i><span><b>Build a float</b><small>Latte + soft serve</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#fam" style="--i:4"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.600-7 10-7 10z"/></svg></i><span><b>Latcha Fam</b><small>Sips for free drinks</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#reviews" style="--i:5"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6L12 16.600 6.600 19.500l1.200-6L3.300 9.300l6.100-.700z"/></svg></i><span><b>Reviews</b><small>What sippers say</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#footer" style="--i:6"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/></svg></i><span><b>Contact</b><small>Hours, delivery &amp; more</small></span><u aria-hidden="true">→</u></a><div class="mnf"><button type="button" class="mnb p" id="mnorder">Order now</button><button type="button" class="mnb d" id="mnquiz">Find my matcha</button></div></div></div>
+<div id="mnav" inert><div class="mn"><div class="mnh"><span class="mnav-av"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><em>Sip &amp; explore</em><small>Your sign to slow down</small></div></div><a class="ml" href="#top" style="--i:0"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></i><span><b>Home</b><small>Back to the top</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#menu" style="--i:1"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.6 12H6.6z"/><path d="M4 8h16"/><path d="M13 8l2-5"/></svg></i><span><b>Menu</b><small>Lattes, clouds &amp; swirls</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#matcha" style="--i:2"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4C9 4 4 9 4 15c0 3 2 5 5 5 6 0 11-5 11-16z"/><path d="M4 20c3-6 7-9 11-11"/></svg></i><span><b>Matcha</b><small>From the fields of Uji</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#builder" style="--i:3"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 11a4 4 0 018 0"/><path d="M6.5 11h11L16 21H8z"/><path d="M12 4v1"/></svg></i><span><b>Build a float</b><small>Latte + soft serve</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#fam" style="--i:4"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.600-7 10-7 10z"/></svg></i><span><b>Latcha Fam</b><small>Sips for free drinks</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#reviews" style="--i:5"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6L12 16.600 6.600 19.500l1.200-6L3.300 9.300l6.100-.700z"/></svg></i><span><b>Reviews</b><small>What sippers say</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#footer" style="--i:6"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/></svg></i><span><b>Contact</b><small>Hours, delivery &amp; more</small></span><u aria-hidden="true">→</u></a><a class="ml" href="#" id="mnacct" style="--i:7"><i class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l2.400 6.300L21 9l-5 4.300 1.600 6.700L12 16.600 6.400 20l1.600-6.700L3 9l6.600-.700z"/></svg></i><span><b>Latcha Club</b><small>Sign in &amp; earn points</small></span><u aria-hidden="true">→</u></a><div class="mnf"><button type="button" class="mnb p" id="mnorder">Order now</button><button type="button" class="mnb d" id="mnquiz">Find my matcha</button></div></div></div>
 
 <section id="top" class="hero2" aria-labelledby="hero-title">
   <div class="h2bg" aria-hidden="true"><div class="ube"></div><div class="mat"></div></div>
@@ -956,6 +1022,10 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
         <label id="clabel">City<select name="city"><option>Bengaluru</option><option>Hyderabad</option></select></label>
         <label>Delivery address<textarea name="address" maxlength="300" autocomplete="street-address" required></textarea></label>
         <label>Notes (optional)<input name="notes" maxlength="300" placeholder="Oat milk, less sweet, gate code"></label>
+        <div class="loyal" id="loyal" hidden>
+          <div id="lyout"><div class="lt"><span class="lg" aria-hidden="true">💗</span><span id="lyoutt"></span></div><div class="lb"><button type="button" class="chip" id="lysi">Sign in</button><button type="button" class="chip o" id="lysu">Create account</button></div></div>
+          <div id="lyon" hidden><div class="lt"><span class="lg" aria-hidden="true">✦</span><span id="lyint"></span></div><label class="famuse" id="ptsuselab" hidden><input type="checkbox" id="ptsuse"><span id="ptsusetxt"></span></label><div class="lnote" id="lynote"></div></div>
+        </div>
         <div class="famstrip" id="famstrip" hidden>
           <div class="famtop"><span id="famline"></span><em id="famnum"></em></div>
           <div class="pearls" id="famgems" aria-hidden="true"></div>
@@ -993,6 +1063,13 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
       <div class="famcard" id="fres" hidden></div>
       <p class="fhow" id="fhow">Every drink we deliver to you is 1 sip. Collect sips on your mobile number and get a free drink. Sips are added when LATCHA marks your order delivered.</p>
     </div>
+  </div>
+</div>
+
+<div class="ordwrap" id="acctwin" hidden>
+  <div class="ordbox glass" role="dialog" aria-modal="true" aria-labelledby="acth">
+    <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b id="acth">Latcha Club</b><small id="acsub">Sign in to earn Latcha points</small></div><button type="button" class="x" id="acx" aria-label="Close Latcha Club">×</button></header>
+    <div class="obody" id="acbody"></div>
   </div>
 </div>
 
@@ -1484,12 +1561,12 @@ function loadPay(){return jreq("/api/payments/config").then(function(r){PAYMODE=
 function payChoice(){var f=$("#oform");return f.pay&&f.pay.value==="cod"?"cod":"upi"}
 function famDisc(){if(!famCard||!famCard.rewards_available||!$("#famuse").checked)return 0;var ids=Object.keys(cart),m=0;
   for(var i=0;i<ids.length;i++){var p=priceOf(ids[i]);if(!p)return 0;m=m?Math.min(m,p):p}return m}
-function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});var t=cartMoney(),d=famDisc(),fin=t!=null?t-d:null,free=n&&d>0&&fin===0,can=PAYMODE!=="off"&&t!=null&&fin>0;
-  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected"+(t!=null&&(PAYMODE!=="off"||d)?(d&&PAYMODE!=="off"?" · ₹"+fin+" (Fam −₹"+d+")":d?" · free drink applied":" · ₹"+t):""):"Nothing selected yet";
+function ordSum(){var n=0,ids=Object.keys(cart);ids.forEach(function(i){n+=cart[i]});var t=cartMoney(),d=famDisc(),pd=ptsDisc(),dd=d+pd,fin=t!=null?t-dd:null,free=n&&dd>0&&fin===0,can=PAYMODE!=="off"&&t!=null&&fin>0;
+  $("#osum").textContent=n?n+" item"+(n>1?"s":"")+" selected"+(t!=null&&(PAYMODE!=="off"||dd)?(dd&&PAYMODE!=="off"?" · ₹"+fin+" ("+(d?"Fam −₹"+d:"")+(d&&pd?", ":"")+(pd?"points −₹"+pd:"")+")":dd?(pd?" · points applied":" · free drink applied"):" · ₹"+t):""):"Nothing selected yet";
   $("#paychoice").hidden=!can;if(can)$("#paytot").textContent="₹"+fin+(PAYMODE==="demo"?" · demo, no real money":"");
   $("#osub").textContent=free?"Place my free order":can&&payChoice()==="upi"?"Pay ₹"+fin+" with UPI":"Send order request";
   $("#ordsmall").textContent=PAYMODE!=="off"?"Pay by UPI or at delivery · LATCHA calls to confirm":"LATCHA calls to confirm · no payment here";
-  $("#osub").disabled=!n||!canOrderNow()}
+  $("#osub").disabled=!n||!canOrderNow();updLoyal()}
 $("#paychoice").addEventListener("change",ordSum);
 
 /* Latcha Fam: sips for delivered drinks, a free drink every N sips. Counts only, looked up by mobile number. */
@@ -1525,11 +1602,11 @@ function errText(e){var b=e.body||{},d=b.detail;
   return "We could not send that. Please try again, or ask LATCHI."}
 $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#omsg"),btn=$("#osub");
   var lines=Object.keys(cart).map(function(i){return {item_id:+i,quantity:cart[i]}});if(!lines.length)return;
-  var pay=!$("#paychoice").hidden&&payChoice()==="upi"?"upi":"cod",reward=famDisc()>0;
+  var pay=!$("#paychoice").hidden&&payChoice()==="upi"?"upi":"cod",reward=famDisc()>0,usePts=ptsDisc()>0,pUsed=usePts?ptsCalc().pts:0;
   btn.disabled=true;msg.className="msg";msg.textContent="Sending…";
-  jreq("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(OUTLETS.length&&curOutlet()?{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,outlet:outSel,notes:f.notes.value,pay:pay,use_reward:reward,lines:lines}:{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,pay:pay,use_reward:reward,lines:lines})})
-  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};var nm=f.customer_name.value;cart={};ordRender();f.reset();outletUI();famCard=null;famPhone="";famUI();
-    if(r.payment){msg.textContent="";btn.disabled=false;startPay({id:r.id,phone:lastOrder.phone,name:nm,outlet:r.outlet,pay:r.payment});return}msg.className="msg ok";msg.textContent="Order request #"+r.id+(r.outlet?" for "+r.outlet:"")+" received. LATCHA will call to confirm. 💗 "+(r.fam_discount?"Your free drink is on the house. ":"");
+  jreq("/api/orders",{method:"POST",headers:authH(),body:JSON.stringify(OUTLETS.length&&curOutlet()?{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,outlet:outSel,notes:f.notes.value,pay:pay,use_reward:reward,use_points:usePts,lines:lines}:{customer_name:f.customer_name.value,phone:f.phone.value,address:f.address.value,city:f.city.value,notes:f.notes.value,pay:pay,use_reward:reward,use_points:usePts,lines:lines})})
+  .then(function(r){lastOrder={id:r.id,phone:f.phone.value};var nm=f.customer_name.value;cart={};ordRender();f.reset();outletUI();famCard=null;famPhone="";famUI();wantPts=false;if(ME){if(typeof r.points==="number")ME.points=r.points;paintAcct();refreshMe().then(fillFromMe)}
+    if(r.payment){msg.textContent="";btn.disabled=false;startPay({id:r.id,phone:lastOrder.phone,name:nm,outlet:r.outlet,pay:r.payment});return}msg.className="msg ok";msg.textContent="Order request #"+r.id+(r.outlet?" for "+r.outlet:"")+" received. LATCHA will call to confirm. 💗 "+(r.fam_discount?"Your free drink is on the house. ":"")+(r.points_discount?"You saved ₹"+r.points_discount+" with "+nf(r.points_used)+" Latcha points. ":"");
     var a=document.createElement("button");a.type="button";a.className="chip o";a.id="trackthis";a.textContent="Track this order";a.addEventListener("click",function(){var p=lastOrder;closeOrder();showTrack(p)});msg.appendChild(a);btn.disabled=true})
   .catch(function(er){msg.className="msg bad";msg.textContent=errText(er);ordSum()})});
 
@@ -1687,8 +1764,8 @@ function loadReviews(){return jreq("/api/reviews?limit=12").then(showReviews)}
 $("#rform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#rmsg");
   if(f.author.value.trim().length<2||f.text.value.trim().length<10){msg.className="msg bad";msg.textContent="Please add your name and a review of at least 10 characters.";return}
   msg.className="msg";msg.textContent="Sending…";
-  jreq("/api/reviews",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({author:f.author.value,rating:+f.rating.value,text:f.text.value,website:f.website.value})})
-  .then(function(){f.reset();msg.className="msg ok";msg.textContent="Thank you! Your review will appear after we approve it. 💗"})
+  jreq("/api/reviews",{method:"POST",headers:authH(),body:JSON.stringify({author:f.author.value,rating:+f.rating.value,text:f.text.value,website:f.website.value})})
+  .then(function(){f.reset();if(ME)f.author.value=ME.name;msg.className="msg ok";msg.textContent="Thank you! Your review will appear after we approve it. 💗"+(ME?" It also shows in your Latcha Club account.":"");if(ME)refreshMe()})
   .catch(function(er){msg.className="msg bad";msg.textContent=errText(er)})});
 
 /* start: the page works on its own; the database only improves it */
@@ -1755,6 +1832,112 @@ $("#badd").addEventListener("click",function(){
 $$("#fam .tile").forEach(function(t){t.setAttribute("role","link");t.setAttribute("tabindex","0");t.setAttribute("aria-label","Open @siplatcha on Instagram");
   var go=function(){window.open("https://www.instagram.com/siplatcha/","_blank","noopener")};
   t.addEventListener("click",go);t.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}})});
+
+/* ---------- Latcha Club: sign in, daily points, spend points at checkout ---------- */
+var ME=null,TK="",RULES={enabled:true,signup_bonus:50,visit_points:10,redeem_points:500,redeem_rupees:50},wantPts=false,acTab="in",acFromOrder=false,acFrom=null,acMsg="";
+try{TK=localStorage.getItem("latcha_tk")||""}catch(e){}
+function setTK(t){TK=t||"";try{if(t)localStorage.setItem("latcha_tk",t);else localStorage.removeItem("latcha_tk")}catch(e){}}
+function authH(){var h={"Content-Type":"application/json"};if(TK)h.Authorization="Bearer "+TK;return h}
+function creq(u,m,b){return jreq(u,{method:m||"GET",headers:authH(),body:b?JSON.stringify(b):undefined})}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function nf(n){return Number(n||0).toLocaleString("en-IN")}
+function utcD(s){return new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(s)?s:s+"Z")}
+function dshort(s){return utcD(s).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}
+var EYE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g class="on"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g><g class="off"><path d="M3 3l18 18"/><path d="M10.600 5.100A10 10 0 0112 5c6.400 0 10 7 10 7a17 17 0 01-3.200 4M6.600 6.600C3.700 8.400 2 12 2 12s3.600 7 10 7a10 10 0 004.400-1"/><path d="M9.900 9.900a3 3 0 004.200 4.200"/></g></svg>';
+var USER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.400 3.600-7 8-7s8 2.600 8 7"/></svg>';
+function loadRules(){return jreq("/api/loyalty").then(function(r){RULES=r;paintAcct();ordSum()},function(){})}
+
+/* nav button, burger-menu row, checkout strip */
+function paintAcct(){var b=$("#acctbtn"),m=$("#mnacct");
+  if(ME){b.className="acct in";b.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.400 6.300L21 9l-5 4.300 1.600 6.700L12 16.600 6.400 20l1.600-6.700L3 9l6.600-.700z"/></svg><span>'+nf(ME.points)+'</span>';b.setAttribute("aria-label","Latcha Club: "+ME.points+" points");
+    m.querySelector("b").textContent="Hi, "+ME.name.split(" ")[0];m.querySelector("small").textContent=nf(ME.points)+" Latcha points · see my activity"}
+  else{b.className="acct out";b.innerHTML=USER+"<span>Sign in</span>";b.setAttribute("aria-label","Sign in to Latcha Club");
+    m.querySelector("b").textContent="Latcha Club";m.querySelector("small").textContent=RULES.enabled?"Sign in & earn points":"Sign in"}
+  updLoyal()}
+function ptsCalc(){var o={pts:0,disc:0};if(!ME||!RULES.enabled)return o;var t=cartMoney();if(t==null)return o;var fin=t-famDisc();
+  var k=Math.min(Math.floor(ME.points/RULES.redeem_points),Math.floor(fin/RULES.redeem_rupees));if(k>0){o.pts=k*RULES.redeem_points;o.disc=k*RULES.redeem_rupees}return o}
+function ptsDisc(){return wantPts?ptsCalc().disc:0}
+function updLoyal(){var box=$("#loyal");if(!box||!RULES)return;var out=$("#lyout"),on=$("#lyon");
+  if(!ME){box.hidden=!RULES.enabled;out.hidden=false;on.hidden=true;
+    $("#lyoutt").innerHTML='Join <em>Latcha Club</em>: '+RULES.signup_bonus+' points as a welcome gift, +'+RULES.visit_points+' every day you visit. '+RULES.redeem_points+' points = ₹'+RULES.redeem_rupees+' off your order.';return}
+  box.hidden=false;out.hidden=true;on.hidden=false;
+  var c=ptsCalc(),lab=$("#ptsuselab"),note=$("#lynote");
+  $("#lyint").innerHTML='Hi <em>'+esc(ME.name.split(" ")[0])+'</em> · <em>'+nf(ME.points)+'</em> Latcha points (worth ₹'+ME.worth_rupees+')';
+  if(c.disc>0){lab.hidden=false;note.textContent="";$("#ptsuse").checked=wantPts;$("#ptsusetxt").textContent="Use "+nf(c.pts)+" points · ₹"+c.disc+" off this order"}
+  else{lab.hidden=true;wantPts=false;$("#ptsuse").checked=false;
+    note.textContent=!RULES.enabled?"Points are paused for now.":ME.points<RULES.redeem_points?"Collect "+nf(RULES.redeem_points-ME.points)+" more points to unlock ₹"+RULES.redeem_rupees+" off. Visit again tomorrow for +"+RULES.visit_points+".":cartMoney()==null?"Add drinks with a price to use your points.":"Your bill is below ₹"+RULES.redeem_rupees+", so points can wait for the next order."}}
+function fillFromMe(){if(!ME)return;var ra=$("#rform").author;if(ra&&!ra.value)ra.value=ME.name;var f=$("#oform");if(!f.customer_name.value)f.customer_name.value=ME.name;
+  if(!f.phone.value){f.phone.value=ME.phone;famLookup()}}
+function confetti(){if(reduce)return;var w=document.createElement("div");w.className="lp-confetti";w.setAttribute("aria-hidden","true");var cols=["#f6bfd0","#e58aa6","#b5456a","#a7c86a","#fff"];
+  for(var i=0;i<26;i++){var p=document.createElement("i");p.style.left=Math.random()*100+"%";p.style.background=cols[i%cols.length];p.style.animationDelay=Math.random()*.5+"s";p.style.width=p.style.height=6+Math.random()*8+"px";w.appendChild(p)}
+  document.body.appendChild(w);setTimeout(function(){w.remove()},2800)}
+function applyMe(me,fresh){ME=me;RULES=me.rules;paintAcct();ordSum();fillFromMe();
+  if(me.visit_awarded>0){var b=$("#acctbtn");b.classList.add("pop");setTimeout(function(){b.classList.remove("pop")},800);
+    toast(fresh==="new"?"Welcome to Latcha Club! +"+me.visit_awarded+" points 💗":"+"+me.visit_awarded+" Latcha points for visiting 💗");if(fresh==="new")confetti()}
+  if(!acct.hidden)renderAcct()}
+function refreshMe(){if(!TK){ME=null;paintAcct();return Promise.resolve()}
+  return creq("/api/me").then(function(me){applyMe(me)},function(er){if(er.status===401){setTK("");ME=null;paintAcct();if(!acct.hidden)renderAcct()}})}
+
+/* the account window */
+var acct=$("#acctwin");
+function showAcct(tab){acFrom=document.activeElement;acFromOrder=!ord.hidden;acMsg="";if(tab)acTab=tab;else if(ME&&!/^(pts|ord|fam|rev|me)$/.test(acTab))acTab="pts";else if(!ME&&!/^(in|up)$/.test(acTab))acTab="in";
+  renderAcct();acct.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";$("#acbody").scrollTop=0;loadRules()}
+function closeAcct(){if(acct.hidden)return;acct.hidden=true;if(ord.hidden&&trk.hidden&&fam.hidden){document.body.classList.remove("ordopen");document.body.style.overflow=""}if(acFrom&&acFrom.focus&&document.contains(acFrom))acFrom.focus()}
+$("#acx").addEventListener("click",closeAcct);
+acct.addEventListener("click",function(e){if(e.target===acct)closeAcct()});
+window.addEventListener("keydown",function(e){if(e.key==="Escape"&&!acct.hidden){e.stopPropagation();closeAcct()}},true);
+$("#acctbtn").addEventListener("click",function(){showAcct()});
+$("#mnacct").addEventListener("click",function(e){e.preventDefault();setNav(false);showAcct()});
+$("#lysi").addEventListener("click",function(){showAcct("in")});$("#lysu").addEventListener("click",function(){showAcct("up")});
+$("#ptsuse").addEventListener("change",function(){wantPts=this.checked;ordSum()});
+function tabsHTML(list,cur){return '<div class="otabs lp" role="tablist">'+list.map(function(t){return '<button type="button" role="tab" data-t="'+t[0]+'" aria-selected="'+(t[0]===cur)+'">'+t[1]+'</button>'}).join("")+'</div>'}
+function pwField(name,label,ac){return '<label>'+label+'<span class="lp-pw"><input name="'+name+'" type="password" autocomplete="'+ac+'" minlength="6" maxlength="72" required><button type="button" class="lp-eye" aria-label="Show password" aria-pressed="false">'+EYE+'</button></span></label>'}
+function perksHTML(){var r=RULES;return '<div class="lp-perks"><div class="lp-perk"><b>+'+r.signup_bonus+'</b><span>welcome points</span></div><div class="lp-perk"><b>+'+r.visit_points+'</b><span>every day you visit</span></div><div class="lp-perk"><b>₹'+r.redeem_rupees+'</b><span>off for every '+nf(r.redeem_points)+' points</span></div></div>'}
+function msgHTML(){return '<div class="msg'+(acMsg&&acMsg[0]==="!"?" bad":" ok")+'" id="acmsg" role="status">'+esc(acMsg.replace(/^!/,""))+'</div>'}
+function renderAcct(){var h="",body=$("#acbody");
+  if(!ME){$("#acsub").textContent="Sign in to earn Latcha points";
+    h+='<p class="lp-hello">Sip. <em>Visit.</em> Save.</p><p class="lp-sub">Your own Latcha Club: points for every visit, discounts at checkout, and all your activity in one place.</p>'+perksHTML()+tabsHTML([["in","Sign in"],["up","Create account"]],acTab);
+    h+='<form class="fm ofields" id="acform" novalidate>'+(acTab==="up"?'<label>Your name<input name="name" maxlength="80" autocomplete="name" required></label>':'')
+      +'<label>Mobile number<input name="phone" inputmode="tel" autocomplete="tel" placeholder="98765 43210" required></label>'+pwField("password",acTab==="up"?"Choose a password (6+ characters)":"Password",acTab==="up"?"new-password":"current-password")
+      +'<button class="chip" type="submit" id="acsub2">'+(acTab==="up"?"Create my account · get "+RULES.signup_bonus+" points":"Sign in")+'</button>'+msgHTML()+'</form>';
+    body.innerHTML=h;var f=$("#acform");if(f.phone&&!f.phone.value&&lastOrder)f.phone.value=lastOrder.phone;return}
+  var r=RULES,k=ME.points%r.redeem_points,pct=Math.max(2,Math.round(k/r.redeem_points*100)),first=ME.name.split(" ")[0];
+  $("#acth").textContent=ME.name;$("#acsub").textContent="+91 "+ME.phone;
+  var visited=ME.history.some(function(t){return t.reason==="visit"&&utcD(t.created_at).toDateString()===new Date().toDateString()});
+  h+='<div class="lp-card"><small>Latcha points</small><div class="lp-big">'+nf(ME.points)+'<span>pts</span></div><span class="lp-worth">✦ Worth ₹'+ME.worth_rupees+' off right now</span><div class="lp-bar" aria-hidden="true"><i data-w="'+pct+'"></i></div><div class="lp-next">'+(r.enabled?nf(r.redeem_points-k)+' points to your next ₹'+r.redeem_rupees+' off':'Points are paused for now')+'</div></div>';
+  h+='<div class="lp-streak'+(visited?" done":"")+'">'+(visited?"✓ Today’s visit points collected":"Visit points are added when you open the site each day")+' · '+ME.visits+' visit day'+(ME.visits===1?"":"s")+'</div>';
+  h+=tabsHTML([["pts","Points"],["ord","Orders"],["fam","Fam"],["rev","Reviews"],["me","Me"]],acTab);
+  if(acTab==="pts"){h+=perksHTML()+'<div class="lp-sec">Points history</div>';
+    h+=ME.history.length?ME.history.map(function(t,i){var ic={welcome:"🎁",visit:"🍵",redeem:"🧾",refund:"↩️",adjust:"✨"}[t.reason]||"✦";
+      return '<div class="lp-row" style="animation-delay:'+Math.min(i,8)*40+'ms"><span class="lp-ic">'+ic+'</span><div class="bd"><b>'+esc(t.note||t.reason)+'</b><small>'+dshort(t.created_at)+'</small></div><span class="lp-amt'+(t.delta<0?" neg":"")+'">'+(t.delta>0?"+":"")+nf(t.delta)+'</span></div>'}).join(""):'<div class="lp-empty"><big>✦</big>No points yet. Visit again tomorrow!</div>'}
+  if(acTab==="ord"){h+=ME.orders.length?ME.orders.map(function(o,i){var items=o.lines.map(function(l){return l.quantity+"× "+l.item_name}).join(", "),sv=[];if(o.fam_discount)sv.push("Fam −₹"+o.fam_discount);if(o.points_discount)sv.push("points −₹"+o.points_discount);
+      return '<div class="lp-row" style="animation-delay:'+Math.min(i,8)*40+'ms"><span class="lp-ic">🧋</span><div class="bd"><b>#'+o.id+(o.amount!=null?' · ₹'+nf(o.amount):'')+'</b><small>'+esc(items)+'<br>'+dshort(o.created_at)+(o.outlet_name?' · '+esc(o.outlet_name):'')+(sv.length?' · '+sv.join(", "):'')+'</small><button type="button" class="lp-trk" data-track="'+o.id+'">Track this order</button></div><span class="lp-st '+o.status+'">'+o.status+'</span></div>'}).join(""):'<div class="lp-empty"><big>🍵</big>No orders yet. Orders you place while signed in show up here.</div>'}
+  if(acTab==="fam"){var c=ME.fam;h+='<div class="lp-sec">Latcha Fam card</div><div class="famcard"><div class="fbig">'+c.into_card+' / '+c.per_reward+'<small>sips on this card</small></div><div class="pearls" aria-hidden="true">'+gems(c)+'</div>'
+      +(c.rewards_available?'<div class="fgift">🎁 You have '+c.rewards_available+' free drink'+(c.rewards_available>1?'s':'')+' ready. Tick “Use my free drink” at checkout.</div>':'<div class="fgift">'+c.to_next+' more sip'+(c.to_next>1?'s':'')+' to your next free drink.</div>')
+      +'<p class="fhow">'+c.sips+' sip'+(c.sips===1?'':'s')+' so far · '+c.delivered_orders+' delivered order'+(c.delivered_orders===1?'':'s')+'.</p></div>'}
+  if(acTab==="rev"){h+=ME.reviews.length?ME.reviews.map(function(v,i){return '<div class="lp-row" style="animation-delay:'+Math.min(i,8)*40+'ms"><span class="lp-ic">💬</span><div class="bd"><div class="lp-stars" aria-label="'+v.rating+' out of 5">'+"★".repeat(v.rating)+'<s>'+"★".repeat(5-v.rating)+'</s></div><b style="font-weight:600">'+esc(v.text)+'</b><small>'+dshort(v.created_at)+'</small></div><span class="lp-st '+(v.approved?"delivered":"confirmed")+'">'+(v.approved?"Live":"Waiting")+'</span></div>'}).join(""):'<div class="lp-empty"><big>⭐</big>No reviews yet. Write one in the Reviews section while you are signed in and it shows up here.</div>'}
+  if(acTab==="me"){h+='<form class="fm ofields" id="acname" novalidate><label>Your name<input name="name" maxlength="80" value="'+esc(ME.name)+'" required></label><button class="chip" type="submit">Save name</button></form>'
+      +'<div class="lp-sec">Change password</div><form class="fm ofields" id="acpass" novalidate>'+pwField("current_password","Current password","current-password")+pwField("new_password","New password (6+ characters)","new-password")+'<button class="chip o" type="submit">Change password</button></form>'+msgHTML()
+      +'<button type="button" class="chip o lp-out" id="aclogout">Sign out</button>'}
+  body.innerHTML=h;var bar=body.querySelector(".lp-bar i");if(bar)requestAnimationFrame(function(){requestAnimationFrame(function(){bar.style.width=bar.dataset.w+"%"})})}
+$("#acbody").addEventListener("click",function(e){var t=e.target.closest("button");if(!t)return;
+  if(t.dataset.t){acTab=t.dataset.t;acMsg="";renderAcct();return}
+  if(t.classList.contains("lp-eye")){var i=t.parentNode.querySelector("input"),s=i.type==="password";i.type=s?"text":"password";t.classList.toggle("on",s);t.setAttribute("aria-pressed",s);t.setAttribute("aria-label",s?"Hide password":"Show password");return}
+  if(t.dataset.track){var id=+t.dataset.track;closeAcct();if(!ord.hidden)closeOrder();showTrack({id:id,phone:ME.phone});return}
+  if(t.id==="aclogout"){setTK("");ME=null;wantPts=false;acTab="in";paintAcct();ordSum();renderAcct();toast("Signed out. See you soon 💗")}});
+function acBusy(b){var s=$("#acform")&&$("#acform").querySelector("button[type=submit]");if(s)s.disabled=b}
+$("#acbody").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#acmsg");
+  function say(t,bad){acMsg=(bad?"!":"")+t;if(msg){msg.className="msg"+(bad?" bad":" ok");msg.textContent=t}}
+  if(f.id==="acform"){var ph=cleanPhone(f.phone.value);if(!ph)return say("Enter a valid 10 digit mobile number.",1);
+    if(acTab==="up"&&f.name.value.trim().length<2)return say("Please enter your name.",1);if(f.password.value.length<6)return say("Your password needs at least 6 characters.",1);
+    say("One moment…");acBusy(true);
+    creq(acTab==="up"?"/api/customers/register":"/api/customers/login","POST",acTab==="up"?{name:f.name.value,phone:ph,password:f.password.value}:{phone:ph,password:f.password.value})
+    .then(function(r){setTK(r.access_token);acMsg="";var wasUp=acTab==="up";applyMe(r.me,wasUp?"new":"");acTab="pts";if(acFromOrder&&!ord.hidden){closeAcct()}else renderAcct();if(!wasUp&&!r.me.visit_awarded)toast("Welcome back, "+r.me.name.split(" ")[0]+" 💗")})
+    .catch(function(er){acBusy(false);var b=er.body||{};say(er.status===409||er.status===401?(typeof b.detail==="string"?b.detail:"Something went wrong."):er.status===429?"Too many tries. Please wait a little.":typeof b.detail==="string"?b.detail:errText(er),1)});return}
+  if(f.id==="acname"){creq("/api/me","PATCH",{name:f.name.value}).then(function(me){applyMe(me);acMsg="Name saved ✓";renderAcct()}).catch(function(er){say(errText(er),1)});return}
+  if(f.id==="acpass"){if(f.new_password.value.length<6)return say("Your new password needs at least 6 characters.",1);
+    creq("/api/me","PATCH",{current_password:f.current_password.value,new_password:f.new_password.value}).then(function(me){applyMe(me);acMsg="Password changed ✓";renderAcct()}).catch(function(er){var b=er.body||{};say(typeof b.detail==="string"?b.detail:errText(er),1)})}});
+paintAcct();loadRules();if(TK)refreshMe();
 cartUI();
 })();
 </script>

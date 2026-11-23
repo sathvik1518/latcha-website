@@ -550,3 +550,83 @@ def test_dashboard_leaves_cancelled_orders_out(page: Page, admin_password):
     assert page.request.patch(f"/api/admin/orders/{oid}", data={"status": "cancelled"}, headers=hdr).ok
     gone = dash_api(page, hdr)["head"]
     assert gone["orders"] == live["orders"] - 1 and gone["sales"] == live["sales"] - 249 and gone["cancelled"] == live["cancelled"] + 1
+
+
+# ---------- Latcha Club: accounts and points ----------
+def test_customer_signs_up_earns_points_and_spends_them_at_checkout(page: Page, admin_password):
+    phone = "98765 6" + str(uuid.uuid4().int)[:4]
+    name = unique("Club Member")
+    page.goto("/")
+    page.click("#acctbtn")
+    page.click(".otabs.lp [data-t=up]")
+    page.fill("#acform [name=name]", name)
+    page.fill("#acform [name=phone]", phone)
+    page.fill("#acform [name=password]", "secret1")
+    page.click(".lp-eye")
+    expect(page.locator("#acform [name=password]")).to_have_attribute("type", "text")   # the eye shows the password
+    page.click("#acsub2")
+    expect(page.locator("#acctbtn")).to_contain_text("60")                                # 50 welcome + 10 first visit
+    expect(page.locator(".lp-big")).to_contain_text("60")
+    expect(page.locator("#acbody")).to_contain_text("Daily visit")
+    page.click("#acx")
+
+    # the owner tops the account up to exactly 500 points (it is worth Rs 50)
+    login = page.request.post("/api/admin/login", data={"username": "owner", "password": admin_password})
+    head = {"Authorization": "Bearer " + login.json()["access_token"]}
+    cid = next(c["id"] for c in page.request.get("/api/admin/customers", headers=head).json() if c["phone"] == phone.replace(" ", ""))
+    assert page.request.post(f"/api/admin/customers/{cid}/adjust", headers=head, data={"delta": 440, "note": "test"}).ok
+    page.reload()
+    expect(page.locator("#acctbtn")).to_contain_text("500")                               # still signed in after a reload
+
+    add = page.locator(".item .add").first
+    add.scroll_into_view_if_needed()
+    add.click()
+    add.click()
+    page.click("#cartbar")
+    page.click("#otabs [data-t=details]")
+    expect(page.locator("#oform [name=phone]")).to_have_value(phone.replace(" ", ""))    # filled from the account
+    expect(page.locator("#ptsuselab")).to_be_visible()
+    page.locator("#ptsuselab").click()
+    expect(page.locator("#osum")).to_contain_text("points −₹50")
+    page.fill("#oform [name=address]", "12 MG Road, Indiranagar")
+    choose_cash(page)
+    page.click("#osub")
+    expect(page.locator("#omsg")).to_contain_text("You saved ₹50")
+    expect(page.locator("#acctbtn")).to_contain_text("0")
+    page.click("#ordx")
+    page.click("#acctbtn")
+    page.click(".otabs.lp [data-t=ord]")
+    expect(page.locator("#acbody")).to_contain_text("points −₹50")                        # the order is in the account's activity
+
+
+def test_signing_in_with_a_wrong_password_is_refused(page: Page):
+    page.goto("/")
+    page.click("#acctbtn")
+    page.fill("#acform [name=phone]", "98765 43211")
+    page.fill("#acform [name=password]", "not-a-real-one")
+    page.click("#acsub2")
+    expect(page.locator("#acmsg")).to_contain_text("Wrong mobile number or password")
+    expect(page.locator("#acctbtn")).to_contain_text("Sign in")
+
+
+def test_owner_edits_the_points_rules_and_the_website_follows(page: Page, context, admin_password):
+    owner = context.new_page()
+    admin_login(owner, admin_password)
+    owner.click("#tabs button[data-t=fam]")
+    box = owner.get_by_label("Points needed")
+    expect(box).to_be_visible()
+    box.fill("400")
+    owner.get_by_label("Rupees off per reward").fill("60")
+    with owner.expect_response(lambda r: r.request.method == "PATCH" and "/api/admin/loyalty" in r.url) as saved:
+        owner.click("text=Save rules")
+    assert saved.value.ok
+    rules = page.request.get("/api/loyalty").json()
+    assert rules["redeem_points"] == 400 and rules["redeem_rupees"] == 60
+    page.goto("/")
+    page.click("#acctbtn")
+    expect(page.locator(".lp-perks")).to_contain_text("₹60")
+    # put the defaults back so other tests are unaffected
+    owner.get_by_label("Points needed").fill("500")
+    owner.get_by_label("Rupees off per reward").fill("50")
+    with owner.expect_response(lambda r: r.request.method == "PATCH" and "/api/admin/loyalty" in r.url):
+        owner.click("text=Save rules")
