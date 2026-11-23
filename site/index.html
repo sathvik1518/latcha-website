@@ -251,7 +251,7 @@ nav .logo img{height:38px}
 footer.site{background:#fff;border-top:1.5px solid var(--line);padding:56px clamp(16px,5vw,72px);display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center}
 footer.site p{font-size:14px;color:var(--mute);line-height:1.6}
 .founder{margin-top:14px}.founder small{display:block;font:700 11px var(--ui);letter-spacing:.24em;text-transform:uppercase;color:var(--berry)}.founder b{display:block;font-family:var(--serif);font-weight:400;font-size:26px;color:var(--ink);margin-top:3px}
-footer.site .chip{margin:0 10px 0 0}
+footer.site .chip{margin:0}
 
 /* ---------- chatbot ---------- */
 #chat{position:fixed;right:clamp(14px,2.4vw,32px);bottom:clamp(14px,2.4vw,32px);z-index:90;font-family:var(--ui)}
@@ -282,7 +282,7 @@ footer.site .chip{margin:0 10px 0 0}
 .m a{color:var(--berry);font-weight:700;text-decoration:underline}
 .typing{display:flex;gap:4px;padding:14px}.typing i{width:7px;height:7px;border-radius:50%;background:var(--rose-deep);animation:tp 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
 @keyframes tp{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
-#qr{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}#qr::-webkit-scrollbar{display:none}
+#qrw{position:relative}#qr{display:flex;gap:8px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x;cursor:grab}#qr.drag{cursor:grabbing;scroll-snap-type:none}.qa{position:absolute;top:0;width:30px;height:36px;border:0;border-radius:50%;background:#fff;color:var(--berry);font:700 20px/1 var(--ui);box-shadow:0 4px 12px rgba(181,69,106,.25);z-index:2;display:none;place-items:center;padding:0 0 3px}.qa.l{left:6px}.qa.r{right:6px}.qa[hidden]{display:none!important}@media(hover:hover) and (pointer:fine){.qa{display:grid}}#qr::-webkit-scrollbar{display:none}
 #qr button{flex:none;border:1.5px solid var(--rose);background:#fff;color:var(--berry);border-radius:99px;padding:8px 13px;font-weight:700;font-size:12.5px;min-height:36px}
 #qr button:hover{background:var(--petal)}
 #cf{display:flex;gap:8px;padding:12px 14px 14px;border-top:1px solid rgba(255,255,255,.9)}
@@ -501,10 +501,10 @@ nav .logo img{height:32px;width:auto;border-radius:12px;box-shadow:0 6px 14px rg
 .follow:hover{background:var(--berry)}
 .bag{min-width:0;height:44px;padding:0 18px;border-radius:999px;background:var(--berry);color:var(--blush);font-weight:700;display:none}
 nav.past .bag{display:inline-flex;align-items:center}
-.burger{display:none}
+.burger{display:inline-flex}
 #mnav{top:76px}
 @media(min-width:1024px){nav{height:calc(var(--r)*6.5);padding:0 calc(var(--r)*4)}nav .logo img{height:calc(var(--r)*2.5)}#mnav{top:calc(var(--r)*6.5)}}
-@media(max-width:1023px){.burger{display:inline-flex}}
+@media(min-width:1024px){#mnav{left:auto;right:calc(var(--r)*4);width:min(320px,90vw);top:calc(var(--r)*6.5 + 6px);border-radius:22px;border:1px solid var(--line);padding:8px 18px 12px}}
 .follow,.bag{white-space:nowrap}
 @media(max-width:480px){.follow{padding:0 14px;font-size:12.5px;height:40px}.bag{height:40px;padding:0 14px;font-size:13px}.navr{gap:6px}nav .logo img{height:28px}}
 
@@ -661,6 +661,14 @@ footer.site .chip:not(.o){color:var(--berry)!important}
 .items[data-n="6"]{--c:3}.items[data-n="8"],.items[data-n="11"],.items[data-n="12"]{--c:4}
 @media(min-width:981px) and (max-width:1279px){.items,.items[data-n]{--c:3}}
 @media(max-width:760px){.items,.items[data-n]{--c:2;gap:10px}}
+
+/* ---- fixes: footer spacing, quiz scroll ---- */
+.fchips{display:flex;flex-wrap:wrap;gap:12px 12px;align-items:center}
+footer.site{gap:28px}
+@media(max-width:760px){footer.site{gap:22px;padding-bottom:96px}.fchips{gap:14px 12px;width:100%}footer.site .chip{min-height:46px;padding:0 20px;display:inline-flex;align-items:center}footer.site p{line-height:1.7}}
+.ordbox{max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);min-height:0}
+.obody{min-height:0;flex:1 1 auto;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
+@media(max-width:759px){.obody{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}}
 </style>
 
 <script src="assets/vendor/lenis.min.js"></script>
@@ -862,7 +870,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
 <footer class="site" id="footer">
   <div class="brand"><a class="logo lg" href="#top" aria-label="LATCHA"><img src="assets/logo.png" alt="LATCHA"></a><p class="founder"><small>Founder</small><b>Rajasree Yarlagadda</b></p></div>
   <p>Speciality Matcha &amp; Premium Soft Serve<br>Your sign to slow down at Latcha.</p>
-  <div><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button><button type="button" class="chip o" id="trackbtn">Track your order</button><button type="button" class="chip o" id="fambtn">Latcha Fam</button><button type="button" class="chip o" id="quizbtn2">Find my matcha</button></div>
+  <div class="fchips"><a class="chip" href="https://www.instagram.com/siplatcha/" target="_blank" rel="noopener">Follow @siplatcha</a><button type="button" class="chip o" id="orderbtn2">Delivery &amp; hours</button><button type="button" class="chip o" id="trackbtn">Track your order</button><button type="button" class="chip o" id="fambtn">Latcha Fam</button><button type="button" class="chip o" id="quizbtn2">Find my matcha</button></div>
   <p style="width:100%;font-size:12px">© LATCHA™</p>
 </footer>
 
@@ -949,7 +957,7 @@ if(document.readyState==="complete")idle();else addEventListener("load",idle)})(
   <section id="panel" class="glass" role="dialog" aria-label="Chat with LATCHI" aria-hidden="true" inert>
     <header><span class="av2"><svg viewBox="0 0 64 72" aria-hidden="true"><use href="#mascot"/></svg></span><div><b>LATCHI</b><small>Latcha’s matcha helper · online</small></div><button id="cx" type="button" aria-label="Close chat">×</button></header>
     <div id="msgs" aria-live="polite"></div>
-    <div id="qr"></div>
+    <div id="qrw"><button type="button" class="qa l" id="qrl" aria-label="Scroll suggestions left" hidden>‹</button><div id="qr"></div><button type="button" class="qa r" id="qrr" aria-label="Scroll suggestions right">›</button></div>
     <form id="cf" autocomplete="off"><input id="ci" type="text" placeholder="Ask about our menu…" aria-label="Your question"><button type="submit" aria-label="Send">➤</button></form>
   </section>
   <button id="cb" type="button" aria-label="Open chat with LATCHI" aria-expanded="false"><span class="cbl" aria-hidden="true">LATCHI</span><span class="dot" id="cdot">1</span></button>
@@ -1071,7 +1079,16 @@ function say(t,user){var d=document.createElement("div");d.className="m "+(user?
 function reply(t,chips){var ty=document.createElement("div");ty.className="m b typing";ty.innerHTML="<i></i><i></i><i></i>";msgs.appendChild(ty);msgs.scrollTop=msgs.scrollHeight;
   setTimeout(function(){ty.remove();say(t);if(chips)setQR(chips)},reduce?0:650)}
 function setQR(a){$("#qr").innerHTML=a.map(function(x){return '<button type="button">'+x+'</button>'}).join("")}
-$("#qr").addEventListener("click",function(e){var b=e.target.closest("button");if(b)ask(b.textContent)});
+var qr=$("#qr"),qrl=$("#qrl"),qrr=$("#qrr"),qDrag=null,qMoved=false;
+function qrArrows(){qrl.hidden=qr.scrollLeft<8;qrr.hidden=qr.scrollLeft+qr.clientWidth>=qr.scrollWidth-8}
+qr.addEventListener("scroll",qrArrows,{passive:true});addEventListener("resize",qrArrows);
+new MutationObserver(function(){qr.scrollLeft=0;qrArrows()}).observe(qr,{childList:true});
+qrl.addEventListener("click",function(){qr.scrollBy({left:-180,behavior:"smooth"})});qrr.addEventListener("click",function(){qr.scrollBy({left:180,behavior:"smooth"})});
+qr.addEventListener("wheel",function(e){if(qr.scrollWidth<=qr.clientWidth)return;var d=Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY;qr.scrollLeft+=d;e.preventDefault()},{passive:false});
+qr.addEventListener("pointerdown",function(e){if(e.pointerType!=="mouse")return;qDrag={x:e.clientX,l:qr.scrollLeft};qMoved=false});
+addEventListener("pointermove",function(e){if(!qDrag)return;var dx=e.clientX-qDrag.x;if(Math.abs(dx)>4){qMoved=true;qr.classList.add("drag")}if(qMoved)qr.scrollLeft=qDrag.l-dx});
+addEventListener("pointerup",function(){qDrag=null;setTimeout(function(){qr.classList.remove("drag")},0)});
+qr.addEventListener("click",function(e){if(qMoved){qMoved=false;return}var b=e.target.closest("button");if(b)ask(b.textContent)});
 $("#cf").addEventListener("submit",function(e){e.preventDefault();var v=$("#ci").value.trim();if(v){$("#ci").value="";ask(v)}});
 var ALL=[];
 function buildAll(){ALL.length=0;CLASSIC.forEach(function(r){ALL.push({n:r[0],d:r[1],k:r[2],s:r[3],bs:r[4]})});
@@ -1237,8 +1254,8 @@ var tl={on:matchMedia("(pointer:coarse)").matches&&!reduce,has:false,base:null,r
 function clampT(v){return Math.max(-1,Math.min(1,v))}
 if(tl.on){addEventListener("deviceorientation",function(e){if(e.beta==null||e.gamma==null)return;tl.has=true;var b=e.beta,g=e.gamma,a=(screen.orientation&&screen.orientation.angle)||0;if(a===90){var z=b;b=g;g=-z}else if(a===-90||a===270){var z2=b;b=-g;g=z2}
     if(!tl.base)tl.base={b:b,g:g};tl.base.b+=(b-tl.base.b)*.01;tl.base.g+=(g-tl.base.g)*.01;tl.raw={x:clampT((g-tl.base.g)/22),y:clampT((b-tl.base.b)/22)}},{passive:true});
-  var ask=function(){if(tl.asked||!window.DeviceOrientationEvent||typeof DeviceOrientationEvent.requestPermission!=="function")return;tl.asked=true;DeviceOrientationEvent.requestPermission().catch(function(){tl.asked=false})};
-  document.addEventListener("touchend",ask,{passive:true});document.addEventListener("click",ask)}
+  var askTilt=function(){if(tl.asked||!window.DeviceOrientationEvent||typeof DeviceOrientationEvent.requestPermission!=="function")return;tl.asked=true;DeviceOrientationEvent.requestPermission().catch(function(){tl.asked=false})};
+  document.addEventListener("touchend",askTilt,{passive:true});document.addEventListener("click",askTilt)}
 function readTilt(dt){tl.c+=dt;var tx,ty;if(tl.has){tx=tl.raw.x;ty=tl.raw.y}else{tx=.35*Math.sin(tl.c*.37);ty=.35*Math.sin(tl.c*.29+1.3)}var k=1-Math.exp(-6*dt);tl.out.x+=(tx-tl.out.x)*k;tl.out.y+=(ty-tl.out.y)*k;return tl.out}
 /* rising glass bubbles (canvas, one every 400 ms, 10-30 px, 4-10 s) */
 var bctx=hcv.getContext("2d"),bsprite=document.createElement("canvas"),bubs=[],bSince=0,bW=0,bH=0,bD=0;
@@ -1310,7 +1327,7 @@ $("#h2next").addEventListener("click",function(){showFlavour(hi+1)});
 /* Lenis smooth scrolling (as in the Soda template), paused while a drawer is open */
 var lenis=null;
 if(window.Lenis&&!reduce){lenis=new Lenis({smoothWheel:true,anchors:true});window.lenis=lenis;
-  [$("#ord"),$("#trk"),$("#panel"),$("#mnav")].forEach(function(e){if(e)e.setAttribute("data-lenis-prevent","")});
+  [$("#ord"),$("#trk"),$("#panel"),$("#mnav"),$("#quizwin"),$("#famwin")].concat([].slice.call(document.querySelectorAll(".ordwrap,.obody"))).forEach(function(e){if(e)e.setAttribute("data-lenis-prevent","")});
   new MutationObserver(function(){if(document.body.classList.contains("ordopen"))lenis.stop();else lenis.start()}).observe(document.body,{attributes:true,attributeFilter:["class"]})}
 var navAs=[].slice.call(document.querySelectorAll("#navlinks a")),navSecs=navAs.map(function(a){return document.querySelector(a.getAttribute("href"))}),lastOn=-1;
 var secTop=[],docH=0,lastTickY=-1;
