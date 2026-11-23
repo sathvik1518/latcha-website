@@ -15,7 +15,7 @@ One scroll to fall in love. One form to order. One link for everything.
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-5b8a1f?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-b5456a?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-4a2433?style=for-the-badge&logo=vercel&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-96_passing-5b8a1f?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-110_passing-5b8a1f?style=for-the-badge)
 
 <br>
 
@@ -26,6 +26,7 @@ One scroll to fall in love. One form to order. One link for everything.
 **[🍵 Live site](https://latcha-website.vercel.app)** &nbsp;·&nbsp;
 **[🚀 Run it](#-run-it-in-60-seconds)** &nbsp;·&nbsp;
 **[✨ Features](#-what-you-get)** &nbsp;·&nbsp;
+**[🍵 Latcha Club](#-latcha-club-accounts-and-points)** &nbsp;·&nbsp;
 **[🔌 API](#-the-api)** &nbsp;·&nbsp;
 **[🌐 Deploy](#-put-it-online-with-vercel)**
 
@@ -44,11 +45,12 @@ One scroll to fall in love. One form to order. One link for everything.
 | 🛒 **A real shop behind the page** | 33 dishes, a cart, order tracking, reviews and an owner screen, all backed by a database. |
 | 📍 **Outlets** | Pick JP Nagar or Sattva Knowledge Park. See "Open now" before ordering. |
 | 💳 **UPI payments** | Pay by UPI or at delivery. Demo mode today; Razorpay when you add keys. |
+| 🍵 **Latcha Club** | Customers make an account, collect points every day they visit, and turn **500 points into ₹50 off** at checkout. The owner can change every number. |
 | 💗 **Latcha Fam** | 8 sips = 1 free drink, counted from the customer's phone number. |
 | 🔎 **Find my matcha** | A 4-tap quiz that picks a drink from the live menu. |
-| 📊 **Owner dashboard** | Sales, top dishes, busy hours, outlets, payments and customers. |
+| 📊 **Owner desk** | A pink, phone-friendly screen for orders, dashboard, reviews, menu, outlets and loyalty. |
 | 🛡 **Safe by default** | Hashed passwords, spam trap, order limits, private tracking, signed payments, reviews held until approved. |
-| ✅ **Tested** | 96 automatic tests (70 API and 26 real-browser) run on every push. |
+| ✅ **Tested** | 110 automatic tests (API and real-browser) run on every push. |
 
 <br>
 
@@ -56,8 +58,8 @@ One scroll to fall in love. One form to order. One link for everything.
 
 | Time | Customer | Owner |
 |---|---|---|
-| ☀️ Morning | Takes the **Find my matcha** quiz, adds the match to the cart | Opens `/admin.html` and sees overnight orders |
-| 🌤 Afternoon | Picks an outlet, pays by UPI and gets an order number | Gets the order in **Orders**, calls to confirm, taps **Confirm order** |
+| ☀️ Morning | Opens the site, collects the day's **Club points**, takes the **Find my matcha** quiz and adds the match to the cart | Opens `/admin.html` and sees overnight orders |
+| 🌤 Afternoon | Picks an outlet, taps **Use my points** for ₹50 off, pays by UPI and gets an order number | Gets the order in **Orders**, calls to confirm, taps **Confirm order** |
 | 🌙 Evening | Tracks the order until it says **Delivered**. A sip lands on the Fam card | Taps **Mark delivered**, marks a sold-out dish, checks the **Dashboard** |
 
 <br>
@@ -75,6 +77,11 @@ One scroll to fall in love. One form to order. One link for everything.
 <p align="center">
 <img src="docs/preview-fam.jpg" alt="The LATCHA fam social section with the Instagram card and photo tiles" width="70%">
 </p>
+<p align="center">
+<img src="docs/shot-club.jpg" alt="Latcha Club account window on a phone: points card, progress bar and history" width="32%">
+<img src="docs/shot-loyalty.jpg" alt="Owner desk Loyalty tab with editable points rules" width="66%">
+</p>
+<p align="center"><sub>Left: a customer's Latcha Club window on a phone. Right: the owner changing the points rules.</sub></p>
 <p align="center"><sub>Preview pictures show the page before the 3D cherries load. On the live site they are real 3D cherries.</sub></p>
 
 <br>
@@ -96,6 +103,37 @@ Run the tests any time: `python -m pytest -q` (browser tests need `playwright in
 <br>
 
 ## ✨ Features in detail
+
+### 🍵 Latcha Club: accounts and points
+
+Customers can make a free account, collect **Latcha points** and spend them at checkout. It sits next to Latcha Fam: Fam rewards drinks, Club rewards visits.
+
+<p align="center"><img src="docs/shot-club.jpg" alt="Latcha Club window: points card, today's visit points collected, rules and history" width="38%"></p>
+
+**How customers use it**
+
+- **Sign up or sign in** from the top-bar button, the menu, or the strip inside the order window. Mobile number + password; no email needed.
+- **Earn:** a welcome gift when the account is made, then points **once per calendar day** (Indian time) the customer opens the site while signed in.
+- **Spend:** in the order window tap **Use my points**. Every full block of 500 points takes ₹50 off the bill, never more than the bill itself.
+- **See everything:** the Club window has tabs for **Points** (balance, progress to the next reward, full history), **Orders** (with status), **Fam** (sips), **Reviews** and **Me** (change name or password).
+- A cancelled order gives the points back, once.
+
+**How the owner controls it** (Admin → **Loyalty**)
+
+| Setting | Default | Meaning |
+|---|---|---|
+| Points programme on/off | on | Pause it any time. Balances are kept |
+| Welcome points | 50 | Given once at sign-up |
+| Points per visit day | 10 | Given once a day to a signed-in customer |
+| Points needed | 500 | Size of one reward block |
+| Rupees off per reward | 50 | Discount for each block |
+
+Saving takes effect on the site straight away. The same tab lists every customer (search by name or number) and lets the owner **add or remove points** with a note, which is also written to the customer's history.
+
+**How it is built:** tables `customers` (balance, visits, last visit day), `point_tx` (every change: welcome, visit, redeem, refund, adjust) and `settings` (the rules above). The balance only changes through one function (`add_tx` in `app/loyalty.py`), so the history always adds up. Login uses a 30-day token that is separate from the owner's.
+
+- ⚠️ **Limit:** there is **no OTP**, so a mobile number is not proven to belong to the person signing up. Fine for a small café; add a one-time code before a big launch. Set a long `JWT_SECRET`, accounts need it.
+- Customers only see orders placed **while signed in**. Guest orders still work exactly as before.
 
 ### 📍 Outlets
 
@@ -153,7 +191,7 @@ A 4-tap quiz (format, flavour, sweetness, light or treat) that picks one dish an
 
 ### 🧑‍🍳 Owner screen: live orders and menu editor
 
-`/admin.html` updates by itself every 12 seconds. A new order shows a banner, the card flashes, and the tab title shows `(2) LATCHA Owner`. Press **Sound off** once to turn on a soft beep.
+`/admin.html` is a pink, glassy desk that matches the shop. It greets the owner with a "Welcome back" line that fades away, and on a phone the tabs become a **bottom app bar** so a thumb reaches everything. It updates by itself every 12 seconds. A new order shows a banner, the card flashes, and the tab title shows `(2) LATCHA Owner`. Press **Sound off** once to turn on a soft beep. Tabs: Orders, Dashboard, Reviews, Menu, Outlets, **Loyalty** (Club rules, customers and Fam sips).
 
 <p align="center"><img src="docs/shot-orders.jpg" alt="Owner screen: live orders with tiles and one-tap buttons" width="85%"></p>
 
@@ -185,6 +223,9 @@ Admin → **Dashboard** shows the last 1, 7, 30 or 90 days. Everything is counte
 
 - **Home screen:** a thick crimson LATCHA wordmark, a tilted Ube Cloud cup with sparkles, floating 3D cherries and leaves, two flavour cards and the line "Your sign to slow down." Sizes scale with the screen width.
 - **Colours:** one rose palette: rose `#f6bfd0`, deep rose `#e58aa6`, berry `#b5456a`, crimson `#b5303a`.
+- **Order window:** three tabs, **Drinks**, **Cart** and **Details**, so a phone never has to scroll one long form.
+- **Menu:** the burger button opens a rounded card with every section, the Club button and Order.
+- **Phone inputs:** all inputs are 16px so iPhone Safari does not zoom in and push the page sideways.
 - **Chat helper:** called **LATCHI** everywhere. It answers menu questions and opens the order form.
 - **Smooth scroll:** Lenis (`site/assets/vendor/lenis.min.js`).
 - **3D cherries and leaves:** Google's `model-viewer`. The 3D files load from the internet; flat pictures show until they arrive.
@@ -201,7 +242,7 @@ flowchart LR
   B([🌐 Browser]) --> W["/ the website<br/>site/index.html"]
   B --> A["/api FastAPI + SQLAlchemy<br/>app/"]
   B --> O["/admin.html owner screen"]
-  A --> D[("🗄 Neon PostgreSQL<br/>menu_items · orders · order_lines<br/>reviews · outlets · sold-out")]
+  A --> D[("🗄 Neon PostgreSQL<br/>menu_items · orders · order_lines<br/>reviews · outlets · sold-out<br/>customers · point_tx · settings")]
   A --> R["💳 Razorpay<br/>(live mode only)"]
   R -. signed webhook .-> A
   O --> A
@@ -227,7 +268,17 @@ Try everything in the browser at **`/docs`**.
 | `POST /api/payments/razorpay/webhook` | Razorpay tells us a payment result (signature checked) |
 | `POST /api/fam/card` | A Fam card from a mobile number |
 | `GET /api/reviews` · `POST /api/reviews` | Approved reviews · send a review (hidden until approved) |
+| `GET /api/loyalty` | The public points rules (what the site shows) |
+| `POST /api/customers/register`, `POST /api/customers/login` | Make a Club account or sign in. Returns a 30-day token |
 | `GET /api/health` | Checks the database answers |
+
+**Customer** (needs the customer token)
+
+| Endpoint | What |
+|---|---|
+| `GET /api/me` | Balance, history, orders. Also hands out the day's visit points |
+| `PATCH /api/me` | Change name or password |
+| `POST /api/orders` with `use_points: true` | Spend points. Returns `points_used`, `points_discount` and the new balance |
 
 **Owner** (needs the login token from `POST /api/admin/login`, valid 2 hours)
 
@@ -239,13 +290,16 @@ Try everything in the browser at **`/docs`**.
 | `GET /api/admin/outlets`, `PATCH /api/admin/outlets/{id}` | Hours, phone, taking orders, opening soon |
 | `PUT /api/admin/outlets/{id}/sold-out/{item_id}` | Mark a dish sold out at one outlet |
 | `GET /api/admin/fam` | Every Fam member |
+| `GET/PATCH /api/admin/loyalty` | Read and change the points rules |
+| `GET /api/admin/customers?q=` | Club customers with points and visits |
+| `POST /api/admin/customers/{id}/adjust` | Add or remove points, with a note |
 | `GET /api/admin/stats`, `GET /api/admin/dashboard?days=1..90` | Tiles and dashboard numbers |
 | `GET /api/admin/reviews`, `POST .../approve`, `DELETE .../{id}` | Approve or delete reviews |
 
 **Safety built in**
 
 - Passwords are stored as salted hashes, never as plain text.
-- Orders are checked (Indian mobile number, 1 to 20 of each drink, outlet open and not sold out). Maximum 5 orders per phone per hour.
+- Points are only changed on the server, in one place, and every change is logged. Orders are checked (Indian mobile number, 1 to 20 of each drink, outlet open and not sold out). Maximum 5 orders per phone per hour.
 - Prices and totals are worked out on the server. A payment is only marked paid after a valid confirmation.
 - Tracking needs the order number **and** phone. A wrong phone and a missing order give the same answer.
 - Reviews stay hidden until approved. A hidden field catches simple spam bots. Review and order text is shown as plain text, so nobody can inject code.
@@ -267,7 +321,7 @@ Try everything in the browser at **`/docs`**.
    |---|---|
    | `DATABASE_URL` | Neon pooled connection string |
    | `ADMIN_USERNAME`, `ADMIN_PASSWORD_HASH` | Owner login (hash starts `pbkdf2$`) |
-   | `JWT_SECRET` | Long random text for login tokens |
+   | `JWT_SECRET` | Long random text for login tokens (owner **and** Club customers) |
    | `CORS_ORIGINS` | Only if another website calls the API |
    | `PAYMENTS_MODE` | `demo`, `razorpay` or `off` |
    | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Only for `razorpay` |
@@ -285,7 +339,7 @@ The owner login lives in `ADMIN_USERNAME` and `ADMIN_PASSWORD_HASH`. There is no
 2. In **Vercel → Settings → Environment Variables**, paste that line into `ADMIN_PASSWORD_HASH` (tick **Production**). Set `ADMIN_USERNAME` the same way. Do the same in your local `.env`.
 3. **Redeploy**, then log in at the main address plus `/admin.html`.
 
-The value must be one unbroken line with no quotes or spaces. `JWT_SECRET` must also be set, or login always fails. Never share these values or screenshot your `.env`.
+The value must be one unbroken line with no quotes or spaces. `JWT_SECRET` must also be set, or owner login and Club accounts both fail. Never share these values or screenshot your `.env`.
 
 <br>
 
@@ -312,8 +366,8 @@ Neon's free plan sleeps after 5 minutes idle, so the first request after a quiet
 
 ```
 site/                   the website, served at /
-├── index.html          the whole site (HTML, CSS, JavaScript), quiz and Fam included
-├── admin.html          owner screen: orders, dashboard, reviews, menu, outlets, Fam
+├── index.html          the whole site (HTML, CSS, JavaScript): quiz, Fam and Latcha Club included
+├── admin.html          owner screen: orders, dashboard, reviews, menu, outlets, loyalty
 ├── favicon.ico, favicon-*.png, apple-touch-icon.png
 └── assets/             pictures and videos, plus vendor/ (lenis and model-viewer)
 app/                    the backend
@@ -324,6 +378,7 @@ app/                    the backend
 ├── outlets.py          outlets, opening hours, sold-out lists, self-upgrade
 ├── payments.py         demo and Razorpay payments, signatures, webhook
 ├── fam.py              sips and free drinks
+├── loyalty.py          Club accounts, points rules, history, redeem and refund
 ├── dashboard.py        the dashboard sums (Indian time)
 ├── security.py         password hashing and login tokens
 └── db.py, config.py    database connection and settings
@@ -331,9 +386,9 @@ scripts/
 ├── init_db.py          create tables, load the 33 menu items
 ├── make_admin_hash.py  make the owner password hash
 └── menu_seed.json      the menu data
-tests/                  96 automated tests
-├── test_api.py, test_dashboard.py   70 API tests
-└── e2e/                26 browser tests (Playwright) on a throw-away database
+tests/                  110 automated tests
+├── test_api.py, test_dashboard.py, test_loyalty.py   API tests
+└── e2e/                browser tests (Playwright) on a throw-away database
 .github/workflows/      runs the tests on every push
 index.py                the file Vercel looks for (loads app/main.py)
 requirements.txt        Python packages (requirements-dev.txt adds test tools)
@@ -348,8 +403,8 @@ speed-changes.patch     the speed edits only, so they can be undone on their own
 
 | Check | Result |
 |---|---|
-| 70 API tests: orders, outlets, payments, Fam, tracking, reviews, login, dashboard, limits | Pass |
-| 26 browser tests (Playwright): menu, ordering, outlet and sold-out rules, UPI demo pay, Fam card and free drink, quiz, tracking, reviews, owner login, live orders, dashboard | Pass |
+| API tests: orders, outlets, payments, Fam, Club accounts and points, tracking, reviews, login, dashboard, limits | Pass |
+| Browser tests (Playwright): menu, ordering, Club sign-up and points, outlet and sold-out rules, UPI demo pay, Fam card and free drink, quiz, tracking, reviews, owner login, live orders, dashboard | Pass |
 | Run on every push by GitHub Actions (`api` and `e2e` jobs) | Set up. Check the green tick on GitHub |
 | Live Vercel deploy and Neon connection | Pass (`/api/health`, site and `/admin.html` load) |
 | Real Razorpay payment | **Not tested.** Demo mode only until keys are added |
@@ -366,7 +421,8 @@ The tests check behaviour, not looks. After each change, check colours, sizes an
 - [ ] **Outlet details.** Confirm hours, addresses and phone numbers for each outlet, and whether Indiranagar is still "opening soon".
 - [ ] **Real payments.** Get Razorpay keys, test with `rzp_test_...` first, then go live. Keys go only in `.env` and Vercel, never in chat or git.
 - [ ] **Who gets the orders.** Orders appear in `/admin.html` and the tab title and beep alert you while it is open. There is no WhatsApp, email or SMS alert yet.
-- [ ] **Fam has no OTP.** Fine for a small café; add a one-time code before a big launch.
+- [ ] **Fam and Club have no OTP.** Fine for a small café; add a one-time code before a big launch.
+- [ ] **Club rules.** Check the points numbers in Admin → Loyalty (default 500 points = ₹50 off) so the discount fits LATCHA's margins.
 - [ ] **Story reviews.** The three review cards in the scroll story are sample text until three real reviews are approved.
 - [ ] **Instagram numbers.** Post and follower counts are typed into the page.
 - [ ] **Menu spelling.** "Caramel Toffe" is probably "Caramel Toffee".
