@@ -94,7 +94,7 @@ def test_customer_order_and_review_then_owner_approves(page: Page, context, admi
     # 3. The owner logs in, sees the order and approves the review.
     owner = context.new_page()
     admin_login(owner, admin_password)
-    expect(owner.locator("#list")).to_contain_text(f"#{order_no} · {customer}")
+    expect(owner.locator("#list .card", has_text=customer).filter(has_text=f"#{order_no}")).to_have_count(1)
     owner.click("#tabs button[data-t=reviews]")
     card = owner.locator("#list .card", has_text=reviewer)
     expect(card).to_contain_text("Waiting")
@@ -276,7 +276,7 @@ def test_customer_pays_by_upi_in_demo_mode_and_owner_sees_paid(page: Page, conte
 
     owner = context.new_page()
     admin_login(owner, admin_password)
-    card = owner.locator("#list .card", has_text=f"#{order_no} · {name}")
+    card = owner.locator("#list .card", has_text=name).filter(has_text=f"#{order_no}")
     expect(card).to_contain_text(f"{amount} · UPI · Paid")
 
 
