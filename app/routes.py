@@ -1,7 +1,7 @@
 import time
 from datetime import datetime, timedelta, timezone
-import json, logging
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+import csv, hashlib, hmac, io, json, logging
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 from . import dashboard, fam, loyalty, models as m, notify, outlets as ot, payments as pay, schemas as s
@@ -17,6 +17,12 @@ MAX_ORDERS_PER_PHONE_HOUR = 5
 MAX_PENDING_REVIEWS = 200
 log = logging.getLogger("latcha.pay")
 NOT_FOUND = "We could not find that order. Check the order number and phone number."
+
+
+def track_code(order_id: int) -> str:
+    """A private link code for one order: "<number>.<10 secret letters>". Nobody can guess it without the server secret."""
+    key = (get_settings().jwt_secret or "latcha-dev").encode()
+    return f"{order_id}.{hmac.new(key, f'track:{order_id}'.encode(), hashlib.sha256).hexdigest()[:10]}"
 
 
 # ---------- public ----------
@@ -133,7 +139,7 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
     msg = "Order saved. Complete the UPI payment to confirm it." if start else "Order request received. LATCHA will confirm it by phone."
     return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None, message=msg,
                           amount=charge, fam_discount=discount, points_used=pts_used, points_discount=pts_disc,
-                          points=cust.points if cust else None, payment=start)
+                          points=cust.points if cust else None, payment=start, track=track_code(order.id))
 
 
 def _own_order(db: Session, order_id: int, phone: str) -> m.Order:
@@ -231,7 +237,23 @@ def track_order(body: s.TrackIn, db: Session = Depends(get_db)):
     # Same answer for "no such order" and "wrong phone", so nobody can probe which numbers exist.
     if o is None or o.phone != body.phone:
         raise HTTPException(404, "We could not find that order. Check the order number and phone number.")
-    return o
+    return _track_out(o)
+
+
+def _track_out(o: m.Order) -> s.TrackOut:
+    out = s.TrackOut.model_validate(o)
+    out.code = track_code(o.id)
+    return out
+
+
+@public.get("/orders/track/{code}", response_model=s.TrackOut)
+def track_by_code(code: str, db: Session = Depends(get_db)):
+    """The share link: the secret code stands in for the phone number. Same answer for every kind of miss."""
+    num, _, _sig = code.partition(".")
+    o = db.get(m.Order, int(num)) if num.isdigit() and len(num) <= 10 and int(num) < 2_000_000_000 else None
+    if o is None or not hmac.compare_digest(code.encode(), track_code(o.id).encode()):
+        raise HTTPException(404, "We could not find that order. Check the link and try again.")
+    return _track_out(o)
 
 
 @public.get("/reviews", response_model=list[s.ReviewOut])
@@ -397,6 +419,8 @@ def set_order_status(order_id: int, body: s.StatusIn, db: Session = Depends(get_
     o = db.get(m.Order, order_id)
     if not o:
         raise HTTPException(404, "Not found")
+    if o.status != body.status:
+        o.status_at = datetime.now(timezone.utc)
     o.status = body.status
     loyalty.refund_if_cancelled(db, o, body.status)
     db.commit()
@@ -416,6 +440,7 @@ def admin_stats(db: Session = Depends(get_db)):
     return s.StatsOut(
         new_orders=cnt(O.status == "new"),
         being_made=cnt(O.status == "confirmed"),
+        on_the_way=cnt(O.status == "out"),
         awaiting_payment=cnt(O.payment_method == "upi", O.payment_status.in_(("pending", "failed")), O.status != "cancelled"),
         today_orders=cnt(O.created_at >= day, O.status != "cancelled"),
         today_paid=db.scalar(select(func.coalesce(func.sum(O.amount), 0)).where(O.payment_status == "paid", O.paid_at >= day, O.status != "cancelled")) or 0,
@@ -425,6 +450,31 @@ def admin_stats(db: Session = Depends(get_db)):
 @admin.get("/dashboard", response_model=s.DashOut)
 def admin_dashboard(days: int = Query(7, ge=1, le=90), db: Session = Depends(get_db)):
     return dashboard.build(db, days)
+
+
+def _safe(v) -> str:
+    """Stop a spreadsheet from running a name or address as a formula."""
+    v = "" if v is None else str(v)
+    return "'" + v if v[:1] in ("=", "+", "-", "@", "\t", "\r") else v
+
+
+@admin.get("/export.csv")
+def export_orders(days: int = Query(30, ge=1, le=365), db: Session = Depends(get_db)):
+    """Orders as a spreadsheet file (Excel opens it). Times are Indian time."""
+    start = ot.now_ist().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=days - 1)
+    rows = db.scalars(select(m.Order).where(m.Order.created_at >= start.astimezone(timezone.utc))
+                      .order_by(m.Order.id)).all()
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["Order", "Placed (IST)", "Status", "Customer", "Phone", "Outlet", "Items", "Amount (Rs)", "Payment", "Paid?", "Free drink (Rs)", "Points (Rs)"])
+    for o in rows:
+        placed = dashboard._ist(o.created_at).strftime("%Y-%m-%d %H:%M")
+        items = "; ".join(f"{l.quantity} x {l.item_name}" for l in o.lines)
+        w.writerow([o.id, placed, o.status, _safe(o.customer_name), _safe(o.phone), _safe(o.outlet_name or o.city), _safe(items),
+                    "" if o.amount is None else o.amount, o.payment_method, o.payment_status, o.fam_discount, o.points_discount])
+    name = f"latcha-orders-{ot.now_ist():%Y-%m-%d}.csv"
+    return Response("\ufeff" + buf.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
 @admin.post("/orders/{order_id}/mark-paid", response_model=s.OrderOut)

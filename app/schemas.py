@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 Category = Literal["classic", "cloud", "soft", "float"]
-Status = Literal["new", "confirmed", "delivered", "cancelled"]
+Status = Literal["new", "confirmed", "out", "delivered", "cancelled"]   # out = on the way
 
 
 def clean_phone(v: str) -> str:
@@ -135,6 +135,7 @@ class OrderReceipt(BaseModel):
     points_discount: int = 0
     points: int | None = None
     payment: PaymentStart | None = None
+    track: str | None = None     # private tracking code, for the share link
 
 
 class PayIn(BaseModel):
@@ -153,6 +154,7 @@ class StatsOut(BaseModel):
     """Numbers for the owner's live screen. All counts are real orders; money is rupees actually paid."""
     new_orders: int          # waiting for the owner to confirm
     being_made: int          # confirmed, not yet delivered
+    on_the_way: int = 0      # out for delivery
     awaiting_payment: int    # UPI orders not paid yet (not cancelled)
     today_orders: int        # placed today (Indian time), not cancelled
     today_paid: int          # rupees paid today
@@ -218,6 +220,10 @@ class TrackOut(BaseModel):
     payment_status: str = "unpaid"
     amount: int | None = None
     fam_discount: int = 0
+    status_at: datetime | None = None
+    outlet_name: str | None = None
+    outlet_phone: str | None = None
+    code: str | None = None      # private tracking code (set by the route)
     lines: list[TrackLine]
 
 
@@ -318,6 +324,10 @@ class DashHead(BaseModel):
     unpriced_orders: int
     fam_free_drinks: int
     fam_discount: int
+    avg_delivery_minutes: int | None = None   # placed to delivered, only orders delivered in this period
+    delivered_timed: int = 0
+    cancel_rate: int = 0                      # % of orders placed that were cancelled
+    repeat_rate: int = 0                      # % of customers who had ordered before
 
 
 class DashDay(BaseModel):
@@ -341,6 +351,12 @@ class DashOutlet(BaseModel):
 class DashHour(BaseModel):
     hour: int
     orders: int
+
+
+class DashWeekday(BaseModel):
+    day: str
+    orders: int
+    sales: int
 
 
 class DashBucket(BaseModel):
@@ -371,6 +387,7 @@ class DashOut(BaseModel):
     dishes: list[DashDish]
     outlets: list[DashOutlet]
     hours: list[DashHour]
+    weekdays: list[DashWeekday] = []
     payments: DashPayments
     customers: DashCustomers
     pending_reviews: int

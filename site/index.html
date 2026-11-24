@@ -463,6 +463,8 @@ body.ordopen #chat{display:none}
 .tstep li.on{color:var(--berry)}
 .tstep li.on::before{background:var(--berry);border-color:var(--berry)}
 .tstep li.on::after{background:var(--berry)}
+.tstep li{font-size:11px}.tstat.go{background:#eaf3dc;color:var(--matcha)}
+.tacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.tacts .chip{text-decoration:none}
 .tstat{margin:14px 0 4px;padding:14px 16px;border-radius:18px;background:var(--petal);color:var(--ink);font-size:14px;line-height:1.5;font-weight:700}
 .tstat.bad{color:var(--crimson)}
 .tlines{margin:10px 0 0;padding:0;list-style:none}
@@ -1749,36 +1751,62 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closeQuiz()}
 
 /* order tracking */
 var trk=$("#trk"),trkFrom=null,lastOrder=null;
-var TSTAT={new:"We got your order. LATCHA will call you to confirm it.",confirmed:"Confirmed. Your order is being made and sent your way.",delivered:"Delivered. We hope you enjoyed every sip! 🍵",cancelled:"This order was cancelled. Please order again or ask LATCHI if you need help."};
-function showTrack(pre){trkFrom=document.activeElement;var f=$("#tform");f.reset();$("#tmsg").textContent="";$("#tmsg").className="msg";$("#tres").hidden=true;$("#tres").innerHTML="";
+var TSTAT={new:"We got your order. LATCHA will call you to confirm it.",confirmed:"Confirmed. Your drink is being made right now.",out:"On the way! Your order is out for delivery. 🛵",delivered:"Delivered. We hope you enjoyed every sip! 🍵",cancelled:"This order was cancelled. Please order again or ask LATCHI if you need help."};
+function showTrack(pre){trkStop();trkFrom=document.activeElement;var f=$("#tform");f.reset();$("#tmsg").textContent="";$("#tmsg").className="msg";$("#tres").hidden=true;$("#tres").innerHTML="";
   if(pre){f.order_id.value=pre.id;f.phone.value=pre.phone}
   trk.hidden=false;document.body.classList.add("ordopen");document.body.style.overflow="hidden";(pre?$("#tsub"):f.order_id).focus()}
-function closeTrack(){if(trk.hidden)return;trk.hidden=true;if(ord.hidden){document.body.classList.remove("ordopen");document.body.style.overflow=""}if(trkFrom&&trkFrom.focus)trkFrom.focus()}
+function closeTrack(){trkStop();if(trk.hidden)return;trk.hidden=true;if(ord.hidden){document.body.classList.remove("ordopen");document.body.style.overflow=""}if(trkFrom&&trkFrom.focus)trkFrom.focus()}
 $("#trackbtn").addEventListener("click",function(){showTrack()});
 $("#trkx").addEventListener("click",closeTrack);
 trk.addEventListener("click",function(e){if(e.target===trk)closeTrack()});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTrack()});
-function trackHtml(o){var st=o.status,steps=[["new","Received"],["confirmed","Confirmed"],["delivered","Delivered"]],at=st==="cancelled"?-1:["new","confirmed","delivered"].indexOf(st),h="";
+var TSTEPS=[["new","Received"],["confirmed","Making"],["out","On the way"],["delivered","Delivered"]];
+function utcD(s){return new Date(/(Z|[+-]\d\d:?\d\d)$/.test(s)?s:s+"Z")}
+function agoT(d){var m=Math.floor((Date.now()-d)/60000);if(isNaN(m))return"";if(m<1)return"just now";if(m<60)return m+" min ago";var h=Math.floor(m/60);return h<24?h+" h ago":Math.floor(h/24)+" d ago"}
+function trackHtml(o){var st=o.status,steps=TSTEPS,at=st==="cancelled"?-1:steps.map(function(x){return x[0]}).indexOf(st),h="",live=st!=="delivered"&&st!=="cancelled";
   if(st!=="cancelled")h+='<ol class="tstep" aria-label="Order progress">'+steps.map(function(x,i){return '<li'+(i<=at?' class="on"':'')+(i===at?' aria-current="step"':'')+'>'+x[1]+'</li>'}).join("")+'</ol>';
-  h+='<div class="tstat'+(st==="cancelled"?' bad':'')+'" id="tstat">Order #'+o.id+' · '+esc(TSTAT[st])+'</div><ul class="tlines">'+o.lines.map(function(l){return '<li><span>'+esc(l.item_name)+'</span><span>× '+l.quantity+'</span></li>'}).join("")+'</ul>';
+  h+='<div class="tstat'+(st==="cancelled"?' bad':st==="out"?' go':'')+'" id="tstat" aria-live="polite">Order #'+o.id+' · '+esc(TSTAT[st])+'</div><ul class="tlines">'+o.lines.map(function(l){return '<li><span>'+esc(l.item_name)+'</span><span>× '+l.quantity+'</span></li>'}).join("")+'</ul>';
   if(st==="delivered"){var sp=o.lines.reduce(function(a,l){return a+l.quantity},0);h+='<div class="tstat pay ok">+'+sp+' sip'+(sp>1?'s':'')+' added to your Latcha Fam card 🍵</div>'}
   if(o.fam_discount)h+='<div class="tstat pay ok">Free drink used'+(PAYMODE!=="off"?' (−₹'+o.fam_discount+')':'')+'</div>';
   if(o.amount&&(o.payment_method==="upi"||o.payment_status==="paid")){var pd=o.payment_status==="paid";
     h+='<div class="tstat pay'+(pd?' ok':'')+'">'+(pd?'Paid ₹'+o.amount+(o.payment_method==="upi"?' by UPI ✓':' ✓'):'Payment pending · ₹'+o.amount)+'</div>';
     if(!pd&&o.payment_method==="upi"&&st!=="cancelled"&&PAYMODE!=="off")h+='<button type="button" class="chip" id="paynow">Pay ₹'+o.amount+' now</button>'}
   var d=new Date(o.created_at);if(!isNaN(d))h+='<p class="tmeta">Placed '+esc(d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}))+'</p>';
-  return h}
+  var up=utcD(o.status_at||o.created_at);if(!isNaN(up))h+='<p class="tmeta" id="tupd">'+(st==="new"?"Placed ":"Updated ")+agoT(up)+(live?" · refreshes by itself":"")+'</p>';
+  h+='<div class="tacts">';
+  if(live&&o.outlet_phone)h+='<a class="chip o" href="tel:'+esc(o.outlet_phone)+'">Call '+esc(o.outlet_name||"LATCHA")+'</a>';
+  if(o.code)h+='<button type="button" class="chip o" id="tshare">Share tracking link</button>';
+  return h+'</div>'}
 $("#tform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#tmsg"),btn=$("#tsub"),res=$("#tres"),id=f.order_id.value.replace(/^#/,"").trim();
   res.hidden=true;
   if(!/^[0-9]{1,10}$/.test(id)||+id<1){msg.className="msg bad";msg.textContent="Enter your order number, like 12.";return}
   btn.disabled=true;msg.className="msg";msg.textContent="Checking…";
   jreq("/api/orders/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({order_id:+id,phone:f.phone.value})})
-  .then(function(o){msg.textContent="";res.innerHTML=trackHtml(o);res.hidden=false;var pn=$("#paynow");
-    if(pn)pn.addEventListener("click",function(){pn.disabled=true;
-      jreq("/api/orders/"+o.id+"/pay",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:f.phone.value})})
-      .then(function(p){closeTrack();showOrder();startPay({id:o.id,phone:f.phone.value,name:"",outlet:"",pay:p})},function(er){pn.disabled=false;msg.className="msg bad";msg.textContent=(er.body&&typeof er.body.detail==="string")?er.body.detail:"We could not start the payment. Please try again."})})})
+  .then(function(o){msg.textContent="";trkPaint(o,f.phone.value)})
   .catch(function(er){msg.className="msg bad";msg.textContent=er.status===404?"We could not find that order. Check the order number and mobile number.":errText(er)})
   .then(function(){btn.disabled=false})});
+
+/* live tracking: shows the order, then re-checks every 10 seconds until it is delivered or cancelled */
+var tpoll=null,tcur=null;
+function trkStop(){if(tpoll){clearInterval(tpoll);tpoll=null}}
+function trkPaint(o,phone){var res=$("#tres"),msg=$("#tmsg");tcur={code:o.code,phone:phone,status:o.status};
+  res.innerHTML=trackHtml(o);res.hidden=false;
+  var sh=$("#tshare");if(sh)sh.addEventListener("click",function(){shareTrack(o)});
+  var pn=$("#paynow");
+  if(pn){if(!phone)pn.remove();else pn.addEventListener("click",function(){pn.disabled=true;
+    jreq("/api/orders/"+o.id+"/pay",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({phone:phone})})
+    .then(function(p){closeTrack();showOrder();startPay({id:o.id,phone:phone,name:"",outlet:"",pay:p})},function(er){pn.disabled=false;msg.className="msg bad";msg.textContent=(er.body&&typeof er.body.detail==="string")?er.body.detail:"We could not start the payment. Please try again."})})}
+  trkStop();if(o.code&&o.status!=="delivered"&&o.status!=="cancelled")tpoll=setInterval(trkPoll,10000)}
+function trkPoll(){if(trk.hidden){trkStop();return}if(document.hidden||!tcur||!tcur.code)return;
+  jreq("/api/orders/track/"+encodeURIComponent(tcur.code)).then(function(o){
+    if(o.status!==tcur.status){trkPaint(o,tcur.phone);if(o.status==="out")toast("Your order is on the way 🛵");else if(o.status==="delivered")toast("Delivered. Enjoy! 🍵");else if(o.status==="confirmed")toast("Your order is confirmed 💗")}
+    else{var u=$("#tupd"),d=utcD(o.status_at||o.created_at);if(u&&!isNaN(d))u.textContent=(o.status==="new"?"Placed ":"Updated ")+agoT(d)+" · refreshes by itself"}}).catch(function(){})}
+function shareTrack(o){var u=location.origin+"/?track="+encodeURIComponent(o.code);
+  if(navigator.share){navigator.share({title:"LATCHA order #"+o.id,text:"Track my LATCHA order #"+o.id,url:u}).catch(function(){});return}
+  (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(u):Promise.reject()).then(function(){toast("Tracking link copied 💗")},function(){toast(u)})}
+function openTrackLink(code){showTrack();var msg=$("#tmsg");msg.className="msg";msg.textContent="Checking…";
+  jreq("/api/orders/track/"+encodeURIComponent(code)).then(function(o){msg.textContent="";$("#tform").order_id.value=o.id;trkPaint(o,"")})
+  .catch(function(er){msg.className="msg bad";msg.textContent=er.status===404?"We could not find that order. Check the link, or use your order number and mobile number.":errText(er)})}
 
 /* reviews */
 function stars(n){return "★★★★★".slice(0,n)}
@@ -1974,6 +2002,8 @@ $("#acbody").addEventListener("submit",function(e){e.preventDefault();var f=e.ta
     creq("/api/me","PATCH",{current_password:f.current_password.value,new_password:f.new_password.value}).then(function(me){applyMe(me);acMsg="Password changed ✓";renderAcct()}).catch(function(er){var b=er.body||{};say(typeof b.detail==="string"?b.detail:errText(er),1)})}});
 paintAcct();loadRules();if(TK)refreshMe();
 cartUI();
+/* a shared tracking link: /?track=12.abc123... opens the tracker straight away */
+(function(){var mt=/[?&]track=([0-9]+\.[0-9a-f]+)/.exec(location.search);if(!mt)return;history.replaceState(null,"",location.pathname);setTimeout(function(){openTrackLink(mt[1])},700)})();
 /* install-on-phone: service worker + the "Install" button in the menu */
 (function(){var inst=$("#mninstall"),dp=null,standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
   if("serviceWorker"in navigator&&location.protocol!=="file:")addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){})});

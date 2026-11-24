@@ -15,7 +15,7 @@ One scroll to fall in love. One form to order. One link for everything.
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-5b8a1f?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-b5456a?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-4a2433?style=for-the-badge&logo=vercel&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-131_passing-5b8a1f?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-147_passing-5b8a1f?style=for-the-badge)
 
 <br>
 
@@ -42,7 +42,7 @@ One scroll to fall in love. One form to order. One link for everything.
 |---|---|
 | 🥤 **A cup you can play with** | The hero cup floats and tilts with your mouse or phone. Cherries and leaves drift around it. One flavour tap turns the whole background from rose to matcha green. |
 | 🎬 **A scroll that tells a story** | Cups, the matcha tin on marble, then the pour. Smooth scroll, no jumps. |
-| 🛒 **A real shop behind the page** | 33 dishes, a cart, order tracking, reviews and an owner screen, all backed by a database. |
+| 🛒 **A real shop behind the page** | 33 dishes, a cart, live order tracking with a share link, reviews and an owner screen, all backed by a database. |
 | 📍 **Outlets** | Pick JP Nagar or Sattva Knowledge Park. See "Open now" before ordering. |
 | 💳 **UPI payments** | Pay by UPI or at delivery. Demo mode today; Razorpay when you add keys. |
 | 🍵 **Latcha Club** | Customers make an account, collect points every day they visit, and turn **500 points into ₹50 off** at checkout. The owner can change every number. |
@@ -52,7 +52,7 @@ One scroll to fall in love. One form to order. One link for everything.
 | 🔎 **Find my matcha** | A 4-tap quiz that picks a drink from the live menu. |
 | 📊 **Owner desk** | A pink, phone-friendly screen for orders, dashboard, reviews, menu, outlets and loyalty. |
 | 🛡 **Safe by default** | Hashed passwords, spam trap, order limits, private tracking, signed payments, reviews held until approved. |
-| ✅ **Tested** | 131 automatic tests (API and real-browser) run on every push. |
+| ✅ **Tested** | 147 automatic tests (API and real-browser) run on every push. |
 
 <br>
 
@@ -225,14 +225,23 @@ A 4-tap quiz (format, flavour, sweetness, light or treat) that picks one dish an
 
 <p align="center"><img src="docs/shot-menu-editor.jpg" alt="Owner screen: menu editor" width="85%"></p>
 
+### 🛵 Live order tracking
+
+After ordering, **Track this order** shows four steps: **Received → Making → On the way → Delivered**. The page re-checks every 10 seconds by itself, so the customer watches the status change without pressing anything. It also shows "Updated 3 min ago", a **Call the outlet** button, and **Share tracking link**.
+
+- The owner moves an order along with one button each time: **Confirm order**, **Send out for delivery**, **Mark delivered** (or **Cancel order**). The dropdown on each card still works too.
+- The share link looks like `/?track=12.a1b2c3d4e5`. The part after the dot is a secret made from the server's `JWT_SECRET`, so nobody can guess another order's link. It opens the tracker without asking for the phone number, and it never shows the name, phone or address. Paying later from the tracker still asks for the phone number.
+- Ordering by phone number still works the old way (**Track your order** in the footer, or from the Club **Me** tab).
+
 ### 📊 Owner dashboard
 
 Admin → **Dashboard** shows the last 1, 7, 30 or 90 days. Everything is counted from real orders; nothing extra is stored.
 
 <p align="center"><img src="docs/shot-dashboard.jpg" alt="Owner dashboard with sales, orders, collected, average order and a sales-by-day chart (sample data)" width="85%"></p>
 
-- Top row: sales, orders (each compared with the period before), money collected, average order, customers.
-- Charts: sales or orders by day, top dishes, busiest hours, outlets, how people pay, new and returning customers, Fam free drinks given.
+- Top row: sales, orders (each compared with the period before), money collected, average order, **average time to deliver** (placed to delivered), **repeat customers** (% who had ordered before).
+- Charts: sales or orders by day, top dishes, busiest hours, **best weekday**, outlets, how people pay, new and returning customers, Fam free drinks given.
+- **Export orders (CSV)** downloads the orders of the chosen period. Excel and Google Sheets open it. Times are Indian time, and names that start with `=` are made safe so a spreadsheet cannot run them as a formula.
 - **Sales** is the value of orders placed. **Collected** is only what is marked Paid. Cancelled orders are never counted.
 - An order with no price adds to the order count but not to rupees. The page tells you how many.
 - Days and hours are Indian time. A customer is one mobile number.
@@ -284,7 +293,8 @@ Try everything in the browser at **`/docs`**.
 | `GET /api/menu` | Menu items that are switched on (with prices) |
 | `GET /api/outlets` | Outlets with "Open now" text |
 | `POST /api/orders` | Place an order (outlet, items, optional free drink). The server works out the price |
-| `POST /api/orders/track` | Needs the order number **and** the phone used. Returns status and items only |
+| `POST /api/orders/track` | Needs the order number **and** the phone used. Returns status, items, outlet and a private tracking `code` |
+| `GET /api/orders/track/{code}` | The share link. The secret code replaces the phone number. Same 404 for every wrong code |
 | `GET /api/payments/config` | Which payment mode is on |
 | `POST /api/orders/{id}/pay` | Start a UPI payment |
 | `POST /api/orders/{id}/pay/confirm` | Confirm a payment (demo, or Razorpay signature) |
@@ -319,6 +329,7 @@ Try everything in the browser at **`/docs`**.
 | `POST /api/admin/customers/{id}/adjust` | Add or remove points, with a note |
 | `GET /api/admin/alerts`, `POST /api/admin/alerts/test` | Are Telegram alerts set up, and send a test message |
 | `GET /api/admin/stats`, `GET /api/admin/dashboard?days=1..90` | Tiles and dashboard numbers |
+| `GET /api/admin/export.csv?days=1..365` | Orders as a CSV file |
 | `GET /api/admin/reviews`, `POST .../approve`, `DELETE .../{id}` | Approve or delete reviews |
 
 **Safety built in**
@@ -326,6 +337,7 @@ Try everything in the browser at **`/docs`**.
 - Passwords are stored as salted hashes, never as plain text.
 - Points are only changed on the server, in one place, and every change is logged. Orders are checked (Indian mobile number, 1 to 20 of each drink, outlet open and not sold out). Maximum 5 orders per phone per hour.
 - Prices and totals are worked out on the server. A payment is only marked paid after a valid confirmation.
+- Tracking needs the order number **and** phone, or the private share link. Share codes are derived from `JWT_SECRET`: changing that secret makes old links stop working.
 - Tracking needs the order number **and** phone. A wrong phone and a missing order give the same answer.
 - Reviews stay hidden until approved. A hidden field catches simple spam bots. Review and order text is shown as plain text, so nobody can inject code.
 - Database rules (rating 1 to 5, sweetness 0 to 5, quantity 1 to 20) are enforced in the database too.
@@ -415,8 +427,8 @@ scripts/
 ├── init_db.py          create tables, load the 33 menu items
 ├── make_admin_hash.py  make the owner password hash
 └── menu_seed.json      the menu data
-tests/                  131 automated tests
-├── test_api.py, test_dashboard.py, test_loyalty.py, test_features.py   API tests
+tests/                  147 automated tests
+├── test_api.py, test_dashboard.py, test_loyalty.py, test_features.py, test_tracking.py   API tests
 └── e2e/                browser tests (Playwright) on a throw-away database
 .github/workflows/      runs the tests on every push
 index.py                the file Vercel looks for (loads app/main.py)

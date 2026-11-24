@@ -55,7 +55,17 @@ def build(db: Session, days: int, now: datetime | None = None) -> dict:
     sales, before_sales = _money(live_orders), _money(prev)
     priced = [o for o in live_orders if o.amount]
     collected = _money([o for o in live_orders if o.payment_status == "paid"])
+    cur_all = len(cur)
+    cancelled_n = sum(1 for o, _ in cur if o.status == "cancelled")
+    mins = []
+    for o in live_orders:
+        if o.status == "delivered" and o.status_at is not None:
+            a, b = _ist(o.created_at), _ist(o.status_at)
+            if b >= a:
+                mins.append((b - a).total_seconds() / 60)
     head = dict(
+        avg_delivery_minutes=round(sum(mins) / len(mins)) if mins else None, delivered_timed=len(mins),
+        cancel_rate=round(cancelled_n * 100 / cur_all) if cur_all else 0,
         orders=len(live), orders_change=_pct(len(live), len(prev)),
         sales=sales, sales_change=_pct(sales, before_sales),
         collected=collected,
@@ -99,6 +109,13 @@ def build(db: Session, days: int, now: datetime | None = None) -> dict:
     hours = Counter(t.hour for _, t in live)
     by_hour = [dict(hour=h, orders=hours.get(h, 0)) for h in range(24)]
 
+    # ---- which day of the week is strongest
+    wk = [[0, 0] for _ in range(7)]
+    for o, t in live:
+        wk[t.weekday()][0] += 1
+        wk[t.weekday()][1] += o.amount or 0
+    weekdays = [dict(day=n, orders=wk[i][0], sales=wk[i][1]) for i, n in enumerate(("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))]
+
     # ---- how people pay
     def bucket(pred):
         sel = [o for o in live_orders if pred(o)]
@@ -124,7 +141,9 @@ def build(db: Session, days: int, now: datetime | None = None) -> dict:
         ordered_twice_or_more=sum(1 for c in counts.values() if c >= 2),
     )
 
+    head["repeat_rate"] = round(customers["returning"] * 100 / customers["total"]) if customers["total"] else 0
     return dict(
+        weekdays=weekdays,
         days=days, from_date=start.strftime("%Y-%m-%d"), to_date=today.strftime("%Y-%m-%d"),
         head=head, daily=daily, dishes=dishes, outlets=outlets, hours=by_hour, payments=payments, customers=customers,
         pending_reviews=db.scalar(select(func.count(m.Review.id)).where(m.Review.approved.is_(False))) or 0,

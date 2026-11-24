@@ -30,7 +30,8 @@ def upgrade_schema(engine) -> None:
     """Adds the new columns to tables that already exist (create_all only makes new tables)."""
     insp = inspect(engine)
     adds = {"orders": [("customer_id", "INTEGER REFERENCES customers(id)"), ("points_used", "INTEGER NOT NULL DEFAULT 0"),
-                       ("points_discount", "INTEGER NOT NULL DEFAULT 0"), ("points_refunded", "BOOLEAN NOT NULL DEFAULT FALSE")],
+                       ("points_discount", "INTEGER NOT NULL DEFAULT 0"), ("points_refunded", "BOOLEAN NOT NULL DEFAULT FALSE"),
+                       ("status_at", "TIMESTAMP")],
             "reviews": [("customer_id", "INTEGER REFERENCES customers(id)")],
             "customers": [("birthday", "VARCHAR(5)")]}
     for table, cols in adds.items():

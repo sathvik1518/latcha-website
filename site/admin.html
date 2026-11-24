@@ -147,14 +147,14 @@ button svg{width:16px;height:16px}
 /* order cards */
 .oc{padding:18px 18px 16px}
 .oc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--rose-deep)}
-.oc.st-new::before{background:var(--crimson)}.oc.st-delivered::before{background:var(--matcha)}.oc.st-cancelled::before{background:#c9b3bd}.oc.st-cancelled{opacity:.7}
+.oc.st-out::before{background:#d9962b}.oc.st-new::before{background:var(--crimson)}.oc.st-delivered::before{background:var(--matcha)}.oc.st-cancelled::before{background:#c9b3bd}.oc.st-cancelled{opacity:.7}
 .oh{display:flex;align-items:center;gap:12px}
 .onum{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;flex:none;background:linear-gradient(135deg,var(--berry),var(--rose-deep));color:#fff;font-family:var(--serif);font-size:17px;box-shadow:0 8px 16px rgba(181,69,106,.28)}
-.oc.st-new .onum{background:linear-gradient(135deg,var(--crimson),#e0566a)}.oc.st-delivered .onum{background:linear-gradient(135deg,var(--matcha),#8cbc4a)}.oc.st-cancelled .onum{background:#c9b3bd;box-shadow:none}
+.oc.st-out .onum{background:linear-gradient(135deg,#d9962b,#f0b95a)}.oc.st-new .onum{background:linear-gradient(135deg,var(--crimson),#e0566a)}.oc.st-delivered .onum{background:linear-gradient(135deg,var(--matcha),#8cbc4a)}.oc.st-cancelled .onum{background:#c9b3bd;box-shadow:none}
 .oh .who{flex:1;min-width:0}.oh .who b{display:block;font-size:20px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .age{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--mute)}.age svg{width:13px;height:13px}
 .sel{min-height:40px;padding:6px 32px 6px 14px;font-size:13px;font-weight:800;text-transform:capitalize;border-color:var(--rose)}
-.st-new .sel{background-color:#ffe3e7;color:var(--crimson)}.st-delivered .sel{background-color:var(--leaf);color:var(--matcha)}.st-confirmed .sel{background-color:#ffe9f0;color:var(--berry)}
+.st-new .sel{background-color:#ffe3e7;color:var(--crimson)}.st-delivered .sel{background-color:var(--leaf);color:var(--matcha)}.st-confirmed .sel{background-color:#ffe9f0;color:var(--berry)}.st-out .sel{background-color:#fff0d6;color:#9a5b00}
 .steps{display:flex;align-items:center;margin:14px 2px 4px}
 .steps .s{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#b69aa6}
 .steps .s i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#fff;border:2px solid var(--rose);flex:none}
@@ -331,8 +331,8 @@ function bars(vals,tips,hi,tall){var mx=Math.max.apply(null,vals.concat([1]));
   return'<div class="dbars'+(tall?' tall':'')+'" role="img" aria-label="Bar chart">'+vals.map(function(v,i){return'<i'+(i===hi?' class="hi"':'')+' style="height:'+Math.max(3,Math.round(v*100/mx))+'%" title="'+dx(tips[i])+'"></i>'}).join("")+'</div>'}
 function renderDash(d){
   var h=d.head,c=d.customers,p=d.payments,days=d.daily,html="",big=0,i;
-  var chips='<div class="row barrow"><div class="chips" role="group" aria-label="Period">'+[7,30,90].map(function(n){return'<button type="button" data-d="'+n+'"'+(n===dday?' class="on" aria-pressed="true"':' aria-pressed="false"')+'>Last '+n+' days</button>'}).join("")+'</div><span class="mute">'+dshort(d.from_date)+' – '+dshort(d.to_date)+'</span></div>';
-  var tiles=[[inr(h.sales),"Sales"+chg(h.sales_change),"rupee","big"],[h.orders+'',"Orders"+chg(h.orders_change),"bag","k-made"],[inr(h.collected),"Collected (paid)","check","k-paid"],[inr(h.average_order),"Average order","trend","k-pay"],[c.total+'',"Customers","users",""]];
+  var chips='<div class="row barrow"><div class="chips" role="group" aria-label="Period">'+[7,30,90].map(function(n){return'<button type="button" data-d="'+n+'"'+(n===dday?' class="on" aria-pressed="true"':' aria-pressed="false"')+'>Last '+n+' days</button>'}).join("")+'</div><span class="mute">'+dshort(d.from_date)+' – '+dshort(d.to_date)+'</span><button type="button" class="o sm" id="dcsv">⬇ Export orders (CSV)</button></div>';
+  var tiles=[[inr(h.sales),"Sales"+chg(h.sales_change),"rupee","big"],[h.orders+'',"Orders"+chg(h.orders_change),"bag","k-made"],[inr(h.collected),"Collected (paid)","check","k-paid"],[inr(h.average_order),"Average order","trend","k-pay"],[h.avg_delivery_minutes==null?"–":h.avg_delivery_minutes+" min","Avg time to deliver"+(h.delivered_timed?' <span class="dchg">(from '+h.delivered_timed+')</span>':""),"clock",""],[h.repeat_rate+"%","Repeat customers","heart",""]];
   html+=chips+'<div class="stats">'+tiles.map(function(t){return'<div class="stat '+t[3]+'"><i class="si">'+ic(t[2])+'</i><div><b>'+t[0]+'</b><span class="l">'+t[1]+'</span></div></div>'}).join("")+'</div>';
   if(!h.orders){html+='<div class="card empty"><div class="em">📈</div><h3>No orders in this period yet</h3><p>Numbers fill in as orders come.</p></div>'}
   html+='<div class="dgrid">';
@@ -345,6 +345,9 @@ function renderDash(d){
   /* hours */
   var hv=d.hours.map(function(x){return x.orders}),hm=0;hv.forEach(function(v,k){if(v>hv[hm])hm=k});
   html+='<div class="card"><h3 class="dh"><i class="hic">'+ic("clock")+'</i>Busy hours</h3><p class="dsub">'+(hv[hm]?'Busiest: '+hlabel(hm)+' to '+hlabel((hm+1)%24)+' ('+hv[hm]+' order'+(hv[hm]===1?'':'s')+'). Indian time.':'No orders yet.')+'</p>'+bars(hv,d.hours.map(function(x){return hlabel(x.hour)+": "+x.orders+" order"+(x.orders===1?"":"s")}),hv[hm]?hm:-1,true)+'<div class="dlab"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span></div></div>';
+  /* weekdays */
+  var WD=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],wv=d.weekdays.map(function(x){return x.orders}),wm=0;wv.forEach(function(v,k){if(v>wv[wm])wm=k});
+  html+='<div class="card"><h3 class="dh"><i class="hic">'+ic("trend")+'</i>Best weekday</h3><p class="dsub">'+(wv[wm]?'Strongest: '+WD[wm]+' ('+wv[wm]+' order'+(wv[wm]===1?'':'s')+', '+inr(d.weekdays[wm].sales)+').':'No orders yet.')+'</p>'+bars(wv,d.weekdays.map(function(x,k){return WD[k]+": "+x.orders+" order"+(x.orders===1?"":"s")+" · "+inr(x.sales)}),wv[wm]?wm:-1,true)+'<div class="dlab">'+d.weekdays.map(function(x){return'<span>'+x.day+'</span>'}).join("")+'</div></div>';
   /* outlets */
   html+='<div class="card"><h3 class="dh"><i class="hic">'+ic("pin")+'</i>Outlets</h3><p class="dsub">Orders and sales by shop.</p>'+(d.outlets.length?hrows(d.outlets.map(function(x){return{n:x.name,v:x.orders,t:x.orders+" order"+(x.orders===1?"":"s"),s:x.sales?inr(x.sales):""}})):'<p class="mute">No orders yet.</p>')+'</div>';
   /* payments */
@@ -354,13 +357,16 @@ function renderDash(d){
   html+='<div class="card"><h3 class="dh"><i class="hic">'+ic("heart")+'</i>Customers and Fam</h3><p class="dsub">A customer is one mobile number.</p>'
     +[["New customers",c.new],["Came back (ordered before)",c.returning],["Ordered 2 or more times now",c.ordered_twice_or_more],["Fam free drinks given",h.fam_free_drinks],["Rupees given away as free drinks",inr(h.fam_discount)]].map(function(r){return'<div class="dkv"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>'}).join("")+'</div>';
   html+='</div>';
-  var notes=['Sales is the value of orders placed. Collected is only what is marked Paid. Delivered '+h.delivered+', cancelled '+h.cancelled+'.'];
+  var notes=['Sales is the value of orders placed. Collected is only what is marked Paid. Delivered '+h.delivered+', cancelled '+h.cancelled+' ('+h.cancel_rate+'% of orders placed).'];
   if(h.unpriced_orders)notes.push(h.unpriced_orders+' order'+(h.unpriced_orders===1?' has':'s have')+' no price (a dish had no price when it was ordered), so '+(h.unpriced_orders===1?'it adds':'they add')+' no rupees above. Set prices in Menu.');
   if(d.pending_reviews)notes.push(d.pending_reviews+' review'+(d.pending_reviews===1?' is':'s are')+' waiting for your approval in Reviews.');
   html+='<p class="dnote">'+notes.map(dx).join("<br>")+'</p>';
   var l=$("list");l.innerHTML=html;
   [].forEach.call(l.querySelectorAll("[data-d]"),function(b){b.onclick=function(){dday=+b.dataset.d;loadDash()}});
+  var cs=$("dcsv");if(cs)cs.onclick=dlCsv;
   [].forEach.call(l.querySelectorAll("[data-m]"),function(b){b.onclick=function(){dmet=b.dataset.m;renderDash(d)}})}
+function dlCsv(){fetch("/api/admin/export.csv?days="+dday,{headers:{Authorization:"Bearer "+T}}).then(function(r){if(!r.ok)throw new Error("Could not export. Please try again.");return r.blob()})
+  .then(function(b){var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="latcha-orders-last-"+dday+"-days.csv";document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)}).catch(function(er){$("err").textContent=er.message})}
 function loadDash(){var l=$("list");l.innerHTML=SK;
   api("GET","/api/admin/dashboard?days="+dday).then(function(d){if(tab==="dash")renderDash(d)}).catch(function(er){if(tab==="dash"){l.textContent="";$("err").textContent=er.message}})}
 /* ---------- live order screen ---------- */
@@ -375,7 +381,7 @@ function alertState(){api("GET","/api/admin/alerts").then(function(a){$("alertbt
 $("alertbtn").onclick=function(){var b=this;if(!b.dataset.on){flash("Phone alerts: make a Telegram bot with @BotFather, message it once, then add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in Vercel → Settings → Environment Variables and redeploy. New orders will then ping your phone instantly.");return}
   b.disabled=true;api("POST","/api/admin/alerts/test").then(function(r){flash(r.message)}).catch(function(er){flash(er.message)}).then(function(){b.disabled=false})};
 $("snd").onclick=function(){sound=!sound;this.textContent=sound?"🔔 Sound on":"🔔 Sound off";this.setAttribute("aria-pressed",sound);if(sound)beep()};
-function inFilter(o){return filt==="all"?true:filt==="active"?(o.status==="new"||o.status==="confirmed"):o.status===filt}
+function inFilter(o){return filt==="all"?true:filt==="active"?(o.status==="new"||o.status==="confirmed"||o.status==="out"):o.status===filt}
 function fetchOrders(silent){
   return Promise.all([api("GET","/api/admin/orders?limit=200"),api("GET","/api/admin/stats")]).then(function(r){
     var list=r[0],mx=0,ids={};stats=r[1];list.forEach(function(o){if(o.id>mx)mx=o.id});
@@ -393,7 +399,7 @@ function renderOrders(fresh){
   $("stats").innerHTML="";tiles.forEach(function(t){$("stats").appendChild(el("div",{class:"stat "+t[4]+(t[2]?" hot":"")},[el("i",{class:"si",html:ic(t[3])}),el("div",{},[el("b",{text:String(t[1])}),el("span",{class:"l",text:t[0]})])]))});
   var nb=$("nbo");nb.textContent=st.new_orders||"";nb.dataset.n=st.new_orders||0;var d0=new Date();$("livet").textContent="Live · updated "+d0.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
   var cb=$("chips");cb.innerHTML="";
-  FILTERS.forEach(function(f){var c=f[0]==="all"?orders.length:f[0]==="active"?n("new")+n("confirmed"):n(f[0]);
+  FILTERS.forEach(function(f){var c=f[0]==="all"?orders.length:f[0]==="active"?n("new")+n("confirmed")+n("out"):n(f[0]);
     cb.appendChild(el("button",{type:"button",class:f[0]===filt?"on":"",text:f[1]+" · "+c,"aria-pressed":f[0]===filt,onclick:function(){filt=f[0];renderOrders({})}}))});
   var of=$("outf"),names={};orders.forEach(function(o){if(o.outlet_name)names[o.outlet_name]=1});
   of.innerHTML='<option value="">All outlets</option>'+Object.keys(names).map(function(x){return'<option>'+x.replace(/&/g,"&amp;").replace(/</g,"&lt;")+'</option>'}).join("");of.value=names[outF]?outF:"";outF=of.value;of.hidden=Object.keys(names).length<2;
@@ -408,13 +414,14 @@ function setStatus(o,st){return api("PATCH","/api/admin/orders/"+o.id,{status:st
 function fail(er){$("err").textContent=er.message}
 function who2(n){return (n||"?").trim().charAt(0).toUpperCase()}
 function orderCard(o,isNew){
-  var STEPS=[["new","New"],["confirmed","Confirmed"],["delivered","Delivered"]],idx=STEPS.map(function(s){return s[0]}).indexOf(o.status);
-  var sel=el("select",{"aria-label":"Status",class:"sel"},["new","confirmed","delivered","cancelled"].map(function(x){var op=el("option",{value:x,text:x});if(x===o.status)op.selected=true;return op}));
+  var STEPS=[["new","New"],["confirmed","Confirmed"],["out","On the way"],["delivered","Delivered"]],idx=STEPS.map(function(s){return s[0]}).indexOf(o.status);
+  var sel=el("select",{"aria-label":"Status",class:"sel"},["new","confirmed","out","delivered","cancelled"].map(function(x){var op=el("option",{value:x,text:x==="out"?"on the way":x});if(x===o.status)op.selected=true;return op}));
   sel.onchange=function(){setStatus(o,sel.value)};
   var acts=el("div",{class:"acts"});
   if(o.status==="new")acts.appendChild(el("button",{text:"Confirm order",onclick:function(){setStatus(o,"confirmed")}}));
-  if(o.status==="confirmed")acts.appendChild(el("button",{text:"Mark delivered",onclick:function(){setStatus(o,"delivered")}}));
-  if(o.status==="new"||o.status==="confirmed")acts.appendChild(el("button",{class:"o sm",text:"Cancel order",onclick:function(){if(confirm("Cancel order #"+o.id+"?"))setStatus(o,"cancelled")}}));
+  if(o.status==="confirmed")acts.appendChild(el("button",{text:"Send out for delivery",onclick:function(){setStatus(o,"out")}}));
+  if(o.status==="confirmed"||o.status==="out")acts.appendChild(el("button",o.status==="out"?{text:"Mark delivered",onclick:function(){setStatus(o,"delivered")}}:{class:"o sm",text:"Mark delivered",onclick:function(){setStatus(o,"delivered")}}));
+  if(o.status==="new"||o.status==="confirmed"||o.status==="out")acts.appendChild(el("button",{class:"o sm",text:"Cancel order",onclick:function(){if(confirm("Cancel order #"+o.id+"?"))setStatus(o,"cancelled")}}));
   var steps=el("div",{class:"steps"});
   if(o.status==="cancelled")steps.appendChild(el("span",{class:"badge bad",text:"Cancelled"}));
   else STEPS.forEach(function(s,k){if(k)steps.appendChild(el("div",{class:"ln"+(k<=idx?" d":"")}));steps.appendChild(el("div",{class:"s"+(k<=idx?" d":"")+(k===idx?" cur":"")},[el("i",{html:ic("check")}),el("span",{text:s[1]})]))});

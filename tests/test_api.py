@@ -81,7 +81,8 @@ def test_track_shows_status_and_items_but_no_private_details(c):
     body = r.json()
     assert body["id"] == oid and body["status"] == "new"
     assert body["lines"] == [{"item_name": "Pure Iced Matcha Latte", "quantity": 2}]
-    assert set(body) == {"id", "created_at", "status", "lines", "payment_method", "payment_status", "amount", "fam_discount"}  # no phone, address or name
+    assert set(body) == {"id", "created_at", "status", "lines", "payment_method", "payment_status", "amount", "fam_discount",
+                         "status_at", "outlet_name", "outlet_phone", "code"}  # no customer phone, address or name
     h = tok(c)
     c.patch(f"/api/admin/orders/{oid}", json={"status": "delivered"}, headers=h)
     assert c.post("/api/orders/track", json={"order_id": oid, "phone": "9100000001"}).json()["status"] == "delivered"

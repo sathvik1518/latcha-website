@@ -76,11 +76,16 @@ class Order(Base):
     points_used: Mapped[int] = mapped_column(Integer, default=0, server_default="0")        # Latcha points spent on this order
     points_discount: Mapped[int] = mapped_column(Integer, default=0, server_default="0")    # rupees off from those points
     points_refunded: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")   # points given back after a cancel
+    status_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)   # when the status last changed (empty = never, use created_at)
     lines: Mapped[list["OrderLine"]] = relationship(back_populates="order", cascade="all, delete-orphan")
 
     @property
     def outlet_name(self) -> str | None:
         return self.outlet.name if self.outlet else None
+
+    @property
+    def outlet_phone(self) -> str | None:
+        return (self.outlet.phone or None) if self.outlet else None
 
 
 class OrderLine(Base):
