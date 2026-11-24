@@ -10,7 +10,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://api.getlayers.ai" crossorigin>
-<link rel="preload" as="image" href="assets/cup-ube.webp">
+<link rel="preload" as="image" href="assets/cup-ube.webp"><link rel="preload" as="image" href="assets/menu/soft-4.webp"><link rel="preload" as="image" href="assets/menu/cloud-3.webp"><link rel="preload" as="image" href="assets/menu/soft-1.webp"><link rel="preload" as="image" href="assets/menu/soft-5.webp"><link rel="preload" as="image" href="assets/menu/soft-2.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gloock&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=Pinyon+Script&display=swap" rel="stylesheet">
@@ -1173,8 +1173,10 @@ var wm=$("#wm"),letters=[];
 wm.innerHTML='<div class="lw"></div>';
 [[0,136],[136,291],[291,400],[400,530],[530,692],[692,877]].forEach(function(r){var im=document.createElement("img");im.src=BASE+"logo-word.png";im.alt="";im.style.clipPath="inset(0 "+((877-r[1])/877*100)+"% 0 "+(r[0]/877*100)+"%)";wm.firstChild.appendChild(im);letters.push(im)});
 var ingEls=INGS.map(function(d){var e=document.createElement("div");e.className="ing";e.style.left=d[2]+"%";e.style.top=d[3]+"%";
-  var im=document.createElement("img");im.alt=d[0];e.appendChild(im);load(im,d[4]);
+  var im=document.createElement("img");im.alt=d[0];im.setAttribute("loading","eager");im.setAttribute("fetchpriority","high");e.appendChild(im);load(im,d[4]);
   e.insertAdjacentHTML("beforeend","<b>"+d[0]+"</b><small>"+d[1]+"</small>");$("#ings").appendChild(e);return e});
+/* if a picture is still empty after a few seconds (slow network or a stuck request), ask for it again */
+[2500,6000,12000].forEach(function(ms){setTimeout(function(){ingEls.forEach(function(e){var im=e.querySelector("img"),u=im&&im.getAttribute("src");if(u&&!(im.complete&&im.naturalWidth))im.src=u.split("?")[0]+"?r="+Date.now()})},ms)});
 var revEls=REVS.map(function(r){var e=document.createElement("div");e.className="rev glass";
   e.innerHTML='<i style="background:'+r[1]+'" aria-hidden="true">'+r[0]+'</i><div><h3>'+r[2]+'</h3><em>'+r[3]+'</em><p>“'+r[4]+'”</p></div>';
   $("#revs").appendChild(e);return e});
