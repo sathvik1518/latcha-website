@@ -225,6 +225,10 @@ A 4-tap quiz (format, flavour, sweetness, light or treat) that picks one dish an
 
 <p align="center"><img src="docs/shot-menu-editor.jpg" alt="Owner screen: menu editor" width="85%"></p>
 
+### 🔑 The owner login: "open the shop"
+
+`/admin.html` opens on a small LATCHA shopfront with a **CLOSED** sign that swings in the breeze and steam rising from a matcha cup. The greeting follows Indian time ("Good morning, owner"), and a short tip changes each visit. Sign in and the sign flips to **OPEN**, the door lights up and the desk loads. A wrong password shakes the card, and a Caps Lock warning shows while typing the password. No order data is loaded before login.
+
 ### 🛵 Live order tracking
 
 After ordering, **Track this order** shows four steps: **Received → Making → On the way → Delivered**. The page re-checks every 10 seconds by itself, so the customer watches the status change without pressing anything. It also shows "Updated 3 min ago", a **Call the outlet** button, and **Share tracking link**.

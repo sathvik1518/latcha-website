@@ -67,8 +67,40 @@ button.o{background:rgba(255,255,255,.88);color:var(--berry);border:1.5px solid 
 button.d{background:var(--crimson);color:#fff;box-shadow:0 8px 20px rgba(181,48,58,.25)}
 button.sm{min-height:38px;padding:7px 16px;font-size:13px}
 button svg{width:16px;height:16px}
-/* login */
-#login{display:grid;gap:12px;max-width:400px;margin:10px 0}
+/* login: the shop door */
+#gate{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:clamp(24px,5vw,72px);align-items:center;max-width:1080px;margin:clamp(4px,3vh,32px) auto 0}
+#gate[hidden]{display:none!important}
+.gscene{position:relative;width:100%;max-width:500px;justify-self:center;animation:gin .8s cubic-bezier(.2,.8,.2,1) both}
+.gscene svg{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 22px 28px rgba(181,69,106,.18))}
+.gscene .door,.gscene .win{transition:fill .8s ease}
+body.opening .gscene .door{fill:#e8f0d6}body.opening .gscene .win{fill:#fffbe8}
+.swing{position:absolute;left:62.500%;top:42%;width:25%;perspective:700px;transform-origin:50% -26px;animation:swing 4.200s ease-in-out infinite}
+.swing::before,.swing::after{content:"";position:absolute;top:-30px;width:2px;height:32px;background:#8f2229;opacity:.7}.swing::before{left:16%}.swing::after{right:16%}
+.sign{position:relative;aspect-ratio:1.8;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,1.5,.5,1)}
+.sign b{position:absolute;inset:0;display:grid;place-items:center;border:3px solid #fff;border-radius:12px;color:#fff;font:800 clamp(11px,1.700vw,16px)/1 var(--ui);letter-spacing:.18em;backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 8px 16px rgba(74,36,51,.22)}
+.sign .c{background:var(--crimson)}.sign .o{background:var(--matcha);transform:rotateY(180deg)}
+body.opening .sign{transform:rotateY(180deg)}body.opening .swing{animation-duration:1.200s}
+.gscene .st{stroke-dasharray:60;animation:steam 3s ease-in-out infinite;opacity:0}.gscene .s2{animation-delay:-1s}.gscene .s3{animation-delay:-2s}
+.gscene .tw{transform-box:fill-box;transform-origin:center;animation:tw 3.600s ease-in-out infinite}.gscene .t2{animation-delay:-1.800s}
+@keyframes swing{0%,100%{transform:rotate(-3.500deg)}50%{transform:rotate(3.500deg)}}
+@keyframes steam{0%{opacity:0;transform:translateY(10px)}35%{opacity:.85}100%{opacity:0;transform:translateY(-16px)}}
+@keyframes gin{from{opacity:0;transform:translateY(18px) scale(.97)}}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.gside h1{font-family:var(--serif);font-weight:400;font-size:clamp(36px,5vw,56px);line-height:1.04;letter-spacing:-.01em}
+.gside h1 em{font-style:normal;color:var(--berry)}
+.gsub{color:var(--mute);font-weight:600;margin:8px 0 18px}
+#login{display:grid;gap:12px;max-width:420px;margin:0;position:relative;padding:22px;animation:gin .8s .12s cubic-bezier(.2,.8,.2,1) both}
+#login.shake{animation:shake .45s}
+#login button[type=submit],#login>button{display:flex;align-items:center;justify-content:center;gap:10px;min-height:50px;font-size:15px}
+#login>button svg{transition:transform .25s}#login>button:hover svg{transform:translateX(4px)}
+.gtag{display:flex;align-items:center;gap:10px;margin-bottom:2px}.gtag span{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--crimson);background:#ffe3e7;padding:4px 10px;border-radius:99px}
+.gtag i{flex:1;border-top:2px dashed var(--rose)}
+.fld{position:relative;display:block}.fld>svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--berry);pointer-events:none}.fld input{width:100%;padding-left:46px}
+.caps{font-size:12.500px;font-weight:700;color:var(--amber);background:#fff0d6;border-radius:12px;padding:7px 12px}
+.gtip{margin:16px 4px 6px;font-size:13.500px;color:var(--mute);font-weight:600;max-width:420px}.gtip b{color:var(--berry)}
+.gback{display:inline-block;margin:2px 4px;font-size:13px;font-weight:700;color:var(--berry);text-decoration:none}.gback:hover{text-decoration:underline}
+@media(max-width:820px){#gate{grid-template-columns:1fr;gap:6px;margin-top:0}.gscene{max-width:250px}.gside h1{font-size:34px}.gsub{margin-bottom:14px}}
+@media(prefers-reduced-motion:reduce){.gscene,#login,.swing,.gscene .st,.gscene .tw{animation:none}.sign{transition:none}.gscene .st{opacity:.5}}
 .pw{position:relative}.pw input{width:100%;padding-right:52px}
 .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:var(--berry);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .eye:hover{background:var(--petal)}.eye svg{width:22px;height:22px}.eye .off{display:none}.eye.on .off{display:block}.eye.on .on{display:none}
@@ -253,13 +285,54 @@ button svg{width:16px;height:16px}
 <div class="deco" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b><b></b><b></b><b></b></div>
 <header class="top"><img src="assets/logo.png" alt="LATCHA"><div class="nm"><b>LATCHA</b><small>Owner desk</small></div><div class="sp"></div><span class="live" id="live" hidden><i></i><span id="livet">Live</span></span><button class="hbtn" id="out" type="button" hidden aria-label="Log out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Log out</span></button></header>
 <main>
-<div class="welcome" id="welcome"><div class="eyebrow">Behind the counter</div>
+<div class="welcome" id="welcome" hidden><div class="eyebrow">Behind the counter</div>
 <h1>Welcome <em>back</em></h1></div>
-<form id="login" class="card glass">
-  <input id="u" placeholder="Username" autocomplete="username" autocapitalize="none" required>
-  <div class="pw"><input id="p" type="password" placeholder="Password" autocomplete="current-password" required><span class="eye" id="eye" role="button" tabindex="0" aria-label="Show password" aria-pressed="false"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.500 7 10.500 7-4 7-10.500 7S1.500 12 1.500 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.900 17.900A10.500 10.500 0 0112 19C5.500 19 1.500 12 1.500 12a19 19 0 014.600-5.400M9.900 5.200A9.500 9.500 0 0112 5c6.500 0 10.500 7 10.500 7a19 19 0 01-2.200 3.200"/><path d="M1 1l22 22"/><path d="M9.900 9.900a3 3 0 004.200 4.200"/></svg></span></div>
-  <button>Log in</button><div class="err" id="lerr" role="alert"></div>
+<section id="gate" aria-label="Owner sign in">
+  <div class="gscene" aria-hidden="true">
+    <svg viewBox="0 0 400 368" fill="none">
+      <ellipse cx="200" cy="348" rx="165" ry="12" fill="#e58aa6" opacity=".25"/>
+      <rect x="40" y="70" width="320" height="270" rx="22" fill="#fff5f8" stroke="#f6d3df" stroke-width="2"/>
+      <g class="awn">
+        <rect x="30" y="38" width="42.5" height="62" fill="#b5303a"/><rect x="72.5" y="38" width="42.5" height="62" fill="#fff"/><rect x="115" y="38" width="42.5" height="62" fill="#b5303a"/><rect x="157.5" y="38" width="42.5" height="62" fill="#fff"/><rect x="200" y="38" width="42.5" height="62" fill="#b5303a"/><rect x="242.5" y="38" width="42.5" height="62" fill="#fff"/><rect x="285" y="38" width="42.5" height="62" fill="#b5303a"/><rect x="327.5" y="38" width="42.5" height="62" fill="#fff"/>
+        <circle cx="51.250" cy="100" r="21.250" fill="#b5303a"/><circle cx="93.750" cy="100" r="21.250" fill="#fff"/><circle cx="136.250" cy="100" r="21.250" fill="#b5303a"/><circle cx="178.750" cy="100" r="21.250" fill="#fff"/><circle cx="221.250" cy="100" r="21.250" fill="#b5303a"/><circle cx="263.750" cy="100" r="21.250" fill="#fff"/><circle cx="306.250" cy="100" r="21.250" fill="#b5303a"/><circle cx="348.750" cy="100" r="21.250" fill="#fff"/>
+        <rect x="30" y="30" width="340" height="12" rx="6" fill="#8f2229"/>
+      </g>
+      <rect class="win" x="66" y="140" width="176" height="150" rx="16" fill="#fff" stroke="#e58aa6" stroke-width="2.500"/>
+      <text x="154" y="166" text-anchor="middle" font-family="Gloock,Georgia,serif" font-size="22" fill="#b5303a" letter-spacing="3">LATCHA</text>
+      <path d="M82 258H226" stroke="#f6bfd0" stroke-width="5" stroke-linecap="round"/>
+      <g>
+        <path d="M118 208H190L182 252Q154 262 126 252Z" fill="#fff" stroke="#e58aa6" stroke-width="2.500" stroke-linejoin="round"/>
+        <path d="M120 214H188L184 238Q154 246 124 238Z" fill="#8cbc4a"/>
+        <ellipse cx="154" cy="208" rx="36" ry="7" fill="#a7d05f" stroke="#e58aa6" stroke-width="2.500"/>
+        <path d="M130 214Q142 222 154 214T178 214" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+        <path class="st s1" d="M140 200Q134 192 140 186T140 178" stroke="#e58aa6" stroke-width="3" stroke-linecap="round"/>
+        <path class="st s2" d="M155 198Q149 190 155 184T155 175" stroke="#e58aa6" stroke-width="3" stroke-linecap="round"/>
+        <path class="st s3" d="M170 200Q164 192 170 186T170 178" stroke="#e58aa6" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <g><rect x="206" y="226" width="22" height="32" rx="5" fill="#fff" stroke="#e58aa6" stroke-width="2"/><rect x="206" y="236" width="22" height="14" fill="#8cbc4a"/><rect x="82" y="236" width="22" height="22" rx="5" fill="#fff" stroke="#e58aa6" stroke-width="2"/><rect x="82" y="244" width="22" height="9" fill="#e58aa6" opacity=".8"/></g>
+      <rect class="door" x="262" y="140" width="76" height="200" rx="12" fill="#f6bfd0" stroke="#e58aa6" stroke-width="2.500"/>
+      <rect x="274" y="154" width="52" height="86" rx="26" fill="#fff" opacity=".65"/>
+      <circle cx="324" cy="250" r="5" fill="#b5456a"/>
+      <path d="M54 340c0-26 10-40 22-52 6 14 6 30-2 52z" fill="#8cbc4a"/><path d="M82 340c0-18 8-30 20-38 2 12-1 26-10 38z" fill="#5b8a1f" opacity=".85"/>
+      <path class="tw" d="M352 64l3 9 9 3-9 3-3 9-3-9-9-3 9-3z" fill="#fff"/><path class="tw t2" d="M22 150l2.500 7 7 2.500-7 2.500-2.500 7-2.500-7-7-2.500 7-2.500z" fill="#fff"/>
+    </svg>
+    <div class="swing"><div class="sign"><b class="c">CLOSED</b><b class="o">OPEN</b></div></div>
+  </div>
+  <div class="gside">
+    <div class="eyebrow">Behind the counter</div>
+    <h1 id="gh">Good morning, <em>owner</em></h1>
+    <p class="gsub" id="gsub">Sign in to open the shop for today.</p>
+    <form id="login" class="card glass">
+  <div class="gtag"><span>Staff only</span><i></i></div>
+  <div class="fld"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.500 4.200-7 8-7s7 2.500 8 7"/></svg><input id="u" placeholder="Username" aria-label="Username" autocomplete="username" autocapitalize="none" required></div>
+  <div class="fld pw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><input id="p" type="password" placeholder="Password" aria-label="Password" autocomplete="current-password" required><span class="eye" id="eye" role="button" tabindex="0" aria-label="Show password" aria-pressed="false"><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 12S5.5 5 12 5s10.500 7 10.500 7-4 7-10.500 7S1.500 12 1.500 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.900 17.900A10.500 10.500 0 0112 19C5.500 19 1.500 12 1.500 12a19 19 0 014.600-5.400M9.900 5.200A9.500 9.500 0 0112 5c6.500 0 10.500 7 10.500 7a19 19 0 01-2.200 3.200"/><path d="M1 1l22 22"/><path d="M9.900 9.900a3 3 0 004.200 4.200"/></svg></span></div>
+  <div class="caps" id="caps" hidden>⇪ Caps Lock is on</div>
+  <button><span id="lbt">Open the shop</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><div class="err" id="lerr" role="alert"></div>
 </form>
+    <p class="gtip" id="gtip"></p>
+    <a class="gback" href="/">← Back to the shop</a>
+  </div>
+</section>
 <section id="app" hidden>
   <div class="nav"><div class="tabs" id="tabs">
     <button data-t="orders" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12l2 4v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/><path d="M4 6h16"/><path d="M9 10a3 3 0 006 0"/></svg>Orders<span class="nb" id="nbo" data-n="0"></span></button><button data-t="dash" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg>Dashboard</button><button data-t="reviews" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6L12 16.600 6.600 19.500l1.200-6L3.300 9.300l6.100-.700z"/></svg>Reviews</button><button data-t="menu" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.600 12H6.600z"/><path d="M4 8h16"/><path d="M13 8l2-5"/></svg>Menu</button><button data-t="outlets" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/></svg>Outlets</button><button data-t="fam" class="o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.400-7-10a4 4 0 017-2.600A4 4 0 0119 10c0 5.600-7 10-7 10z"/></svg>Loyalty</button>
@@ -289,15 +362,25 @@ function api(m,u,b){return fetch(u,{method:m,headers:Object.assign({"Content-Typ
   if(r.status===401&&T){out();throw new Error("Session ended. Log in again.")}
   if(r.status===204)return null;return r.json().then(function(j){if(!r.ok)throw new Error(typeof j.detail==="string"?j.detail:"Request failed");return j})})}
 var welT;
-function show(){var on=!!T,w=$("welcome");$("login").hidden=on;$("app").hidden=!on;$("out").hidden=!on;clearTimeout(welT);
+function show(){var on=!!T,w=$("welcome");$("gate").hidden=on;w.hidden=!on;document.body.classList.toggle("locked",!on);if(!on)gateReset();$("login").hidden=on;$("app").hidden=!on;$("out").hidden=!on;clearTimeout(welT);
   if(on){w.classList.remove("gone","in");void w.offsetWidth;w.classList.add("in");welT=setTimeout(function(){w.classList.add("gone")},3200);alertState();load()}
   else{w.classList.remove("gone","in");$("live").hidden=true}}
 function eyeToggle(){var p=$("p"),s=p.type==="password";p.type=s?"text":"password";$("eye").classList.toggle("on",s);$("eye").setAttribute("aria-pressed",s);$("eye").setAttribute("aria-label",s?"Hide password":"Show password")}
 $("eye").onclick=eyeToggle;$("eye").onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();eyeToggle()}};
 function out(){T="";try{sessionStorage.removeItem("tk")}catch(e){}show()}
 $("out").onclick=out;
-$("login").onsubmit=function(e){e.preventDefault();$("lerr").textContent="";$("p").type="password";$("eye").classList.remove("on");
-  api("POST","/api/admin/login",{username:$("u").value,password:$("p").value}).then(function(r){T=r.access_token;try{sessionStorage.setItem("tk",T)}catch(e){}$("p").value="";window.scrollTo(0,0);show()}).catch(function(er){$("lerr").textContent=er.message})};
+/* the shop door: greeting by Indian time, tips, caps-lock hint, a sign that flips to OPEN */
+var TIPS=["Press <b>🔔 Sound</b> once on the Orders tab, and every new order beeps.","Tap <b>📲 Phone alerts</b> to get each order on Telegram.","Mark a dish <b>sold out</b> in Menu and customers cannot order it.","<b>Dashboard → Export</b> gives you every order as a spreadsheet.","Add this desk to your home screen to open it like an app."];
+function gateReset(){var h=(new Date(Date.now()+(330+new Date().getTimezoneOffset())*60000)).getHours(),g=h<5?"Still up":h<12?"Good morning":h<17?"Good afternoon":h<21?"Good evening":"Good night";
+  document.body.classList.remove("opening");$("gh").innerHTML=g+", <em>owner</em>";$("gsub").textContent="Sign in to open the shop for today.";$("lbt").textContent="Open the shop";
+  $("login").querySelector("button").disabled=false;$("gtip").innerHTML="💡 "+TIPS[Math.floor(Math.random()*TIPS.length)]}
+function capsHint(e){if(e.getModifierState)$("caps").hidden=!e.getModifierState("CapsLock")}
+$("p").addEventListener("keydown",capsHint);$("p").addEventListener("keyup",capsHint);$("p").addEventListener("blur",function(){$("caps").hidden=true});
+$("login").onsubmit=function(e){e.preventDefault();var f=$("login"),btn=f.querySelector("button");$("lerr").textContent="";$("p").type="password";$("eye").classList.remove("on");btn.disabled=true;$("lbt").textContent="Checking…";
+  api("POST","/api/admin/login",{username:$("u").value,password:$("p").value}).then(function(r){T=r.access_token;try{sessionStorage.setItem("tk",T)}catch(e){}$("p").value="";
+    document.body.classList.add("opening");$("gh").innerHTML="We are <em>open!</em>";$("gsub").textContent="Setting up your counter…";$("lbt").textContent="Welcome 💗";
+    setTimeout(function(){window.scrollTo(0,0);show()},matchMedia("(prefers-reduced-motion: reduce)").matches?0:950)})
+  .catch(function(er){$("lerr").textContent=er.message;btn.disabled=false;$("lbt").textContent="Open the shop";f.classList.remove("shake");void f.offsetWidth;f.classList.add("shake")})};
 $("tabs").onclick=function(e){var b=e.target.closest("button");if(!b)return;tab=b.dataset.t;[].forEach.call($("tabs").children,function(x){x.className=x===b?"on":"o"});window.scrollTo({top:0,behavior:"smooth"});load()};
 function load(){$("err").textContent="";$("flash").hidden=true;$("bar").hidden=tab!=="orders";$("msearch").hidden=tab!=="menu";$("mcats").hidden=tab!=="menu";$("live").hidden=tab!=="orders"||window.innerWidth<721;var l=$("list");
   if(tab==="orders"){first=true;seen=0;sig="";l.innerHTML=SK;fetchOrders(false).catch(function(er){l.textContent="";fail(er)});return}
