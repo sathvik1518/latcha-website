@@ -1442,7 +1442,7 @@ function orbitInit(o,i,leaf){var e=o.el,L=e.parentNode,W=L.clientWidth,H=L.clien
   var lx=e.offsetLeft+e.offsetWidth/2,ly=e.offsetTop+e.offsetHeight/2,rx=Math.min(hw*(leaf?1.55+.1*(i%3):1.05+.13*(i%5)),W*.46),ry=Math.min(rx*.5,H*.42);
   o.base=parseFloat(e.style.getPropertyValue("--o"))||1;o.oc={x:W/2,y:H/2};o.ol={x:lx,y:ly};o.orx=rx;o.ory=ry;o.oa=Math.atan2((ly-H/2)/(ry||1),(lx-W/2)/(rx||1));o.ow=(leaf?.2+.03*(i%3):.3+.04*(i%4))}
 var hyaw=0;/* the cup's current turn in radians: cherries and leaves ride it, so they circle exactly as the cup turns */
-function orbitPos(o,t){var a=o.oa+t*o.ow-hyaw,x=o.oc.x+Math.cos(a)*o.orx,y=o.oc.y+Math.sin(a)*o.ory;return{dx:x-o.ol.x,dy:y-o.ol.y,d:(Math.sin(a)+1)/2}}
+function orbitPos(o,t){var a=o.oa-t*o.ow-hyaw,x=o.oc.x+Math.cos(a)*o.orx,y=o.oc.y+Math.sin(a)*o.ory;return{dx:x-o.ol.x,dy:y-o.ol.y,d:(Math.sin(a)+1)/2}}
 function measure(){placeLayers();berries.forEach(function(o,i){var e=o.el,L=e.parentNode;o.rest={cx:e.offsetLeft+e.offsetWidth/2,cy:L.offsetTop+e.offsetTop+e.offsetHeight/2};orbitInit(o,i,false)});leaves.forEach(function(o,i){orbitInit(o,i,true)})}
 measure();addEventListener("resize",measure);addEventListener("load",function(){setTimeout(measure,200)});if(window.ResizeObserver)new ResizeObserver(function(){measure()}).observe(hero);
 function heroFrame(now){if(!hrun)return;requestAnimationFrame(heroFrame);
