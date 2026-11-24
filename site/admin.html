@@ -204,6 +204,35 @@ body.opening .sign{transform:rotateY(180deg)}body.opening .swing{animation-durat
 .note{margin-top:10px;padding:10px 14px;border-radius:16px;background:#fff7e6;border:1px dashed #f3d79b;font-size:13.5px;color:#7a5200}
 .ots{margin-top:10px;font-size:12.5px;color:var(--mute)}
 .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+/* board view: one lane per step */
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.lane{background:rgba(255,255,255,.38);border:1px solid var(--glass-line);border-radius:26px;padding:12px 12px 4px;min-height:240px}
+.lane>h3{display:flex;align-items:center;gap:9px;font:400 19px/1 var(--serif);margin:4px 4px 12px;color:var(--ink)}
+.lane>h3 i{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;color:#fff}.lane>h3 i svg{width:16px;height:16px}
+.lane>h3 .cnt{margin-left:auto;font:800 12px/1 var(--ui);padding:6px 11px;border-radius:99px;background:#fff;color:var(--berry)}
+.lane.l-new>h3 i{background:var(--crimson)}.lane.l-confirmed>h3 i{background:var(--berry)}.lane.l-out>h3 i{background:#d9962b}
+.lane .none{text-align:center;color:var(--mute);font-size:13.5px;font-weight:600;padding:34px 10px 40px}.lane .none big{display:block;font-size:30px;margin-bottom:6px}
+.lane .oc{padding:14px 14px 12px;margin-bottom:12px}
+.lane .oc .acts button{flex:1 1 auto}
+.lane .oh{gap:10px}.lane .onum{width:42px;height:42px;font-size:15px}
+.lane .info{margin-top:10px;gap:6px}.lane .info .ln2:first-child,.lane .ots{display:none}
+.lane .sel{max-width:134px;min-width:0;font-size:12.5px}.lane .who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lane .cbtns{margin-top:10px;gap:6px;flex-wrap:nowrap}.lane .cbtn{padding:7px 11px;font-size:12.5px;min-height:36px;gap:5px}.lane .cbtn svg{width:15px;height:15px}
+.lane .items{margin-top:10px}.lane .payrow{margin-top:10px!important}
+/* how long an order has waited in its step */
+.wait{display:inline-flex;align-items:center;gap:5px;font:800 12px/1 var(--ui);padding:5px 10px;border-radius:99px;background:#fff;color:var(--mute);margin-left:8px;white-space:nowrap}
+.wait::before{content:"";width:8px;height:8px;border-radius:50%;background:#7ac143}
+.wait.amber{background:#fff0d6;color:var(--amber)}.wait.amber::before{background:#e0a32a}
+.wait.red{background:#ffe0e3;color:var(--crimson)}.wait.red::before{background:#d02f3d;animation:wping 1.6s infinite}
+@keyframes wping{0%{box-shadow:0 0 0 0 rgba(208,47,61,.5)}100%{box-shadow:0 0 0 8px rgba(208,47,61,0)}}
+.oc.w-red{box-shadow:0 0 0 2px rgba(208,47,61,.35),var(--shadow)}
+.who .row2{display:flex;align-items:center;flex-wrap:wrap}
+/* one-tap contact buttons */
+.cbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.cbtn{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:7px 14px;border-radius:99px;background:#fff;border:1.5px solid var(--line);color:var(--berry);font-weight:800;font-size:13px;text-decoration:none;transition:transform .15s,border-color .2s,background .2s}
+.cbtn:hover{border-color:var(--rose-deep);transform:translateY(-1px)}.cbtn svg{width:16px;height:16px}
+.cbtn.wa{background:#e8f6e3;color:#2f7a1f;border-color:#cfe8c4}.cbtn.wa:hover{border-color:#5b8a1f}
+@media(max-width:999px){#vw{display:none}.board{display:block}}
 .edit{margin-top:12px}.edit summary{cursor:pointer;font-weight:800;font-size:14px;color:var(--berry);list-style:none;display:inline-flex;align-items:center;gap:6px}.edit summary::-webkit-details-marker{display:none}.edit summary::after{content:"▾";transition:transform .2s}.edit[open] summary::after{transform:rotate(180deg)}
 .edit .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:10px}
 .edit label{display:grid!important;gap:4px;font-size:12px;font-weight:700;color:var(--mute)}
@@ -340,7 +369,7 @@ body.opening .sign{transform:rotateY(180deg)}body.opening .swing{animation-durat
   <div id="bar" hidden>
     <div class="stats" id="stats"></div>
     <div class="row barrow"><div class="chips scroll" id="chips" role="group" aria-label="Show orders"></div>
-      <div class="row" style="justify-content:flex-start;gap:8px"><select id="outf" aria-label="Outlet"></select><button class="o sm" id="snd" type="button" aria-pressed="false">🔔 Sound off</button><button class="o sm" id="alertbtn" type="button">📲 Phone alerts</button></div></div>
+      <div class="row" style="justify-content:flex-start;gap:8px"><select id="outf" aria-label="Outlet"></select><button class="o sm" id="vw" type="button" aria-pressed="false"></button><button class="o sm" id="snd" type="button" aria-pressed="false">🔔 Sound off</button><button class="o sm" id="alertbtn" type="button">📲 Phone alerts</button></div></div>
   </div>
   <input id="msearch" type="search" placeholder="Search the menu…" aria-label="Search the menu" hidden>
   <div class="chips scroll" id="mcats" role="group" aria-label="Menu group" hidden style="margin-top:8px"></div>
@@ -352,7 +381,7 @@ body.opening .sign{transform:rotateY(180deg)}body.opening .swing{animation-durat
 <script>
 var T="";try{T=sessionStorage.getItem("tk")||""}catch(e){}
 var SK='<div class="sk"></div><div class="sk"></div><div class="sk"></div>',tab="orders",$=function(i){return document.getElementById(i)};
-var P={phone:'<path d="M22 16.9v3a2 2 0 01-2.200 2A19.800 19.800 0 013 5.200 2 2 0 015 3h3a2 2 0 012 1.700c.1 1 .4 1.900.7 2.800a2 2 0 01-.5 2.100L9 10.900a16 16 0 006 6l1.300-1.300a2 2 0 012.100-.4c.9.3 1.800.6 2.800.7a2 2 0 011.700 2z"/>',pin:'<path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/>',home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',check:'<path d="M5 12.500l4.500 4.500L19 7.500"/>',
+var P={chat:'<path d="M21 11.5a8.4 8.4 0 01-9 8.4 8.5 8.5 0 01-3.8-.9L3 21l1.9-5.2A8.4 8.4 0 1121 11.5z"/>',phone:'<path d="M22 16.9v3a2 2 0 01-2.200 2A19.800 19.800 0 013 5.200 2 2 0 015 3h3a2 2 0 012 1.700c.1 1 .4 1.900.7 2.800a2 2 0 01-.5 2.100L9 10.900a16 16 0 006 6l1.300-1.300a2 2 0 012.100-.4c.9.3 1.800.6 2.800.7a2 2 0 011.700 2z"/>',pin:'<path d="M12 21s7-6.200 7-12a7 7 0 00-14 0c0 5.800 7 12 7 12z"/><circle cx="12" cy="9" r="2.500"/>',home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',check:'<path d="M5 12.500l4.500 4.500L19 7.500"/>',
 bag:'<path d="M6 2h12l2 4v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6z"/><path d="M4 6h16"/><path d="M9 10a3 3 0 006 0"/>',rupee:'<path d="M6 4h12"/><path d="M6 9h12"/><path d="M9 4c5 0 7 2 7 5s-2 5-7 5l6 6"/>',trend:'<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',users:'<path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M21 21v-2a4 4 0 00-3-3.800"/><path d="M16 3.200a4 4 0 010 7.500"/>',
 hourglass:'<path d="M6 2h12"/><path d="M6 22h12"/><path d="M7 2c0 5 5 6 5 10s-5 5-5 10"/><path d="M17 2c0 5-5 6-5 10s5 5 5 10"/>',cup:'<path d="M5 8h14l-1.600 12H6.600z"/><path d="M4 8h16"/><path d="M13 8l2-5"/>',bell:'<path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.700 21a2 2 0 01-3.400 0"/>',
 card:'<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>',star:'<path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6L12 16.600 6.600 19.500l1.200-6L3.300 9.300l6.100-.700z"/>',heart:'<path d="M12 20s-7-4.400-7-10a4 4 0 017-2.600A4 4 0 0119 10c0 5.600-7 10-7 10z"/>',gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M5 12v9h14v-9"/><path d="M7.500 8a2.500 2.500 0 010-5C11 3 12 8 12 8s1-5 4.500-5a2.500 2.500 0 010 5"/>',sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.900 4.900l1.400 1.400M17.700 17.700l1.400 1.400M2 12h2M20 12h2M4.900 19.100l1.400-1.400M17.700 6.300l1.400-1.400"/>'};
@@ -476,7 +505,26 @@ function fetchOrders(silent){
     document.title=(stats.new_orders?"("+stats.new_orders+") ":"")+"LATCHA Owner";
     var busy=document.activeElement&&document.activeElement.tagName==="SELECT"&&$("list").contains(document.activeElement);
     if((changed||!silent||tab==="orders")&&!busy&&tab==="orders")renderOrders(ids)})}
-function renderOrders(fresh){
+var VIEW=(function(){var v="";try{v=sessionStorage.getItem("ov")||""}catch(e){}return v||"board"})();
+function boardOn(){return VIEW==="board"&&window.innerWidth>=1000&&filt==="active"}
+function fmtMin(m){return m<60?m+" min":m<1440?Math.floor(m/60)+" h "+(m%60)+" min":Math.floor(m/1440)+" d"}
+function waitInfo(o){if(o.status==="delivered"||o.status==="cancelled")return null;var m=Math.floor((Date.now()-utc(o.status_at||o.created_at))/60000);if(isNaN(m)||m<0)m=0;
+  return{m:m,cls:m>=20?"red":m>=10?"amber":"",txt:fmtMin(m)}}
+function waText(o){var f=(o.customer_name||"there").split(" ")[0],s=o.status==="out"?"is on its way 🛵":o.status==="confirmed"?"is confirmed and being made 🍵":o.status==="delivered"?"was delivered. Thank you! 💗":"is received";
+  return "Hi "+f+", LATCHA here. Your order #"+o.id+" "+s}
+function contactBtns(o){var ph=String(o.phone||"").replace(/\D/g,""),wa=ph.length===10?"91"+ph:ph,q=encodeURIComponent((o.address||"")+", "+(o.city||"")),b=[];
+  b.push(el("a",{class:"cbtn",href:"tel:"+o.phone,html:ic("phone")+"Call"}));
+  if(wa)b.push(el("a",{class:"cbtn wa",href:"https://wa.me/"+wa+"?text="+encodeURIComponent(waText(o)),target:"_blank",rel:"noopener",html:ic("chat")+"WhatsApp"}));
+  if(o.address)b.push(el("a",{class:"cbtn",href:"https://www.google.com/maps/search/?api=1&query="+q,target:"_blank",rel:"noopener",html:ic("pin")+"Map"}));
+  return el("div",{class:"cbtns"},b)}
+function renderBoard(l,shown,fresh){var LANES=[["new","New","bell","No new orders","🍵"],["confirmed","Making","cup","Nothing being made","🫖"],["out","On the way","pin","Nothing on the road","🛵"]],b=el("div",{class:"board"});
+  LANES.forEach(function(x){var rows=shown.filter(function(o){return o.status===x[0]}).sort(function(a,c){return utc(a.status_at||a.created_at)-utc(c.status_at||c.created_at)}),lane=el("section",{class:"lane l-"+x[0],"aria-label":x[1]},[el("h3",{},[el("i",{html:ic(x[2])}),document.createTextNode(x[1]),el("span",{class:"cnt",text:String(rows.length)})])]);
+    if(!rows.length)lane.appendChild(el("div",{class:"none"},[el("big",{text:x[4]}),document.createTextNode(x[3])]));
+    rows.forEach(function(o){lane.appendChild(orderCard(o,fresh[o.id],true))});b.appendChild(lane)});
+  l.appendChild(b)}
+function viewBtn(){var v=$("vw");v.textContent=VIEW==="board"?"☰ List view":"▦ Board view";v.setAttribute("aria-pressed",VIEW==="board");v.hidden=filt!=="active";v.onclick=function(){VIEW=VIEW==="board"?"list":"board";try{sessionStorage.setItem("ov",VIEW)}catch(e){}renderOrders({})}}
+addEventListener("resize",function(){if(T&&tab==="orders"&&orders.length)renderOrders({})});
+function renderOrders(fresh){viewBtn();
   var st=stats||{},n=function(s){return orders.filter(function(o){return o.status===s}).length};
   var tiles=[["New",st.new_orders||0,st.new_orders>0,"bell",""],["Being made",st.being_made||0,false,"cup","k-made"],["Waiting for payment",st.awaiting_payment||0,false,"hourglass","k-pay"],["Today",st.today_orders||0,false,"sun",""],["Paid today","₹"+(st.today_paid||0),false,"rupee","k-paid"]];
   $("stats").innerHTML="";tiles.forEach(function(t){$("stats").appendChild(el("div",{class:"stat "+t[4]+(t[2]?" hot":"")},[el("i",{class:"si",html:ic(t[3])}),el("div",{},[el("b",{text:String(t[1])}),el("span",{class:"l",text:t[0]})])]))});
@@ -490,13 +538,14 @@ function renderOrders(fresh){
   var l=$("list");l.textContent="";
   var shown=orders.filter(function(o){return inFilter(o)&&(!outF||o.outlet_name===outF)});
   if(!shown.length)l.appendChild(empty(filt==="active"?"🍵":"🧾",filt==="active"?"All caught up":"Nothing here yet",filt==="active"?"No active orders right now. New ones appear here by themselves.":"Orders will be listed here."));
+  if(boardOn()){l.textContent="";renderBoard(l,shown,fresh);return}
   shown.forEach(function(o){l.appendChild(orderCard(o,fresh[o.id]))})}
 setInterval(function(){if(T&&tab==="orders"&&!document.hidden)fetchOrders(true).catch(function(){})},12000);
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&T&&tab==="orders")fetchOrders(true).catch(function(){})});
 function setStatus(o,st){return api("PATCH","/api/admin/orders/"+o.id,{status:st}).then(function(){return fetchOrders(false)}).catch(fail)}
 function fail(er){$("err").textContent=er.message}
 function who2(n){return (n||"?").trim().charAt(0).toUpperCase()}
-function orderCard(o,isNew){
+function orderCard(o,isNew,compact){
   var STEPS=[["new","New"],["confirmed","Confirmed"],["out","On the way"],["delivered","Delivered"]],idx=STEPS.map(function(s){return s[0]}).indexOf(o.status);
   var sel=el("select",{"aria-label":"Status",class:"sel"},["new","confirmed","out","delivered","cancelled"].map(function(x){var op=el("option",{value:x,text:x==="out"?"on the way":x});if(x===o.status)op.selected=true;return op}));
   sel.onchange=function(){setStatus(o,sel.value)};
@@ -508,16 +557,17 @@ function orderCard(o,isNew){
   var steps=el("div",{class:"steps"});
   if(o.status==="cancelled")steps.appendChild(el("span",{class:"badge bad",text:"Cancelled"}));
   else STEPS.forEach(function(s,k){if(k)steps.appendChild(el("div",{class:"ln"+(k<=idx?" d":"")}));steps.appendChild(el("div",{class:"s"+(k<=idx?" d":"")+(k===idx?" cur":"")},[el("i",{html:ic("check")}),el("span",{text:s[1]})]))});
-  var tel=el("a",{href:"tel:"+o.phone,text:o.phone});
+  var tel=el("a",{href:"tel:"+o.phone,text:o.phone}),wi=waitInfo(o);
   var info=el("div",{class:"info"},[
     el("div",{class:"ln2"},[el("span",{class:"ic",html:ic("phone")}),el("div",{class:"t"},[tel])]),
     el("div",{class:"ln2"},[el("span",{class:"ic",html:ic("pin")}),el("div",{class:"t",text:o.outlet_name||o.city})]),
     el("div",{class:"ln2"},[el("span",{class:"ic",html:ic("home")}),el("div",{class:"t",text:o.address})])]);
   var items=el("div",{class:"items"},o.lines.map(function(l){return el("span",{},[el("em",{text:String(l.quantity)}),l.item_name])}));
   var age=el("span",{class:"age",html:ic("clock")});age.appendChild(document.createTextNode(ago(o.created_at)));
-  return el("div",{class:"card oc st-"+o.status+(isNew?" fresh":"")},[
-    el("div",{class:"oh"},[el("div",{class:"onum",text:"#"+o.id}),el("div",{class:"who"},[el("b",{text:o.customer_name}),age]),sel]),
-    steps,info,items,
+  var wchip=wi?el("span",{class:"wait "+wi.cls,title:"Time in this step",text:wi.txt}):"";
+  return el("div",{class:"card oc st-"+o.status+(isNew?" fresh":"")+(wi&&wi.cls?" w-"+wi.cls:"")},[
+    el("div",{class:"oh"},[el("div",{class:"onum",text:"#"+o.id}),el("div",{class:"who"},[el("b",{text:o.customer_name}),el("div",{class:"row2"},[age,wchip])]),sel]),
+    compact?"":steps,info,contactBtns(o),items,
     o.notes?el("div",{class:"note",text:"Note: "+o.notes}):"",
     el("div",{class:"ots",text:utc(o.created_at).toLocaleString()}),payRow(o),acts])}
 

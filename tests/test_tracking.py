@@ -162,3 +162,13 @@ def test_weekdays_use_indian_days(db):
     mk(db, datetime(2026, 11, 20, 9, 0, tzinfo=IST), "2", amount=100)     # Friday
     wk = {x["day"]: x for x in dashboard.build(db, 7, NOW)["weekdays"]}
     assert len(wk) == 7 and wk["Sat"] == {"day": "Sat", "orders": 1, "sales": 200} and wk["Fri"]["orders"] == 1 and wk["Mon"]["orders"] == 0
+
+
+def test_owner_order_list_includes_when_the_status_changed(c):
+    h = admin(c)
+    r = place(c, "9200000010")
+    row = next(o for o in c.get("/api/admin/orders", headers=h).json() if o["id"] == r["id"])
+    assert row["status_at"] is None
+    c.patch(f"/api/admin/orders/{r['id']}", json={"status": "confirmed"}, headers=h)
+    row = next(o for o in c.get("/api/admin/orders", headers=h).json() if o["id"] == r["id"])
+    assert row["status_at"]

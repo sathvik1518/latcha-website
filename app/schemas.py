@@ -107,6 +107,7 @@ class OrderOut(BaseModel):
     city: str
     notes: str
     status: Status
+    status_at: datetime | None = None
     outlet_id: int | None = None
     outlet_name: str | None = None
     payment_method: str = "cod"

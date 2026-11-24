@@ -15,7 +15,7 @@ One scroll to fall in love. One form to order. One link for everything.
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-5b8a1f?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-b5456a?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-4a2433?style=for-the-badge&logo=vercel&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-147_passing-5b8a1f?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-152_passing-5b8a1f?style=for-the-badge)
 
 <br>
 
@@ -52,7 +52,7 @@ One scroll to fall in love. One form to order. One link for everything.
 | 🔎 **Find my matcha** | A 4-tap quiz that picks a drink from the live menu. |
 | 📊 **Owner desk** | A pink, phone-friendly screen for orders, dashboard, reviews, menu, outlets and loyalty. |
 | 🛡 **Safe by default** | Hashed passwords, spam trap, order limits, private tracking, signed payments, reviews held until approved. |
-| ✅ **Tested** | 147 automatic tests (API and real-browser) run on every push. |
+| ✅ **Tested** | 152 automatic tests (API and real-browser) run on every push. |
 
 <br>
 
@@ -228,6 +228,13 @@ A 4-tap quiz (format, flavour, sweetness, light or treat) that picks one dish an
 ### 🔑 The owner login: "open the shop"
 
 `/admin.html` opens on a small LATCHA shopfront with a **CLOSED** sign that swings in the breeze and steam rising from a matcha cup. The greeting follows Indian time ("Good morning, owner"), and a short tip changes each visit. Sign in and the sign flips to **OPEN**, the door lights up and the desk loads. A wrong password shakes the card, and a Caps Lock warning shows while typing the password. No order data is loaded before login.
+
+### 🧑‍🍳 Order board, wait times and one-tap contact
+
+On a computer, **Admin → Orders** shows a **board**: three lanes, **New → Making → On the way**. A card moves to the next lane when you press its button, and the oldest order in each lane is on top. **List view** switches back to full cards (it is also what you get on a phone, and for the Delivered, Cancelled and All filters).
+
+- **Wait time:** each active card shows how long it has been in its step. Green is under 10 minutes, **amber** from 10, **red** from 20 (the card also gets a red ring), so a late order cannot hide.
+- **Call, WhatsApp and Map** buttons are on every order. WhatsApp opens a chat with a ready message ("Hi Asha, LATCHA here. Your order #12 is on its way 🛵"), and Map opens the delivery address in Google Maps.
 
 ### 🛵 Live order tracking
 
@@ -431,7 +438,7 @@ scripts/
 ├── init_db.py          create tables, load the 33 menu items
 ├── make_admin_hash.py  make the owner password hash
 └── menu_seed.json      the menu data
-tests/                  147 automated tests
+tests/                  152 automated tests
 ├── test_api.py, test_dashboard.py, test_loyalty.py, test_features.py, test_tracking.py   API tests
 └── e2e/                browser tests (Playwright) on a throw-away database
 .github/workflows/      runs the tests on every push
