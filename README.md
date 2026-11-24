@@ -236,6 +236,8 @@ On a computer, **Admin → Orders** shows a **board**: three lanes, **New → Ma
 - **Wait time:** each active card shows how long it has been in its step. Green is under 10 minutes, **amber** from 10, **red** from 20 (the card also gets a red ring), so a late order cannot hide.
 - **Call, WhatsApp and Map** buttons are on every order. WhatsApp opens a chat with a ready message ("Hi Asha, LATCHA here. Your order #12 is on its way 🛵"), and Map opens the delivery address in Google Maps.
 
+> **Wide screens:** the owner desk uses the full width of a big monitor (up to 1680 px). Orders (list view), Menu, Outlets and Reviews flow into 2 or 3 columns, and the board and dashboard stretch to fit. On phones nothing changes.
+
 ### 🛵 Live order tracking
 
 After ordering, **Track this order** shows four steps: **Received → Making → On the way → Delivered**. The page re-checks every 10 seconds by itself, so the customer watches the status change without pressing anything. It also shows "Updated 3 min ago", a **Call the outlet** button, and **Share tracking link**.
