@@ -5,6 +5,7 @@ os.environ.update(DATABASE_URL=os.environ.get("TEST_DATABASE_URL", f"sqlite:///{
 from app.security import hash_password
 os.environ["ADMIN_PASSWORD_HASH"] = hash_password("correct horse battery")
 
+from datetime import datetime, timedelta
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
@@ -58,7 +59,7 @@ def test_login_and_visit_reward_once_a_day(c):
     assert r.json()["me"]["visit_awarded"] == 0       # already rewarded today by registering
     assert c.get("/api/me", headers=h).json()["points"] == 60
     with SessionLocal() as db:                         # pretend the last visit was yesterday
-        db.query(m.Customer).filter_by(phone="9811111111").one().last_visit = "2000-01-01"
+        db.query(m.Customer).filter_by(phone="9811111111").one().last_visit = (datetime.now(loyalty.IST) - timedelta(days=1)).strftime("%Y-%m-%d")
         db.commit()
     assert c.get("/api/me", headers=h).json()["visit_awarded"] == 10
     assert c.get("/api/me", headers=h).json()["points"] == 70
@@ -119,7 +120,8 @@ def test_order_without_points_is_unchanged_and_linked_to_customer(c):
 
 def test_owner_edits_the_rules_and_the_shop_follows(c):
     h = admin(c)
-    assert c.get("/api/loyalty").json() == dict(enabled=True, signup_bonus=50, visit_points=10, redeem_points=500, redeem_rupees=50)
+    assert c.get("/api/loyalty").json() == dict(enabled=True, signup_bonus=50, visit_points=10, redeem_points=500, redeem_rupees=50,
+                                                birthday_points=50, comeback_days=14, comeback_points=25, otp=False)
     r = c.patch("/api/admin/loyalty", json=dict(redeem_points=200, redeem_rupees=40, visit_points=25), headers=h)
     assert r.json()["redeem_points"] == 200 and r.json()["redeem_rupees"] == 40 and r.json()["visit_points"] == 25
     assert c.get("/api/loyalty").json()["redeem_points"] == 200

@@ -117,6 +117,7 @@ class Customer(Base):
     points: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     visits: Mapped[int] = mapped_column(Integer, default=0, server_default="0")        # days with a visit reward
     last_visit: Mapped[str | None] = mapped_column(String(10), nullable=True)           # "YYYY-MM-DD" Indian date
+    birthday: Mapped[str | None] = mapped_column(String(5), nullable=True)              # "MM-DD", set once by the customer
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
@@ -135,3 +136,14 @@ class Setting(Base):
     __tablename__ = "settings"
     key: Mapped[str] = mapped_column(String(40), primary_key=True)
     value: Mapped[str] = mapped_column(String(40))
+
+
+class OtpCode(Base):
+    """A one-time phone code for Latcha Club sign-up (only the hash is stored)."""
+    __tablename__ = "otp_codes"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    phone: Mapped[str] = mapped_column(String(20), index=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    tries: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)

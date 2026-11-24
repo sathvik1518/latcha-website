@@ -381,6 +381,7 @@ class RegisterIn(BaseModel):
     name: str = Field(min_length=2, max_length=80)
     phone: str
     password: str = Field(min_length=6, max_length=72)
+    otp: str | None = Field(None, max_length=8)
 
     @field_validator("name")
     @classmethod
@@ -407,6 +408,26 @@ class MeEdit(BaseModel):
     name: str | None = Field(None, min_length=2, max_length=80)
     current_password: str | None = Field(None, max_length=72)
     new_password: str | None = Field(None, min_length=6, max_length=72)
+    birthday: str | None = Field(None, pattern=r"^\d{2}-\d{2}$")   # "MM-DD", can be set once
+
+    @field_validator("birthday")
+    @classmethod
+    def real_day(cls, v: str | None) -> str | None:
+        if v is not None:
+            try:
+                datetime.strptime("2024-" + v, "%Y-%m-%d")   # 2024 is a leap year, so 02-29 is allowed
+            except ValueError:
+                raise ValueError("That is not a real date.")
+        return v
+
+
+class OtpIn(BaseModel):
+    phone: str
+
+    @field_validator("phone")
+    @classmethod
+    def phone_ok(cls, v: str) -> str:
+        return clean_phone(v)
 
 
 class PointRules(BaseModel):
@@ -415,6 +436,10 @@ class PointRules(BaseModel):
     visit_points: int
     redeem_points: int
     redeem_rupees: int
+    birthday_points: int = 0
+    comeback_days: int = 14
+    comeback_points: int = 0
+    otp: bool = False          # the sign-up form asks for a phone code
 
 
 class PointRulesPatch(BaseModel):
@@ -423,6 +448,9 @@ class PointRulesPatch(BaseModel):
     visit_points: int | None = Field(None, ge=0, le=1000)
     redeem_points: int | None = Field(None, ge=1, le=100000)
     redeem_rupees: int | None = Field(None, ge=1, le=5000)
+    birthday_points: int | None = Field(None, ge=0, le=5000)
+    comeback_days: int | None = Field(None, ge=2, le=365)
+    comeback_points: int | None = Field(None, ge=0, le=5000)
 
 
 class MyOrder(BaseModel):
@@ -465,6 +493,7 @@ class MeOut(BaseModel):
     visits: int
     member_since: datetime
     rules: PointRules
+    birthday: str | None = None
     worth_rupees: int          # what the current points are worth right now
     visit_awarded: int = 0     # points given by this very call (a "welcome back" toast)
     fam: FamCard

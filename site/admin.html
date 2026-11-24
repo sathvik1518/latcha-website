@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#f6bfd0">
+<link rel="manifest" href="/admin.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>LATCHA Owner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap" rel="stylesheet">
@@ -263,7 +267,7 @@ button svg{width:16px;height:16px}
   <div id="bar" hidden>
     <div class="stats" id="stats"></div>
     <div class="row barrow"><div class="chips scroll" id="chips" role="group" aria-label="Show orders"></div>
-      <div class="row" style="justify-content:flex-start;gap:8px"><select id="outf" aria-label="Outlet"></select><button class="o sm" id="snd" type="button" aria-pressed="false">🔔 Sound off</button></div></div>
+      <div class="row" style="justify-content:flex-start;gap:8px"><select id="outf" aria-label="Outlet"></select><button class="o sm" id="snd" type="button" aria-pressed="false">🔔 Sound off</button><button class="o sm" id="alertbtn" type="button">📲 Phone alerts</button></div></div>
   </div>
   <input id="msearch" type="search" placeholder="Search the menu…" aria-label="Search the menu" hidden>
   <div class="chips scroll" id="mcats" role="group" aria-label="Menu group" hidden style="margin-top:8px"></div>
@@ -286,7 +290,7 @@ function api(m,u,b){return fetch(u,{method:m,headers:Object.assign({"Content-Typ
   if(r.status===204)return null;return r.json().then(function(j){if(!r.ok)throw new Error(typeof j.detail==="string"?j.detail:"Request failed");return j})})}
 var welT;
 function show(){var on=!!T,w=$("welcome");$("login").hidden=on;$("app").hidden=!on;$("out").hidden=!on;clearTimeout(welT);
-  if(on){w.classList.remove("gone","in");void w.offsetWidth;w.classList.add("in");welT=setTimeout(function(){w.classList.add("gone")},3200);load()}
+  if(on){w.classList.remove("gone","in");void w.offsetWidth;w.classList.add("in");welT=setTimeout(function(){w.classList.add("gone")},3200);alertState();load()}
   else{w.classList.remove("gone","in");$("live").hidden=true}}
 function eyeToggle(){var p=$("p"),s=p.type==="password";p.type=s?"text":"password";$("eye").classList.toggle("on",s);$("eye").setAttribute("aria-pressed",s);$("eye").setAttribute("aria-label",s?"Hide password":"Show password")}
 $("eye").onclick=eyeToggle;$("eye").onkeydown=function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();eyeToggle()}};
@@ -367,6 +371,9 @@ function ago(t){var m=Math.floor((Date.now()-utc(t))/60000);if(isNaN(m))return""
 function beep(){if(!sound)return;try{var a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.type="sine";o.frequency.value=880;g.gain.value=.08;o.connect(g);g.connect(a.destination);o.start();setTimeout(function(){o.frequency.value=1175},150);setTimeout(function(){o.stop();a.close()},340)}catch(e){}}
 function flash(t){var f=$("flash");f.textContent=t;f.hidden=false;clearTimeout(flash.t);flash.t=setTimeout(function(){f.hidden=true},8000)}
 $("flash").onclick=function(){this.hidden=true};
+function alertState(){api("GET","/api/admin/alerts").then(function(a){$("alertbtn").textContent=a.configured?"📲 Alerts on · send test":"📲 Set up phone alerts";$("alertbtn").dataset.on=a.configured?"1":""}).catch(function(){})}
+$("alertbtn").onclick=function(){var b=this;if(!b.dataset.on){flash("Phone alerts: make a Telegram bot with @BotFather, message it once, then add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in Vercel → Settings → Environment Variables and redeploy. New orders will then ping your phone instantly.");return}
+  b.disabled=true;api("POST","/api/admin/alerts/test").then(function(r){flash(r.message)}).catch(function(er){flash(er.message)}).then(function(){b.disabled=false})};
 $("snd").onclick=function(){sound=!sound;this.textContent=sound?"🔔 Sound on":"🔔 Sound off";this.setAttribute("aria-pressed",sound);if(sound)beep()};
 function inFilter(o){return filt==="all"?true:filt==="active"?(o.status==="new"||o.status==="confirmed"):o.status===filt}
 function fetchOrders(silent){
@@ -440,18 +447,19 @@ function rulesCard(r){
   var on=el("input",{type:"checkbox",class:"sw"});on.checked=r.enabled;
   function num(k,label,hint,min,max){var i=el("input",{type:"number",min:String(min),max:String(max),step:"1",value:String(r[k]),"aria-label":label,inputmode:"numeric"});i.oninput=prev;return [i,el("label",{},[label,i,el("small",{text:hint})])]}
   var F={signup_bonus:num("signup_bonus","Welcome points","Given once when a customer creates an account.",0,5000),visit_points:num("visit_points","Points per visit day","Given once a day when a signed-in customer opens the site.",0,1000),
-    redeem_points:num("redeem_points","Points needed","How many points make one reward.",1,100000),redeem_rupees:num("redeem_rupees","Rupees off per reward","Discount for each block of points at checkout.",1,5000)};
+    redeem_points:num("redeem_points","Points needed","How many points make one reward.",1,100000),redeem_rupees:num("redeem_rupees","Rupees off per reward","Discount for each block of points at checkout.",1,5000),
+    birthday_points:num("birthday_points","Birthday points","Given once a year when a customer opens the site on their birthday. 0 turns it off.",0,5000),comeback_days:num("comeback_days","Comeback after (days)","A customer away this many days or more gets the comeback points.",2,365),comeback_points:num("comeback_points","Comeback points","\"We miss you\" bonus on the first visit back. 0 turns it off.",0,5000)};
   var pv=el("div",{class:"lyprev"}),ok=el("span",{class:"mute"});
   function v(k){return parseInt(F[k][0].value,10)||0}
   function prev(){pv.textContent="";pv.appendChild(el("b",{text:v("redeem_points").toLocaleString("en-IN")+" points = ₹"+v("redeem_rupees")}));pv.appendChild(el("span",{text:"A customer visiting every day earns that in about "+(v("visit_points")?Math.ceil(v("redeem_points")/v("visit_points"))+" days":"never (visit points are 0)")+"."}))}
   on.onchange=function(){api("PATCH","/api/admin/loyalty",{enabled:on.checked}).then(function(){ok.textContent=on.checked?"Points are on ✓":"Points are paused ✓";setTimeout(function(){ok.textContent=""},2200)}).catch(function(er){on.checked=!on.checked;fail(er)})};
   var save=el("button",{type:"button",text:"Save rules",onclick:function(){
-    api("PATCH","/api/admin/loyalty",{signup_bonus:v("signup_bonus"),visit_points:v("visit_points"),redeem_points:Math.max(1,v("redeem_points")),redeem_rupees:Math.max(1,v("redeem_rupees"))})
+    api("PATCH","/api/admin/loyalty",{signup_bonus:v("signup_bonus"),visit_points:v("visit_points"),redeem_points:Math.max(1,v("redeem_points")),redeem_rupees:Math.max(1,v("redeem_rupees")),birthday_points:v("birthday_points"),comeback_days:Math.max(2,v("comeback_days")),comeback_points:v("comeback_points")})
     .then(function(x){r=x;$("err").textContent="";ok.textContent="Saved ✓ The website uses these numbers now.";setTimeout(function(){ok.textContent=""},3000)}).catch(fail)}});
   prev();
   return el("div",{class:"card lyr"},[el("div",{class:"row"},[el("div",{},[el("h3",{class:"dh",html:'<i class="hic">'+ic("gift")+'</i>Latcha points rules'}),el("p",{class:"sub",text:"Every number here is yours to change. The website follows them straight away."})])]),
     el("label",{class:"lysw"},[on," Points programme is on"]),
-    el("div",{class:"lyg"},[F.signup_bonus[1],F.visit_points[1],F.redeem_points[1],F.redeem_rupees[1]]),pv,el("div",{class:"acts",style:"margin-top:14px"},[save,ok])])}
+    el("div",{class:"lyg"},[F.signup_bonus[1],F.visit_points[1],F.redeem_points[1],F.redeem_rupees[1],F.birthday_points[1],F.comeback_days[1],F.comeback_points[1]]),pv,el("div",{class:"acts",style:"margin-top:14px"},[save,ok])])}
 function custCard(c){
   var pts=el("div",{class:"pts"},[String(c.points.toLocaleString("en-IN")),el("small",{text:"points"})]);
   var d=el("input",{type:"number",step:"1",min:"-100000",max:"100000",placeholder:"+100 or -50","aria-label":"Points to add or remove",inputmode:"numeric"}),n=el("input",{maxlength:"100",placeholder:"Reason (optional)","aria-label":"Reason"}),ok=el("span",{class:"mute"});

@@ -4,7 +4,7 @@ import json, logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from . import dashboard, fam, loyalty, models as m, outlets as ot, payments as pay, schemas as s
+from . import dashboard, fam, loyalty, models as m, notify, outlets as ot, payments as pay, schemas as s
 from .config import get_settings
 from .db import get_db
 from .security import hash_password, make_token, require_admin, verify_password
@@ -51,7 +51,7 @@ def list_outlets(db: Session = Depends(get_db)):
 
 
 @public.post("/orders", response_model=s.OrderReceipt, status_code=201)
-def place_order(body: s.OrderIn, db: Session = Depends(get_db), cust: m.Customer | None = Depends(loyalty.optional_customer)):
+def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db), cust: m.Customer | None = Depends(loyalty.optional_customer)):
     since = datetime.now(timezone.utc) - timedelta(hours=1)
     recent = db.scalar(select(func.count(m.Order.id)).where(
         m.Order.phone == body.phone, m.Order.created_at >= since))
@@ -128,6 +128,8 @@ def place_order(body: s.OrderIn, db: Session = Depends(get_db), cust: m.Customer
         order.payment_provider, order.payment_ref = made["provider"], made["provider_order_id"]
         start = s.PaymentStart(**pay.public_payment(order))
     db.commit()
+    if not start:   # pay-at-delivery (or free) orders ping the owner now; UPI orders ping once the payment is confirmed
+        notify.order_placed(order, str(request.base_url))
     msg = "Order saved. Complete the UPI payment to confirm it." if start else "Order request received. LATCHA will confirm it by phone."
     return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None, message=msg,
                           amount=charge, fam_discount=discount, points_used=pts_used, points_discount=pts_disc,
@@ -172,7 +174,7 @@ def restart_payment(order_id: int, body: s.PayIn, db: Session = Depends(get_db))
 
 
 @public.post("/orders/{order_id}/pay/confirm", response_model=s.PayResult)
-def confirm_payment(order_id: int, body: s.PayIn, db: Session = Depends(get_db)):
+def confirm_payment(order_id: int, body: s.PayIn, request: Request, db: Session = Depends(get_db)):
     o = _own_order(db, order_id, body.phone)
     if o.payment_method != "upi" or o.status == "cancelled":
         raise HTTPException(422, "This order cannot be paid online.")
@@ -181,14 +183,16 @@ def confirm_payment(order_id: int, body: s.PayIn, db: Session = Depends(get_db))
     if o.payment_provider == "demo":
         if pay.mode() != "demo":
             raise HTTPException(404, "Not found")   # the pretend screen is switched off once real payments are on
-        pay.mark_paid(db, o, f"demo_pay_{o.id}")
+        if pay.mark_paid(db, o, f"demo_pay_{o.id}"):
+            notify.order_placed(o, str(request.base_url))
     else:
         if not (body.razorpay_payment_id and body.razorpay_order_id and body.razorpay_signature):
             raise HTTPException(422, "Payment details are missing.")
         if pay.mode() != "razorpay" or body.razorpay_order_id != o.payment_ref or not pay.verify_checkout_signature(
                 body.razorpay_order_id, body.razorpay_payment_id, body.razorpay_signature):
             raise HTTPException(400, "We could not verify that payment. If money was taken, it will be matched shortly.")
-        pay.mark_paid(db, o, body.razorpay_payment_id)
+        if pay.mark_paid(db, o, body.razorpay_payment_id):
+            notify.order_placed(o, str(request.base_url))
     return s.PayResult(id=o.id, payment_status=o.payment_status, amount=o.amount)
 
 
@@ -213,7 +217,8 @@ async def razorpay_webhook(request: Request, db: Session = Depends(get_db)):
         if ent.get("amount") != (o.amount or 0) * 100:
             log.error("Webhook amount mismatch on order %s: got %s", o.id, ent.get("amount"))
             return {"ok": True}
-        pay.mark_paid(db, o, ent.get("id"))
+        if pay.mark_paid(db, o, ent.get("id")):
+            notify.order_placed(o, str(request.base_url))
     elif kind == "payment.failed" and o.payment_status == "pending":
         o.payment_status = "failed"
         db.commit()
@@ -251,7 +256,7 @@ def submit_review(body: s.ReviewIn, db: Session = Depends(get_db), cust: m.Custo
 # ---------- customers: accounts and Latcha points ----------
 def _rules_out(db: Session) -> dict:
     r = loyalty.rules(db)
-    return {**r, "enabled": bool(r["enabled"])}
+    return {**r, "enabled": bool(r["enabled"]), "otp": loyalty.otp_required()}
 
 
 def _me(db: Session, c: m.Customer, awarded: int = 0) -> s.MeOut:
@@ -259,15 +264,29 @@ def _me(db: Session, c: m.Customer, awarded: int = 0) -> s.MeOut:
     orders = db.scalars(select(m.Order).where(m.Order.customer_id == c.id).order_by(m.Order.created_at.desc()).limit(50)).all()
     hist = db.scalars(select(m.PointTx).where(m.PointTx.customer_id == c.id).order_by(m.PointTx.id.desc()).limit(60)).all()
     revs = db.scalars(select(m.Review).where(m.Review.customer_id == c.id).order_by(m.Review.created_at.desc()).limit(30)).all()
-    return s.MeOut(id=c.id, name=c.name, phone=c.phone, points=c.points, visits=c.visits, member_since=c.created_at,
+    return s.MeOut(id=c.id, name=c.name, phone=c.phone, points=c.points, visits=c.visits, member_since=c.created_at, birthday=c.birthday,
                    rules=_rules_out(db), worth_rupees=(c.points // r["redeem_points"]) * r["redeem_rupees"], visit_awarded=awarded,
                    fam=fam.card(db, c.phone), orders=orders, history=hist, reviews=revs)
+
+
+@public.post("/customers/otp")
+def customer_otp(body: s.OtpIn, db: Session = Depends(get_db)):
+    """Ask for a sign-up code. In demo mode the code comes back in the reply (no SMS is sent)."""
+    if not loyalty.otp_required():
+        return {"required": False}
+    if db.scalar(select(m.Customer.id).where(m.Customer.phone == body.phone)):
+        raise HTTPException(409, "This number already has an account. Please sign in.")
+    code = loyalty.otp_issue(db, body.phone)
+    return {"required": True, "demo_code": code, "minutes": loyalty.OTP_MINUTES,
+            "note": "Demo mode: no SMS is sent, so the code is shown here."}
 
 
 @public.post("/customers/register", response_model=s.SignedIn, status_code=201)
 def customer_register(body: s.RegisterIn, db: Session = Depends(get_db)):
     if db.scalar(select(m.Customer.id).where(m.Customer.phone == body.phone)):
         raise HTTPException(409, "This number already has an account. Please sign in.")
+    if loyalty.otp_required():
+        loyalty.otp_check(db, body.phone, body.otp)
     c = m.Customer(phone=body.phone, name=body.name, pw_hash=hash_password(body.password))
     db.add(c)
     db.flush()
@@ -309,8 +328,14 @@ def edit_me(body: s.MeEdit, db: Session = Depends(get_db), c: m.Customer = Depen
         if not body.current_password or not verify_password(body.current_password, c.pw_hash):
             raise HTTPException(422, "Your current password is not right.")
         c.pw_hash = hash_password(body.new_password)
+    got = 0
+    if body.birthday:
+        if c.birthday and c.birthday != body.birthday:
+            raise HTTPException(422, "Your birthday is already saved and cannot be changed. Ask LATCHA if it is wrong.")
+        c.birthday = body.birthday
+        got = loyalty.award_birthday(db, c)
     db.commit()
-    return _me(db, c)
+    return _me(db, c, got)
 
 
 @public.get("/loyalty", response_model=s.PointRules)
@@ -508,3 +533,19 @@ def adjust_points(cid: int, body: s.AdjustIn, db: Session = Depends(get_db)):
     n = db.scalar(select(func.count(m.Order.id)).where(m.Order.customer_id == c.id)) or 0
     return s.AdminCustomer(id=c.id, name=c.name, phone=c.phone, points=c.points, visits=c.visits, orders=n,
                            last_visit=c.last_visit, created_at=c.created_at)
+
+
+# ---------- order alerts (Telegram) ----------
+@admin.get("/alerts")
+def alerts_status():
+    return {"configured": notify.configured()}
+
+
+@admin.post("/alerts/test")
+def alerts_test(request: Request):
+    if not notify.configured():
+        raise HTTPException(422, "Alerts are off. Add TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in Vercel, then redeploy.")
+    ok, why = notify.send("✅ <b>LATCHA alerts are working.</b>\nNew orders will appear here the moment they come in.", str(request.base_url))
+    if not ok:
+        raise HTTPException(502, why)
+    return {"ok": True, "message": "Test sent. Check Telegram."}

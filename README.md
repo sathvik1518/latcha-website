@@ -15,7 +15,7 @@ One scroll to fall in love. One form to order. One link for everything.
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-5b8a1f?style=for-the-badge&logo=fastapi&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-b5456a?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-4a2433?style=for-the-badge&logo=vercel&logoColor=white)
-![Tests](https://img.shields.io/badge/Tests-110_passing-5b8a1f?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-131_passing-5b8a1f?style=for-the-badge)
 
 <br>
 
@@ -46,11 +46,13 @@ One scroll to fall in love. One form to order. One link for everything.
 | 📍 **Outlets** | Pick JP Nagar or Sattva Knowledge Park. See "Open now" before ordering. |
 | 💳 **UPI payments** | Pay by UPI or at delivery. Demo mode today; Razorpay when you add keys. |
 | 🍵 **Latcha Club** | Customers make an account, collect points every day they visit, and turn **500 points into ₹50 off** at checkout. The owner can change every number. |
+| 📲 **Instant order alerts** | Every new order pings the owner's Telegram within a second, with a button that opens the owner desk. |
+| 📱 **Install as an app** | Add LATCHA to the phone home screen. It opens full-screen with its own icon. |
 | 💗 **Latcha Fam** | 8 sips = 1 free drink, counted from the customer's phone number. |
 | 🔎 **Find my matcha** | A 4-tap quiz that picks a drink from the live menu. |
 | 📊 **Owner desk** | A pink, phone-friendly screen for orders, dashboard, reviews, menu, outlets and loyalty. |
 | 🛡 **Safe by default** | Hashed passwords, spam trap, order limits, private tracking, signed payments, reviews held until approved. |
-| ✅ **Tested** | 110 automatic tests (API and real-browser) run on every push. |
+| ✅ **Tested** | 131 automatic tests (API and real-browser) run on every push. |
 
 <br>
 
@@ -116,6 +118,8 @@ Customers can make a free account, collect **Latcha points** and spend them at c
 - **Earn:** a welcome gift when the account is made, then points **once per calendar day** (Indian time) the customer opens the site while signed in.
 - **Spend:** in the order window tap **Use my points**. Every full block of 500 points takes ₹50 off the bill, never more than the bill itself.
 - **See everything:** the Club window has tabs for **Points** (balance, progress to the next reward, full history), **Orders** (with status), **Fam** (sips), **Reviews** and **Me** (change name or password).
+- **Birthday:** save your birthday once in the **Me** tab. On the day, opening the site adds birthday points (once a year; not on the day the account was made).
+- **We miss you:** come back after a break (14 days by default) and the first visit adds comeback points.
 - A cancelled order gives the points back, once.
 
 **How the owner controls it** (Admin → **Loyalty**)
@@ -127,13 +131,32 @@ Customers can make a free account, collect **Latcha points** and spend them at c
 | Points per visit day | 10 | Given once a day to a signed-in customer |
 | Points needed | 500 | Size of one reward block |
 | Rupees off per reward | 50 | Discount for each block |
+| Birthday points | 50 | Once a year, on the birthday. 0 turns it off |
+| Comeback after (days) | 14 | How long away counts as a break |
+| Comeback points | 25 | Bonus on the first visit back. 0 turns it off |
 
 Saving takes effect on the site straight away. The same tab lists every customer (search by name or number) and lets the owner **add or remove points** with a note, which is also written to the customer's history.
 
 **How it is built:** tables `customers` (balance, visits, last visit day), `point_tx` (every change: welcome, visit, redeem, refund, adjust) and `settings` (the rules above). The balance only changes through one function (`add_tx` in `app/loyalty.py`), so the history always adds up. Login uses a 30-day token that is separate from the owner's.
 
-- ⚠️ **Limit:** there is **no OTP**, so a mobile number is not proven to belong to the person signing up. Fine for a small café; add a one-time code before a big launch. Set a long `JWT_SECRET`, accounts need it.
+- **Phone code (optional):** set `OTP_MODE=demo` and sign-up asks for a 6-digit code (valid 10 minutes, 3 requests an hour, 5 tries). In demo mode the code is shown on screen and **no SMS is sent**. Real SMS needs a provider (for example MSG91 or Twilio) and a small code change. With `OTP_MODE=off` (default) there is no check.
+- ⚠️ **Limit:** with the code off, a mobile number is not proven to belong to the person signing up, and Latcha Fam cards still use only the phone number. Set a long `JWT_SECRET`, accounts need it.
 - Customers only see orders placed **while signed in**. Guest orders still work exactly as before.
+
+### 📲 Instant order alerts (Telegram)
+
+The owner does not have to keep `/admin.html` open. When an order comes in, a Telegram message arrives with the outlet, customer, address, items, total, how it is paid, and a button that opens the owner desk. UPI orders ping once the payment is confirmed; pay-at-delivery orders ping straight away.
+
+1. In Telegram, message **@BotFather**, send `/newbot`, copy the token.
+2. Send any message to your new bot, then open `https://api.telegram.org/bot<TOKEN>/getUpdates` and copy the `chat` → `id` number.
+3. Add `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `.env` and in Vercel → Settings → Environment Variables, then redeploy.
+4. In the owner desk press **📲 Alerts on · send test**.
+
+If the two values are empty it simply does nothing. A Telegram failure never stops an order (the call gives up after 4 seconds and the error is logged). Customer text is escaped, so nobody can inject formatting.
+
+### 📱 Install LATCHA on a phone
+
+`manifest.webmanifest`, `sw.js` and the icons in `site/icons/` make the site installable. On Android and desktop Chrome or Edge the burger menu shows **📲 Install the LATCHA app**. On iPhone, the button explains: Share → **Add to Home Screen**. The owner desk has its own manifest, so it can be installed too. The service worker never touches `/api`, so orders and points are always live; offline it shows the last saved home page.
 
 ### 📍 Outlets
 
@@ -269,7 +292,8 @@ Try everything in the browser at **`/docs`**.
 | `POST /api/fam/card` | A Fam card from a mobile number |
 | `GET /api/reviews` · `POST /api/reviews` | Approved reviews · send a review (hidden until approved) |
 | `GET /api/loyalty` | The public points rules (what the site shows) |
-| `POST /api/customers/register`, `POST /api/customers/login` | Make a Club account or sign in. Returns a 30-day token |
+| `POST /api/customers/otp` | Ask for a sign-up code (when `OTP_MODE=demo`) |
+| `POST /api/customers/register`, `POST /api/customers/login` | Make a Club account (with `otp` when required) or sign in. Returns a 30-day token |
 | `GET /api/health` | Checks the database answers |
 
 **Customer** (needs the customer token)
@@ -277,7 +301,7 @@ Try everything in the browser at **`/docs`**.
 | Endpoint | What |
 |---|---|
 | `GET /api/me` | Balance, history, orders. Also hands out the day's visit points |
-| `PATCH /api/me` | Change name or password |
+| `PATCH /api/me` | Change name or password, or save the birthday (once) |
 | `POST /api/orders` with `use_points: true` | Spend points. Returns `points_used`, `points_discount` and the new balance |
 
 **Owner** (needs the login token from `POST /api/admin/login`, valid 2 hours)
@@ -293,6 +317,7 @@ Try everything in the browser at **`/docs`**.
 | `GET/PATCH /api/admin/loyalty` | Read and change the points rules |
 | `GET /api/admin/customers?q=` | Club customers with points and visits |
 | `POST /api/admin/customers/{id}/adjust` | Add or remove points, with a note |
+| `GET /api/admin/alerts`, `POST /api/admin/alerts/test` | Are Telegram alerts set up, and send a test message |
 | `GET /api/admin/stats`, `GET /api/admin/dashboard?days=1..90` | Tiles and dashboard numbers |
 | `GET /api/admin/reviews`, `POST .../approve`, `DELETE .../{id}` | Approve or delete reviews |
 
@@ -326,6 +351,8 @@ Try everything in the browser at **`/docs`**.
    | `PAYMENTS_MODE` | `demo`, `razorpay` or `off` |
    | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | Only for `razorpay` |
    | `FAM_SIPS_PER_REWARD` | Sips for a free drink (default 8) |
+   | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Instant order alerts (optional) |
+   | `OTP_MODE` | `off` (default) or `demo` (sign-up code shown on screen) |
 
 4. Create the tables and load the menu: `python scripts/init_db.py` (safe to run twice).
 
@@ -367,7 +394,8 @@ Neon's free plan sleeps after 5 minutes idle, so the first request after a quiet
 ```
 site/                   the website, served at /
 ├── index.html          the whole site (HTML, CSS, JavaScript): quiz, Fam and Latcha Club included
-├── admin.html          owner screen: orders, dashboard, reviews, menu, outlets, loyalty
+├── admin.html          owner screen: orders, dashboard, reviews, menu, outlets, loyalty, alert button
+├── manifest.webmanifest, admin.webmanifest, sw.js, icons/   install-on-phone files
 ├── favicon.ico, favicon-*.png, apple-touch-icon.png
 └── assets/             pictures and videos, plus vendor/ (lenis and model-viewer)
 app/                    the backend
@@ -378,7 +406,8 @@ app/                    the backend
 ├── outlets.py          outlets, opening hours, sold-out lists, self-upgrade
 ├── payments.py         demo and Razorpay payments, signatures, webhook
 ├── fam.py              sips and free drinks
-├── loyalty.py          Club accounts, points rules, history, redeem and refund
+├── loyalty.py          Club accounts, points rules, history, redeem, refund, birthday, comeback, phone code
+├── notify.py           Telegram order alerts
 ├── dashboard.py        the dashboard sums (Indian time)
 ├── security.py         password hashing and login tokens
 └── db.py, config.py    database connection and settings
@@ -386,8 +415,8 @@ scripts/
 ├── init_db.py          create tables, load the 33 menu items
 ├── make_admin_hash.py  make the owner password hash
 └── menu_seed.json      the menu data
-tests/                  110 automated tests
-├── test_api.py, test_dashboard.py, test_loyalty.py   API tests
+tests/                  131 automated tests
+├── test_api.py, test_dashboard.py, test_loyalty.py, test_features.py   API tests
 └── e2e/                browser tests (Playwright) on a throw-away database
 .github/workflows/      runs the tests on every push
 index.py                the file Vercel looks for (loads app/main.py)

@@ -18,9 +18,11 @@ from .db import get_db
 _bearer = HTTPBearer(auto_error=False)
 IST = timezone(timedelta(hours=5, minutes=30))
 
-DEFAULTS = {"enabled": 1, "signup_bonus": 50, "visit_points": 10, "redeem_points": 500, "redeem_rupees": 50}
+DEFAULTS = {"enabled": 1, "signup_bonus": 50, "visit_points": 10, "redeem_points": 500, "redeem_rupees": 50,
+            "birthday_points": 50, "comeback_days": 14, "comeback_points": 25}
 LIMITS = {"enabled": (0, 1), "signup_bonus": (0, 5000), "visit_points": (0, 1000),
-          "redeem_points": (1, 100000), "redeem_rupees": (1, 5000)}
+          "redeem_points": (1, 100000), "redeem_rupees": (1, 5000),
+          "birthday_points": (0, 5000), "comeback_days": (2, 365), "comeback_points": (0, 5000)}
 TOKEN_DAYS = 30
 
 
@@ -29,7 +31,8 @@ def upgrade_schema(engine) -> None:
     insp = inspect(engine)
     adds = {"orders": [("customer_id", "INTEGER REFERENCES customers(id)"), ("points_used", "INTEGER NOT NULL DEFAULT 0"),
                        ("points_discount", "INTEGER NOT NULL DEFAULT 0"), ("points_refunded", "BOOLEAN NOT NULL DEFAULT FALSE")],
-            "reviews": [("customer_id", "INTEGER REFERENCES customers(id)")]}
+            "reviews": [("customer_id", "INTEGER REFERENCES customers(id)")],
+            "customers": [("birthday", "VARCHAR(5)")]}
     for table, cols in adds.items():
         have = {c["name"] for c in insp.get_columns(table)}
         for name, ddl in cols:
@@ -81,9 +84,35 @@ def award_visit(db: Session, c: m.Customer) -> int:
     today = today_ist()
     if not r["enabled"] or c.last_visit == today:
         return 0
+    gap = days_between(c.last_visit, today)
     c.last_visit = today
     c.visits += 1
-    return add_tx(db, c, r["visit_points"], "visit", "Daily visit") if r["visit_points"] else 0
+    got = add_tx(db, c, r["visit_points"], "visit", "Daily visit") if r["visit_points"] else 0
+    if gap is not None and gap >= r["comeback_days"] and r["comeback_points"]:   # "we miss you": back after a long break
+        got += add_tx(db, c, r["comeback_points"], "comeback", f"Welcome back after {gap} days")
+    return got + award_birthday(db, c, r)
+
+
+def days_between(a: str | None, b: str) -> int | None:
+    try:
+        return (datetime.strptime(b, "%Y-%m-%d") - datetime.strptime(a, "%Y-%m-%d")).days if a else None
+    except ValueError:
+        return None
+
+
+def award_birthday(db: Session, c: m.Customer, r: dict | None = None) -> int:
+    """Birthday points, once a year, on the day. Not on the day the account was made, so signing up to cheat gets nothing."""
+    r = r or rules(db)
+    today = datetime.now(IST)
+    if not r["enabled"] or not r["birthday_points"] or not c.birthday or c.birthday != today.strftime("%m-%d"):
+        return 0
+    created = c.created_at.astimezone(IST).strftime("%Y-%m-%d") if c.created_at else ""
+    if created == today.strftime("%Y-%m-%d"):
+        return 0
+    note = f"Happy birthday {today.year}"
+    if db.scalar(select(m.PointTx.id).where(m.PointTx.customer_id == c.id, m.PointTx.reason == "birthday", m.PointTx.note == note)):
+        return 0
+    return add_tx(db, c, r["birthday_points"], "birthday", note)
 
 
 def redeem(db: Session, c: m.Customer, charge: int) -> tuple[int, int]:
@@ -139,3 +168,47 @@ def require_customer(c=Depends(optional_customer)) -> m.Customer:
     if c is None:
         raise HTTPException(401, "Please sign in")
     return c
+
+
+# ---------- phone code (OTP) for sign-up ----------
+OTP_MINUTES, OTP_MAX_PER_HOUR, OTP_MAX_TRIES = 10, 3, 5
+
+
+def otp_required() -> bool:
+    return (get_settings().otp_mode or "off").strip().lower() == "demo"
+
+
+def _otp_hash(phone: str, code: str) -> str:
+    import hashlib
+    return hashlib.sha256(f"{phone}:{code}:{get_settings().jwt_secret}".encode()).hexdigest()
+
+
+def otp_issue(db: Session, phone: str) -> str:
+    """Make a new 6-digit code for this number (3 per hour). Only the hash is stored."""
+    import secrets
+    now = datetime.now(timezone.utc)
+    recent = len(db.scalars(select(m.OtpCode.id).where(m.OtpCode.phone == phone, m.OtpCode.created_at >= now - timedelta(hours=1))).all())
+    if recent >= OTP_MAX_PER_HOUR:
+        raise HTTPException(429, "Too many codes asked for this number. Please try again in an hour.")
+    code = f"{secrets.randbelow(10**6):06d}"
+    db.add(m.OtpCode(phone=phone, code_hash=_otp_hash(phone, code), expires_at=now + timedelta(minutes=OTP_MINUTES)))
+    db.commit()
+    return code
+
+
+def otp_check(db: Session, phone: str, code: str | None) -> None:
+    """Raises unless the newest unexpired code for this number matches (5 tries). A used code is deleted."""
+    if not code or not code.strip().isdigit():
+        raise HTTPException(422, "Enter the 6-digit code.")
+    row = db.scalars(select(m.OtpCode).where(m.OtpCode.phone == phone).order_by(m.OtpCode.id.desc())).first()
+    exp = row.expires_at if row else None
+    if exp is not None and exp.tzinfo is None:
+        exp = exp.replace(tzinfo=timezone.utc)
+    if row is None or exp < datetime.now(timezone.utc) or row.tries >= OTP_MAX_TRIES:
+        raise HTTPException(422, "That code has expired. Ask for a new one.")
+    if row.code_hash != _otp_hash(phone, code.strip()):
+        row.tries += 1
+        db.commit()
+        raise HTTPException(422, "That code is not right.")
+    for r in db.scalars(select(m.OtpCode).where(m.OtpCode.phone == phone)).all():
+        db.delete(r)

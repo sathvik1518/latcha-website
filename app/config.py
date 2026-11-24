@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
     razorpay_webhook_secret: str = ""
+    # Instant order alerts on Telegram (optional): make a bot with @BotFather, then fill both in
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
+    # Phone check for Latcha Club sign-up: "off" (default) or "demo" (the code is shown on screen, no SMS is sent)
+    otp_mode: str = "off"
 
     @property
     def pay_mode(self) -> str:
