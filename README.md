@@ -4,8 +4,8 @@
 
 # LATCHA
 
-### A matcha café website that moves, swirls and actually takes orders.
-One scroll to fall in love. One form to order. One link for everything.
+### A matcha café website that moves, swirls and actually runs the shop.
+One scroll to fall in love. One form to order. One desk to run it all.
 
 *Whisked slow. Sipped soft.* 🍵
 
@@ -16,6 +16,7 @@ One scroll to fall in love. One form to order. One link for everything.
 ![PostgreSQL](https://img.shields.io/badge/Database-Neon_PostgreSQL-b5456a?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-4a2433?style=for-the-badge&logo=vercel&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-152_passing-5b8a1f?style=for-the-badge)
+![PWA](https://img.shields.io/badge/Installable-PWA-e58aa6?style=for-the-badge)
 
 <br>
 
@@ -24,9 +25,9 @@ One scroll to fall in love. One form to order. One link for everything.
 <br>
 
 **[🍵 Live site](https://latcha-website.vercel.app)** &nbsp;·&nbsp;
+**[🛍 Customer side](#-the-customer-side)** &nbsp;·&nbsp;
+**[🧑‍🍳 Owner side](#-the-owner-side)** &nbsp;·&nbsp;
 **[🚀 Run it](#-run-it-in-60-seconds)** &nbsp;·&nbsp;
-**[✨ Features](#-what-you-get)** &nbsp;·&nbsp;
-**[🍵 Latcha Club](#-latcha-club-accounts-and-points)** &nbsp;·&nbsp;
 **[🔌 API](#-the-api)** &nbsp;·&nbsp;
 **[🌐 Deploy](#-put-it-online-with-vercel)**
 
@@ -36,23 +37,17 @@ One scroll to fall in love. One form to order. One link for everything.
 
 <br>
 
-## 🌸 What you get
+## 🌸 The idea
 
-| | |
-|---|---|
-| 🥤 **A cup you can play with** | The hero cup floats and tilts with your mouse or phone. Cherries and leaves drift around it. One flavour tap turns the whole background from rose to matcha green. |
-| 🎬 **A scroll that tells a story** | Cups, the matcha tin on marble, then the pour. Smooth scroll, no jumps. |
-| 🛒 **A real shop behind the page** | 33 dishes, a cart, live order tracking with a share link, reviews and an owner screen, all backed by a database. |
-| 📍 **Outlets** | Pick JP Nagar or Sattva Knowledge Park. See "Open now" before ordering. |
-| 💳 **UPI payments** | Pay by UPI or at delivery. Demo mode today; Razorpay when you add keys. |
-| 🍵 **Latcha Club** | Customers make an account, collect points every day they visit, and turn **500 points into ₹50 off** at checkout. The owner can change every number. |
-| 📲 **Instant order alerts** | Every new order pings the owner's Telegram within a second, with a button that opens the owner desk. |
-| 📱 **Install as an app** | Add LATCHA to the phone home screen. It opens full-screen with its own icon. |
-| 💗 **Latcha Fam** | 8 sips = 1 free drink, counted from the customer's phone number. |
-| 🔎 **Find my matcha** | A 4-tap quiz that picks a drink from the live menu. |
-| 📊 **Owner desk** | A pink, phone-friendly screen for orders, dashboard, reviews, menu, outlets and loyalty. |
-| 🛡 **Safe by default** | Hashed passwords, spam trap, order limits, private tracking, signed payments, reviews held until approved. |
-| ✅ **Tested** | 152 automatic tests (API and real-browser) run on every push. |
+Most café sites are a menu in a PDF and a phone number. LATCHA is two products in one repo:
+
+| | For the customer | For the owner |
+|---|---|---|
+| **Feel** | A pink-to-green page where the cup floats, cherries drift and the scroll tells a story | A pink "owner desk" that opens like a shop door |
+| **Job** | Pick a drink, order, pay by UPI, watch it arrive, earn points | See every order live, move it along, call the customer, read the numbers |
+| **Where** | `/` | `/admin.html` |
+
+No framework on the front. A small FastAPI server behind it. One database. Everything installable on a phone.
 
 <br>
 
@@ -60,13 +55,25 @@ One scroll to fall in love. One form to order. One link for everything.
 
 | Time | Customer | Owner |
 |---|---|---|
-| ☀️ Morning | Opens the site, collects the day's **Club points**, takes the **Find my matcha** quiz and adds the match to the cart | Opens `/admin.html` and sees overnight orders |
-| 🌤 Afternoon | Picks an outlet, taps **Use my points** for ₹50 off, pays by UPI and gets an order number | Gets the order in **Orders**, calls to confirm, taps **Confirm order** |
-| 🌙 Evening | Tracks the order until it says **Delivered**. A sip lands on the Fam card | Taps **Mark delivered**, marks a sold-out dish, checks the **Dashboard** |
+| ☀️ Morning | Opens the site, collects the day's **Club points**, takes the **Find my matcha** quiz and adds the match to the cart | Opens the door at `/admin.html`. The sign flips **CLOSED → OPEN** and overnight orders are waiting |
+| 🌤 Afternoon | Picks an outlet, taps **Use my points** for ₹50 off, pays by UPI, gets an order number and a tracking link | A phone buzzes on Telegram. The order lands in the **New** lane. One tap: **Confirm order** |
+| 🌙 Evening | Watches **Received → Making → On the way → Delivered** update by itself | **Send out for delivery**, then **Mark delivered**. Checks the **Dashboard** and downloads the day as CSV |
 
 <br>
 
-## 📸 A quick look
+## 🛍 The customer side
+
+| | |
+|---|---|
+| 🥤 **A cup you can play with** | The hero cup floats and tilts with your mouse or phone. One flavour tap turns the whole background from rose to matcha green. |
+| 🎬 **A scroll that tells a story** | Cups, the matcha tin on marble, then the pour. Smooth scroll, no jumps. |
+| 🛒 **A real shop** | 33 dishes, a cart, outlets with "Open now", reviews held until approved. |
+| 💳 **UPI or cash** | Pay by UPI or at delivery. Demo mode today; Razorpay when you add keys. |
+| 🛵 **Live tracking** | Four steps, refreshes every 10 seconds, with a private share link. |
+| 🍵 **Latcha Club** | Account, daily visit points, birthday and comeback bonuses. **500 points = ₹50 off.** |
+| 💗 **Latcha Fam** | 8 sips = 1 free drink, counted from the phone number. |
+| 🔎 **Find my matcha** | A 4-tap quiz that picks a drink from the live menu. |
+| 📱 **Install as an app** | Add LATCHA to the home screen. Full-screen, own icon. |
 
 <p align="center">
 <img src="docs/preview-matcha.jpg" alt="Matcha Swirl flavour with the green background" width="49%">
@@ -77,14 +84,49 @@ One scroll to fall in love. One form to order. One link for everything.
 <img src="docs/preview-float.jpg" alt="The build-your-own float section" width="49%">
 </p>
 <p align="center">
-<img src="docs/preview-fam.jpg" alt="The LATCHA fam social section with the Instagram card and photo tiles" width="70%">
+<img src="docs/shot-track.jpg" alt="Live order tracking on a phone: four steps, status message and share link" width="30%">
+<img src="docs/shot-club.jpg" alt="Latcha Club window on a phone: points card and history" width="30%">
+<img src="docs/shot-quiz.jpg" alt="The Find my matcha quiz" width="37%">
+</p>
+<p align="center"><sub>Left to right: live tracking, the Club window, the matcha quiz. Preview pictures show the page before the 3D cherries load; on the live site they are real 3D cherries.</sub></p>
+
+<br>
+
+## 🧑‍🍳 The owner side
+
+| | |
+|---|---|
+| 🔑 **"Open the shop" login** | A little LATCHA shopfront with a swinging CLOSED sign that flips to OPEN. Greeting follows Indian time. |
+| ▦ **Order board** | Three lanes on a computer: New, Making, On the way. List view on phones. |
+| ⏱ **Wait colours** | Green under 10 min, amber from 10, red from 20. A late order cannot hide. |
+| 📞 **One-tap contact** | Call, WhatsApp (message ready) and Map on every order. |
+| 📊 **Dashboard** | Sales, orders, average delivery time, repeat customers, busiest hour, best weekday. |
+| ⬇ **CSV export** | Any period up to a year, opens in Excel or Sheets, formula-safe. |
+| 📲 **Instant alerts** | Every new order pings Telegram within a second. |
+| 🍽 **Menu, outlets, loyalty** | Edit dishes and prices, set opening hours and sold-out lists, change every Club number. |
+| 🖥 **Full-width layout** | Uses the whole monitor, not a thin strip in the middle. |
+
+<p align="center">
+<img src="docs/shot-login.jpg" alt="Owner login: a LATCHA shopfront with a CLOSED sign" width="100%">
 </p>
 <p align="center">
-<img src="docs/shot-club.jpg" alt="Latcha Club account window on a phone: points card, progress bar and history" width="32%">
-<img src="docs/shot-loyalty.jpg" alt="Owner desk Loyalty tab with editable points rules" width="66%">
+<img src="docs/shot-board.jpg" alt="Owner order board with New, Making and On the way lanes, wait chips and contact buttons (sample data)" width="100%">
 </p>
-<p align="center"><sub>Left: a customer's Latcha Club window on a phone. Right: the owner changing the points rules.</sub></p>
-<p align="center"><sub>Preview pictures show the page before the 3D cherries load. On the live site they are real 3D cherries.</sub></p>
+<p align="center">
+<img src="docs/shot-dashboard.jpg" alt="Owner dashboard: sales, orders, collected, average order, time to deliver, repeat customers and charts (sample data)" width="100%">
+</p>
+<p align="center"><sub>Owner desk with sample data: the login door, the live order board and the dashboard.</sub></p>
+
+<br>
+
+## 🛡 Built to be trusted
+
+- **Passwords** are hashed. The owner login uses a signed token.
+- **Orders** are limited per phone, with a spam trap. Prices are worked out on the server, never trusted from the browser.
+- **Tracking links** carry a secret code made from the server key. A wrong code and a missing order look identical.
+- **Payments** are signed (Razorpay) and checked on the server.
+- **Reviews** wait for the owner before they show.
+- **Tests:** 152 automatic tests (108 API, 44 real-browser) run on every push, on a throw-away database. They never touch the live site.
 
 <br>
 
@@ -98,9 +140,9 @@ python scripts/init_db.py
 python -m uvicorn app.main:app --port 8000 --reload
 ```
 
-Open **http://localhost:8000**. No database account needed: it uses a small local file (`dev.db`). To try the owner screen, copy `.env.example` to `.env` and fill in `ADMIN_PASSWORD_HASH` and `JWT_SECRET` (see [Connect Neon](#-connect-neon-the-real-database)).
+Open **http://localhost:8000**. No database account needed: it uses a small local file (`dev.db`). To try the owner screen, copy `.env.example` to `.env` and fill in `ADMIN_PASSWORD_HASH` and `JWT_SECRET` (see [Connect Neon](#-connect-neon-the-real-database)), then open **/admin.html**.
 
-Run the tests any time: `python -m pytest -q` (browser tests need `playwright install chromium` once). They use a throw-away database, never your live site.
+Run the tests any time: `python -m pytest -q` (browser tests need `playwright install chromium` once).
 
 <br>
 
@@ -216,7 +258,7 @@ A 4-tap quiz (format, flavour, sweetness, light or treat) that picks one dish an
 
 `/admin.html` is a pink, glassy desk that matches the shop. It greets the owner with a "Welcome back" line that fades away, and on a phone the tabs become a **bottom app bar** so a thumb reaches everything. It updates by itself every 12 seconds. A new order shows a banner, the card flashes, and the tab title shows `(2) LATCHA Owner`. Press **Sound off** once to turn on a soft beep. Tabs: Orders, Dashboard, Reviews, Menu, Outlets, **Loyalty** (Club rules, customers and Fam sips).
 
-<p align="center"><img src="docs/shot-orders.jpg" alt="Owner screen: live orders with tiles and one-tap buttons" width="85%"></p>
+<p align="center"><img src="docs/shot-board.jpg" alt="Owner screen: live order board" width="85%"></p>
 
 - Tiles: new, being made, waiting for payment, today's orders, rupees paid today (Indian time, cancelled orders not counted).
 - Filters: Active, Delivered, Cancelled, All, plus an outlet filter.
@@ -250,7 +292,6 @@ After ordering, **Track this order** shows four steps: **Received → Making →
 
 Admin → **Dashboard** shows the last 1, 7, 30 or 90 days. Everything is counted from real orders; nothing extra is stored.
 
-<p align="center"><img src="docs/shot-dashboard.jpg" alt="Owner dashboard with sales, orders, collected, average order and a sales-by-day chart (sample data)" width="85%"></p>
 
 - Top row: sales, orders (each compared with the period before), money collected, average order, **average time to deliver** (placed to delivered), **repeat customers** (% who had ordered before).
 - Charts: sales or orders by day, top dishes, busiest hours, **best weekday**, outlets, how people pay, new and returning customers, Fam free drinks given.
