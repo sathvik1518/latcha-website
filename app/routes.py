@@ -85,6 +85,7 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
     total = pay.order_total([(items[l.item_id], l.quantity) for l in body.lines])
     discount = 0
     if body.use_reward:   # a Latcha Fam free drink: the cheapest drink in the cart is free
+        fam.lock_phone(db, body.phone)   # held until commit; the check below then sees any order placed a moment ago
         if fam.card(db, body.phone)["rewards_available"] < 1:
             raise HTTPException(422, "No free drink is waiting on this number yet.")
         discount = fam.reward_discount(items, body.lines)
@@ -122,7 +123,9 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
     db.add(order)
     if pts_used:
         db.flush()
-        loyalty.add_tx(db, cust, -pts_used, "redeem", f"Order #{order.id}")
+        if not loyalty.spend(db, cust, pts_used, f"Order #{order.id}"):
+            db.rollback()
+            raise HTTPException(409, "Your points balance just changed. Please check it and place the order again.")
     start = None
     if method == "upi":
         db.flush()  # we need the order number for the provider

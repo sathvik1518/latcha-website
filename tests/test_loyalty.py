@@ -165,3 +165,28 @@ def test_review_while_signed_in_shows_in_my_account(c):
     assert c.post("/api/reviews", json=dict(author="Ravi", rating=5, text="Lovely matcha, truly."), headers=auth(tok)).status_code == 202
     me = c.get("/api/me", headers=auth(tok)).json()
     assert me["reviews"][0]["rating"] == 5 and me["reviews"][0]["approved"] is False
+
+
+def test_points_cannot_be_spent_twice(c):
+    """Two orders racing for one balance: the second spend must fail, never push the balance below zero."""
+    with SessionLocal() as db:
+        cu = db.query(m.Customer).filter_by(phone="9811111111").one()
+        loyalty.add_tx(db, cu, 500 - cu.points, "adjust", "test")
+        db.commit()
+        stale = db.query(m.Customer).filter_by(phone="9811111111").one()   # both "requests" saw 500 points
+        assert loyalty.spend(db, stale, 500, "first") is True
+        assert loyalty.spend(db, stale, 500, "second") is False
+        db.commit()
+        assert stale.points == 0
+
+
+def test_order_is_refused_and_not_saved_when_points_vanish(c, monkeypatch):
+    tok = c.post("/api/customers/login", json=dict(phone="9811111111", password="secret1")).json()["access_token"]
+    with SessionLocal() as db:
+        before = db.query(m.Order).count()
+    monkeypatch.setattr(loyalty, "redeem", lambda db, cu, charge: (500, 50))   # balance read before another order spent it
+    r = c.post("/api/orders", json=order(use_points=True), headers=auth(tok))
+    assert r.status_code == 409, r.text
+    with SessionLocal() as db:
+        assert db.query(m.Order).count() == before
+    assert c.get("/api/me", headers=auth(tok)).json()["points"] >= 0

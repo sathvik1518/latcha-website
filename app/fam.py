@@ -24,6 +24,13 @@ def _shape(sips: int, used: int, orders: int) -> dict:
                 rewards_available=max(0, sips // n - used), rewards_used=used, delivered_orders=orders)
 
 
+def lock_phone(db, phone: str) -> None:
+    """Hold a per-number lock until commit, so two orders at once cannot use the same free drink.
+    shortcut: Postgres only; SQLite (local dev and tests) is not guarded, fine while it never serves real traffic."""
+    if db.get_bind().dialect.name == "postgresql":
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtext(:k))"), {"k": "fam:" + phone})
+
+
 def card(db, phone: str) -> dict:
     sips = db.scalar(select(func.coalesce(func.sum(m.OrderLine.quantity), 0)).join(m.Order, m.Order.id == m.OrderLine.order_id)
                      .where(m.Order.phone == phone, m.Order.status == "delivered")) or 0
