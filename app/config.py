@@ -3,7 +3,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # .env.local (your computer only, never committed) wins over .env, so local runs use a local database
+    model_config = SettingsConfigDict(env_file=(".env", ".env.local"), extra="ignore")
     database_url: str = "sqlite:///./dev.db"
     cors_origins: str = "http://localhost:8000"
     admin_username: str = "owner"
