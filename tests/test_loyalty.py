@@ -190,3 +190,23 @@ def test_order_is_refused_and_not_saved_when_points_vanish(c, monkeypatch):
     with SessionLocal() as db:
         assert db.query(m.Order).count() == before
     assert c.get("/api/me", headers=auth(tok)).json()["points"] >= 0
+
+
+def test_fam_lock_makes_a_second_order_for_the_same_number_wait():
+    """Postgres only: while one order holds a number's free-drink lock, another order for that number cannot take it."""
+    from sqlalchemy import text
+    from app import fam
+    if engine.dialect.name != "postgresql":
+        pytest.skip("the lock exists only on Postgres (run with TEST_DATABASE_URL)")
+    with SessionLocal() as first, SessionLocal() as second:
+        fam.lock_phone(first, "9877777777")
+        second.execute(text("SET LOCAL lock_timeout = '300ms'"))
+        with pytest.raises(Exception, match="lock timeout"):
+            fam.lock_phone(second, "9877777777")
+        second.rollback()
+        fam.lock_phone(second, "9877777778")          # a different number is not held up
+        first.rollback()                              # first order finishes: the lock is released
+        second.rollback()
+        second.execute(text("SET LOCAL lock_timeout = '300ms'"))
+        fam.lock_phone(second, "9877777777")
+        second.rollback()

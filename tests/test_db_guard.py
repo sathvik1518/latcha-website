@@ -3,4 +3,5 @@
 
 def test_tests_never_use_the_live_database():
     from app.db import engine
-    assert engine.url.get_backend_name() == "sqlite" or engine.url.render_as_string() == __import__("os").environ.get("TEST_DATABASE_URL")
+    # a throw-away SQLite file, or a Postgres running on this machine / in CI (never a hosted one like Neon)
+    assert engine.url.get_backend_name() == "sqlite" or engine.url.host in ("localhost", "127.0.0.1")
