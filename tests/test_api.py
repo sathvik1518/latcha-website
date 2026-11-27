@@ -334,12 +334,21 @@ def test_demo_upi_order_pays_once(c, paymode):
     tr = lambda: c.post("/api/orders/track", json={"order_id": b["id"], "phone": "9200000001"}).json()
     assert tr()["payment_status"] == "pending"
     ok = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000001"})
-    assert ok.status_code == 200 and ok.json()["payment_status"] == "paid"
+    assert ok.status_code == 200 and ok.json()["payment_status"] == "demo"       # pretend screen: never "paid"
     again = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000001"})   # double click
-    assert again.status_code == 200 and again.json()["payment_status"] == "paid"
-    assert tr()["payment_status"] == "paid"
+    assert again.status_code == 200 and again.json()["payment_status"] == "demo"
+    assert tr()["payment_status"] == "demo"
+    assert c.post(f"/api/orders/{b['id']}/pay", json={"phone": "9200000001"}).status_code == 409
     adm = [o for o in c.get("/api/admin/orders", headers=tok(c)).json() if o["id"] == b["id"]][0]
-    assert adm["payment_status"] == "paid" and adm["amount"] == b["amount"]
+    assert adm["payment_status"] == "demo" and adm["amount"] == b["amount"]
+    # staff collect the money for real and mark it paid
+    assert c.post(f"/api/admin/orders/{b['id']}/mark-paid", headers=tok(c)).json()["payment_status"] == "paid"
+
+
+def test_payments_are_off_unless_switched_on():
+    from app.config import Settings
+    assert Settings.model_fields["payments_mode"].default == "off"
+    assert Settings(payments_mode="").pay_mode == "off" and Settings(payments_mode="nonsense").pay_mode == "off"
 
 
 def test_client_cannot_choose_the_amount(c, paymode):
@@ -513,7 +522,9 @@ def test_stats_count_new_being_made_unpaid_and_todays_money(c, paymode):
     s1 = c.get("/api/admin/stats", headers=h).json()
     assert s1["new_orders"] == s0["new_orders"] + 2 and s1["today_orders"] == s0["today_orders"] + 2
     assert s1["awaiting_payment"] == s0["awaiting_payment"] + 1 and s1["latest_order_id"] == b["id"]
-    c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9300000002"})              # pays
+    c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9300000002"})              # demo "pays": no money
+    assert c.get("/api/admin/stats", headers=h).json()["today_paid"] == s0["today_paid"]   # demo money is never counted
+    c.post(f"/api/admin/orders/{b['id']}/mark-paid", headers=h)                              # staff collected it
     c.patch(f"/api/admin/orders/{a['id']}", json={"status": "confirmed"}, headers=h)
     s2 = c.get("/api/admin/stats", headers=h).json()
     assert s2["today_paid"] == s0["today_paid"] + b["amount"]

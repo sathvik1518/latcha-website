@@ -86,8 +86,8 @@ def test_upi_order_alerts_only_after_payment(c, telegram):
     oid = r.json()["id"]
     assert telegram == []                                           # not paid yet: no ping
     p = c.post(f"/api/orders/{oid}/pay/confirm", json=dict(phone="9822222204"))
-    assert p.status_code == 200 and p.json()["payment_status"] == "paid"
-    assert len(telegram) == 1 and "Paid by UPI" in telegram[0]
+    assert p.status_code == 200 and p.json()["payment_status"] == "demo"
+    assert len(telegram) == 1 and "DEMO payment, no money received" in telegram[0] and "Paid by UPI" not in telegram[0]
     c.post(f"/api/orders/{oid}/pay/confirm", json=dict(phone="9822222204"))
     assert len(telegram) == 1                                       # a repeat confirm does not ping again
 

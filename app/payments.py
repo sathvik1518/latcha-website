@@ -96,10 +96,11 @@ def verify_webhook_signature(raw: bytes, signature: str) -> bool:
     return bool(secret) and hmac.compare_digest(_sig(secret, raw), signature or "")
 
 
-def mark_paid(db, order, payment_id: str | None) -> bool:
-    """Idempotent: a repeat call (double click, webhook retry) changes nothing. Returns True the first time only."""
-    res = db.execute(update(type(order)).where(type(order).id == order.id, type(order).payment_status != "paid")
-                     .values(payment_status="paid", payment_id=payment_id, paid_at=datetime.now(timezone.utc)))
+def mark_paid(db, order, payment_id: str | None, status: str = "paid") -> bool:
+    """Idempotent: a repeat call (double click, webhook retry) changes nothing. Returns True the first time only.
+    status="demo" is the pretend screen: no money moved, so it never counts as paid and staff can still mark it paid."""
+    res = db.execute(update(type(order)).where(type(order).id == order.id, type(order).payment_status.not_in(("paid", status)))
+                     .values(payment_status=status, payment_id=payment_id, paid_at=datetime.now(timezone.utc)))
     db.commit()
     db.refresh(order)
     return res.rowcount == 1

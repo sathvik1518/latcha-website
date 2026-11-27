@@ -259,7 +259,7 @@ def fill_order(page: Page, name: str, phone: str):
     expect(page.locator("#paychoice")).to_be_visible()
 
 
-def test_customer_pays_by_upi_in_demo_mode_and_owner_sees_paid(page: Page, context, admin_password):
+def test_demo_upi_payment_is_labelled_demo_for_customer_and_owner(page: Page, context, admin_password):
     name = unique("E2E Payer")
     fill_order(page, name, "98765 43211")
     expect(page.locator("#osub")).to_contain_text("with UPI")       # UPI is the default choice
@@ -271,13 +271,14 @@ def test_customer_pays_by_upi_in_demo_mode_and_owner_sees_paid(page: Page, conte
     assert amount.startswith("₹") and int(amount[1:]) > 0
     page.click("#pbpay")
     expect(page.locator(".pbtick")).to_be_visible(timeout=8000)
-    expect(page.locator("#pbsub")).to_contain_text("is paid")
+    expect(page.locator("#pbtag")).to_contain_text("no real money moved")
+    expect(page.locator("#pbsub")).to_contain_text("pay LATCHA at delivery")
     order_no = re.search(r"#(\d+)", page.locator("#pbsub").inner_text()).group(1)
 
     owner = context.new_page()
     admin_login(owner, admin_password)
     card = owner.locator("#list .card", has_text=name).filter(has_text=f"#{order_no}")
-    expect(card).to_contain_text(f"{amount} · UPI · Paid")
+    expect(card).to_contain_text(f"{amount} · UPI · DEMO – no money received")
 
 
 def test_unpaid_upi_order_can_be_paid_later_from_tracking(page: Page):
@@ -301,7 +302,8 @@ def test_unpaid_upi_order_can_be_paid_later_from_tracking(page: Page):
 
     page.click("#pbmsg .chip")                                       # Track this order
     page.click("#tsub")
-    expect(page.locator("#tres")).to_contain_text("Paid")
+    expect(page.locator("#tres")).to_contain_text("Demo payment · no money received")
+    expect(page.locator("#paynow")).to_have_count(0)
 
 
 def test_owner_can_mark_a_cash_order_as_paid(page: Page, context, admin_password):

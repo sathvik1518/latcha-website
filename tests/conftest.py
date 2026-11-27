@@ -7,6 +7,7 @@ import pytest
 
 # Safety barrier: point the app at a throw-away database BEFORE anything imports it, so no test can ever reach
 # the DATABASE_URL in .env (the live Neon database). The test files set their own temporary database too.
+os.environ["PAYMENTS_MODE"] = "demo"   # the app defaults to off; most payment tests use the demo screen
 os.environ["MAX_ORDERS_PER_IP_HOUR"] = "100000"   # every test order comes from one machine; the limit has its own test
 os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{pathlib.Path(tempfile.mkdtemp()) / 'guard.db'}"
 

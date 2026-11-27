@@ -1647,9 +1647,9 @@ function startPay(c){payCtx=c;payView(true);var d=c.pay.provider==="demo";
   $("#pbsub").textContent="Order #"+c.id+(c.outlet?" · "+c.outlet:"");
   $("#pbpay").hidden=false;$("#pbpay").textContent="Pay ₹"+c.pay.amount+" with UPI";$("#pbcancel").hidden=false;$("#pbcancel").textContent="Not now";
   $("#pbmsg").className="msg";$("#pbmsg").textContent="";payBusy(false);$("#pbpay").focus()}
-function payDone(){var c=payCtx;$("#pbtag").textContent="Payment received";
+function payDone(){var c=payCtx,d=c.pay.provider==="demo";$("#pbtag").textContent=d?"Demo payment done · no real money moved":"Payment received";
   $("#pbamt").innerHTML='<span class="pbtick" aria-hidden="true">✓</span>';
-  $("#pbsub").textContent="Order #"+c.id+" is paid. LATCHA will call you to confirm. 💗";
+  $("#pbsub").textContent=d?"Order #"+c.id+" is saved. This was a demo, so please pay LATCHA at delivery. 💗":"Order #"+c.id+" is paid. LATCHA will call you to confirm. 💗";
   payBusy(false);$("#pbpay").hidden=true;$("#pbmsg").textContent="";$("#pbcancel").hidden=false;$("#pbcancel").textContent="Close";
   var a=document.createElement("button");a.type="button";a.className="chip";a.textContent="Track this order";a.addEventListener("click",function(){var p={id:c.id,phone:c.phone};closeOrder();showTrack(p)});
   $("#pbmsg").appendChild(a);$("#pbpay").hidden=true}
@@ -1769,8 +1769,8 @@ function trackHtml(o){var st=o.status,steps=TSTEPS,at=st==="cancelled"?-1:steps.
   if(st==="delivered"){var sp=o.lines.reduce(function(a,l){return a+l.quantity},0);h+='<div class="tstat pay ok">+'+sp+' sip'+(sp>1?'s':'')+' added to your Latcha Fam card 🍵</div>'}
   if(o.fam_discount)h+='<div class="tstat pay ok">Free drink used'+(PAYMODE!=="off"?' (−₹'+o.fam_discount+')':'')+'</div>';
   if(o.amount&&(o.payment_method==="upi"||o.payment_status==="paid")){var pd=o.payment_status==="paid";
-    h+='<div class="tstat pay'+(pd?' ok':'')+'">'+(pd?'Paid ₹'+o.amount+(o.payment_method==="upi"?' by UPI ✓':' ✓'):'Payment pending · ₹'+o.amount)+'</div>';
-    if(!pd&&o.payment_method==="upi"&&st!=="cancelled"&&PAYMODE!=="off")h+='<button type="button" class="chip" id="paynow">Pay ₹'+o.amount+' now</button>'}
+    h+=o.payment_status==="demo"?'<div class="tstat pay">Demo payment · no money received · pay ₹'+o.amount+' at delivery</div>':'<div class="tstat pay'+(pd?' ok':'')+'">'+(pd?'Paid ₹'+o.amount+(o.payment_method==="upi"?' by UPI ✓':' ✓'):'Payment pending · ₹'+o.amount)+'</div>';
+    if(!pd&&o.payment_status!=="demo"&&o.payment_method==="upi"&&st!=="cancelled"&&PAYMODE!=="off")h+='<button type="button" class="chip" id="paynow">Pay ₹'+o.amount+' now</button>'}
   var d=new Date(o.created_at);if(!isNaN(d))h+='<p class="tmeta">Placed '+esc(d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}))+'</p>';
   var up=utcD(o.status_at||o.created_at);if(!isNaN(up))h+='<p class="tmeta" id="tupd">'+(st==="new"?"Placed ":"Updated ")+agoT(up)+(live?" · refreshes by itself":"")+'</p>';
   h+='<div class="tacts">';

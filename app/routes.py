@@ -178,7 +178,7 @@ def restart_payment(order_id: int, body: s.PayIn, db: Session = Depends(get_db))
     o = _own_order(db, order_id, body.phone)
     if o.payment_method != "upi" or o.status == "cancelled" or pay.mode() == "off":
         raise HTTPException(422, "This order cannot be paid online.")
-    if o.payment_status == "paid":
+    if o.payment_status in ("paid", "demo"):
         raise HTTPException(409, "This order is already paid.")
     if not o.payment_ref or (o.payment_provider or "demo") != ("razorpay" if pay.mode() == "razorpay" else "demo"):
         try:
@@ -196,12 +196,12 @@ def confirm_payment(order_id: int, body: s.PayIn, request: Request, db: Session 
     o = _own_order(db, order_id, body.phone)
     if o.payment_method != "upi" or o.status == "cancelled":
         raise HTTPException(422, "This order cannot be paid online.")
-    if o.payment_status == "paid":   # double click or retry: same answer, nothing changes
-        return s.PayResult(id=o.id, payment_status="paid", amount=o.amount)
+    if o.payment_status in ("paid", "demo"):   # double click or retry: same answer, nothing changes
+        return s.PayResult(id=o.id, payment_status=o.payment_status, amount=o.amount)
     if o.payment_provider == "demo":
         if pay.mode() != "demo":
             raise HTTPException(404, "Not found")   # the pretend screen is switched off once real payments are on
-        if pay.mark_paid(db, o, f"demo_pay_{o.id}"):
+        if pay.mark_paid(db, o, f"demo_pay_{o.id}", status="demo"):
             notify.order_placed(o, str(request.base_url))
     else:
         if not (body.razorpay_payment_id and body.razorpay_order_id and body.razorpay_signature):
