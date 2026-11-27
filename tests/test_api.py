@@ -652,3 +652,16 @@ def test_dashboard_needs_login_and_checks_the_range(c):
     assert d["days"] == 30 and len(d["daily"]) == 30 and len(d["hours"]) == 24
     assert set(d) >= {"head", "daily", "dishes", "outlets", "hours", "payments", "customers", "pending_reviews"}
     assert d["head"]["orders"] >= 1 and d["dishes"]                       # earlier tests placed orders
+
+
+def test_too_many_orders_from_one_network_are_refused(c, monkeypatch):
+    monkeypatch.setattr(_gs(), "max_orders_per_ip_hour", 2)
+    here = {"x-real-ip": "203.0.113.7"}
+    for i in range(2):
+        assert c.post("/api/orders", json={**ORDER, "phone": f"930000000{i}"}, headers=here).status_code == 201
+    r = c.post("/api/orders", json={**ORDER, "phone": "9300000009"}, headers=here)
+    assert r.status_code == 429 and "network" in r.json()["detail"]
+    assert c.post("/api/orders", json={**ORDER, "phone": "9300000008"}, headers={"x-real-ip": "198.51.100.1"}).status_code == 201
+    from app import models as m
+    with SessionLocal() as db:
+        assert "203.0.113.7" not in {o.ip_hash for o in db.query(m.Order)}   # only the hash is stored

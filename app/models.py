@@ -63,6 +63,7 @@ class Order(Base):
     notes: Mapped[str] = mapped_column(String(300), default="")
     status: Mapped[str] = mapped_column(String(20), default="new", index=True)
     outlet_id: Mapped[int | None] = mapped_column(ForeignKey("outlets.id"), nullable=True, index=True)
+    ip_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)   # keyed hash of the network address, never the address itself
     outlet: Mapped["Outlet | None"] = relationship()
     payment_method: Mapped[str] = mapped_column(String(10), default="cod", server_default="cod")      # cod | upi
     payment_status: Mapped[str] = mapped_column(String(10), default="unpaid", server_default="unpaid")  # unpaid | pending | paid | failed

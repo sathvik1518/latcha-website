@@ -19,6 +19,13 @@ log = logging.getLogger("latcha.pay")
 NOT_FOUND = "We could not find that order. Check the order number and phone number."
 
 
+def ip_hash(request: Request) -> str:
+    """Keyed hash of the caller's network address, so orders can be counted per network without storing addresses.
+    shortcut: trusts x-real-ip, which Vercel sets itself; behind any other host it could be faked, so check it there."""
+    ip = request.headers.get("x-real-ip") or (request.client.host if request.client else "")
+    return hmac.new(get_settings().jwt_secret.encode(), ip.encode(), hashlib.sha256).hexdigest()
+
+
 def track_code(order_id: int) -> str:
     """A private link code for one order: "<number>.<10 secret letters>". Nobody can guess it without the server secret."""
     key = (get_settings().jwt_secret or "latcha-dev").encode()
@@ -63,6 +70,9 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
         m.Order.phone == body.phone, m.Order.created_at >= since))
     if recent >= MAX_ORDERS_PER_PHONE_HOUR:
         raise HTTPException(429, "Too many orders from this number. Please try again later.")
+    ip = ip_hash(request)
+    if db.scalar(select(func.count(m.Order.id)).where(m.Order.ip_hash == ip, m.Order.created_at >= since)) >= get_settings().max_orders_per_ip_hour:
+        raise HTTPException(429, "Too many orders from this network. Please try again later.")
     ids = {l.item_id for l in body.lines}
     items = {i.id: i for i in db.scalars(select(m.MenuItem).where(m.MenuItem.id.in_(ids)))}
     for l in body.lines:
@@ -113,7 +123,7 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
     order = m.Order(customer_name=body.customer_name, phone=body.phone, address=body.address,
                     city=outlet.city, notes=body.notes, outlet_id=outlet.id,
                     amount=charge, payment_method=method, payment_status=pstatus, fam_discount=discount,
-                    customer_id=cust.id if cust else None, points_used=pts_used, points_discount=pts_disc)
+                    customer_id=cust.id if cust else None, points_used=pts_used, points_discount=pts_disc, ip_hash=ip)
     if free:
         order.payment_id, order.paid_at = "reward", datetime.now(timezone.utc)
     for l in body.lines:

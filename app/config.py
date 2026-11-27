@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     jwt_secret: str = ""
     token_minutes: int = 120
     enforce_outlet_hours: bool = True   # refuse delivery requests while an outlet is closed
+    max_orders_per_ip_hour: int = 20    # orders per hour from one network (shared office or college Wi-Fi counts as one)
     fam_sips_per_reward: int = 8        # Latcha Fam: this many sips (delivered drinks) = 1 free drink
     # UPI payments: "demo" (fake pay screen, no money), "razorpay" (real checkout, test or live keys), "off"
     payments_mode: str = "demo"

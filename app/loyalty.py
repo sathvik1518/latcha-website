@@ -31,7 +31,7 @@ def upgrade_schema(engine) -> None:
     insp = inspect(engine)
     adds = {"orders": [("customer_id", "INTEGER REFERENCES customers(id)"), ("points_used", "INTEGER NOT NULL DEFAULT 0"),
                        ("points_discount", "INTEGER NOT NULL DEFAULT 0"), ("points_refunded", "BOOLEAN NOT NULL DEFAULT FALSE"),
-                       ("status_at", "TIMESTAMP")],
+                       ("status_at", "TIMESTAMP"), ("ip_hash", "VARCHAR(64)")],
             "reviews": [("customer_id", "INTEGER REFERENCES customers(id)")],
             "customers": [("birthday", "VARCHAR(5)")]}
     for table, cols in adds.items():
