@@ -47,6 +47,16 @@ def test_menu_cards_show_prices_labelled_as_demo(page: Page):
     assert tags.count() >= 30 and all("demo price" in x and "₹" in x for x in tags.all_inner_texts())
 
 
+def test_phone_sees_order_button_on_first_screen(page: Page):
+    page.set_viewport_size({"width": 375, "height": 812})
+    page.goto("/")
+    btn = page.locator("#orderbtn")
+    expect(btn).to_be_visible()
+    box = btn.bounding_box()
+    assert box["y"] + box["height"] <= 812 and box["x"] + box["width"] <= 375
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")      # no sideways scroll
+
+
 def test_plus_and_minus_buttons(page: Page):
     page.goto("/")
     card = page.locator(".item:has(.add)").nth(1)

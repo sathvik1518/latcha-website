@@ -510,6 +510,8 @@ nav .logo img{height:32px;width:auto;border-radius:12px;box-shadow:0 6px 14px rg
 .follow:hover{background:var(--berry)}
 .bag{min-width:0;height:44px;padding:0 18px;border-radius:999px;background:var(--berry);color:var(--blush);font-weight:700;display:none}
 nav.past .bag{display:inline-flex;align-items:center}
+/* phones: Order is always one tap away, and once you scroll the header gets a backing so its logo never sits on the menu boards */
+@media(max-width:900px){.bag{display:inline-flex;align-items:center}nav.past{background:rgba(255,245,248,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line)}}
 .burger{display:inline-flex}
 #mnav{top:76px}
 @media(min-width:1024px){nav{height:calc(var(--r)*6.5);padding:0 calc(var(--r)*4)}nav .logo img{height:calc(var(--r)*2.5)}#mnav{top:calc(var(--r)*6.5)}}
