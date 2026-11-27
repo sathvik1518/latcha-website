@@ -39,6 +39,14 @@ def test_menu_loads_from_the_database(page: Page):
     assert adds.count() >= 30
 
 
+def test_menu_cards_show_prices_labelled_as_demo(page: Page):
+    """The database prices are placeholders, so in demo mode every card says so."""
+    page.goto("/")
+    tags = page.locator(".item .dp")
+    expect(tags.first).to_contain_text("demo price")
+    assert tags.count() >= 30 and all("demo price" in x and "₹" in x for x in tags.all_inner_texts())
+
+
 def test_plus_and_minus_buttons(page: Page):
     page.goto("/")
     card = page.locator(".item:has(.add)").nth(1)
