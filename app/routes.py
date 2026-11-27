@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timedelta, timezone
-import csv, hashlib, hmac, io, json, logging
+import csv, hashlib, hmac, io, json, logging, secrets
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -19,17 +19,34 @@ log = logging.getLogger("latcha.pay")
 NOT_FOUND = "We could not find that order. Check the order number and phone number."
 
 
+_SPARE_KEY = secrets.token_bytes(32)   # only when JWT_SECRET is missing: unguessable, but links stop working on restart
+
+
+def _key() -> bytes:
+    return get_settings().jwt_secret.encode() or _SPARE_KEY
+
+
 def ip_hash(request: Request) -> str:
     """Keyed hash of the caller's network address, so orders can be counted per network without storing addresses.
     shortcut: trusts x-real-ip, which Vercel sets itself; behind any other host it could be faked, so check it there."""
     ip = request.headers.get("x-real-ip") or (request.client.host if request.client else "")
-    return hmac.new(get_settings().jwt_secret.encode(), ip.encode(), hashlib.sha256).hexdigest()
+    return hmac.new(_key(), ip.encode(), hashlib.sha256).hexdigest()
+
+
+def rate_limit(db: Session, request: Request, what: str, per_hour: int) -> None:
+    """Refuse after per_hour lookups from one network in the last hour. Stored in the database, not in memory."""
+    key, since = f"{what}:{ip_hash(request)}", datetime.now(timezone.utc) - timedelta(hours=1)
+    db.query(m.Hit).filter(m.Hit.created_at < since).delete(synchronize_session=False)
+    if db.scalar(select(func.count(m.Hit.id)).where(m.Hit.key == key)) >= per_hour:
+        db.commit()
+        raise HTTPException(429, "Too many tries. Please wait a while and try again.")
+    db.add(m.Hit(key=key))
+    db.commit()
 
 
 def track_code(order_id: int) -> str:
     """A private link code for one order: "<number>.<10 secret letters>". Nobody can guess it without the server secret."""
-    key = (get_settings().jwt_secret or "latcha-dev").encode()
-    return f"{order_id}.{hmac.new(key, f'track:{order_id}'.encode(), hashlib.sha256).hexdigest()[:10]}"
+    return f"{order_id}.{hmac.new(_key(), f'track:{order_id}'.encode(), hashlib.sha256).hexdigest()[:10]}"
 
 
 # ---------- public ----------
@@ -162,8 +179,9 @@ def _own_order(db: Session, order_id: int, phone: str) -> m.Order:
 
 
 @public.post("/fam/card", response_model=s.FamCard)
-def fam_card(body: s.FamIn, db: Session = Depends(get_db)):
+def fam_card(body: s.FamIn, request: Request, db: Session = Depends(get_db)):
     """Sips and free drinks for one mobile number. Shows counts only: no names, addresses or orders."""
+    rate_limit(db, request, "fam", get_settings().lookups_per_hour)
     return fam.card(db, body.phone)
 
 
@@ -244,7 +262,8 @@ async def razorpay_webhook(request: Request, db: Session = Depends(get_db)):
 
 
 @public.post("/orders/track", response_model=s.TrackOut)
-def track_order(body: s.TrackIn, db: Session = Depends(get_db)):
+def track_order(body: s.TrackIn, request: Request, db: Session = Depends(get_db)):
+    rate_limit(db, request, "track", get_settings().lookups_per_hour)
     o = db.get(m.Order, body.order_id)
     # Same answer for "no such order" and "wrong phone", so nobody can probe which numbers exist.
     if o is None or o.phone != body.phone:
@@ -259,8 +278,9 @@ def _track_out(o: m.Order) -> s.TrackOut:
 
 
 @public.get("/orders/track/{code}", response_model=s.TrackOut)
-def track_by_code(code: str, db: Session = Depends(get_db)):
+def track_by_code(code: str, request: Request, db: Session = Depends(get_db)):
     """The share link: the secret code stands in for the phone number. Same answer for every kind of miss."""
+    rate_limit(db, request, "track", get_settings().lookups_per_hour)
     num, _, _sig = code.partition(".")
     o = db.get(m.Order, int(num)) if num.isdigit() and len(num) <= 10 and int(num) < 2_000_000_000 else None
     if o is None or not hmac.compare_digest(code.encode(), track_code(o.id).encode()):

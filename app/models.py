@@ -137,6 +137,14 @@ class PointTx(Base):
     note: Mapped[str] = mapped_column(String(120), default="")
 
 
+class Hit(Base):
+    """One request to a rate-limited lookup, so limits hold across serverless instances. Rows older than an hour are cleared."""
+    __tablename__ = "hits"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    key: Mapped[str] = mapped_column(String(100), index=True)   # "<what>:<keyed hash of the network>"
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, index=True)
+
+
 class Setting(Base):
     """Owner-editable numbers (loyalty rules). One row per value."""
     __tablename__ = "settings"

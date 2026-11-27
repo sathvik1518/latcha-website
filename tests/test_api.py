@@ -676,3 +676,29 @@ def test_too_many_orders_from_one_network_are_refused(c, monkeypatch):
     from app import models as m
     with SessionLocal() as db:
         assert "203.0.113.7" not in {o.ip_hash for o in db.query(m.Order)}   # only the hash is stored
+
+
+def test_api_map_is_hidden_on_the_live_site(c):
+    for path in ("/docs", "/redoc", "/openapi.json"):
+        assert c.get(path).status_code == 404
+
+
+def test_fam_and_tracking_lookups_are_limited_per_network(c, monkeypatch):
+    monkeypatch.setattr(_gs(), "lookups_per_hour", 3)
+    here = {"x-real-ip": "203.0.113.50"}
+    for _ in range(3):
+        assert c.post("/api/fam/card", json={"phone": "9400000001"}, headers=here).status_code == 200
+    assert c.post("/api/fam/card", json={"phone": "9400000002"}, headers=here).status_code == 429
+    for _ in range(3):
+        assert c.post("/api/orders/track", json={"order_id": 999999, "phone": "9400000001"}, headers=here).status_code == 404
+    assert c.post("/api/orders/track", json={"order_id": 999999, "phone": "9400000001"}, headers=here).status_code == 429
+    assert c.get("/api/orders/track/1.abc", headers=here).status_code == 429          # the share link counts too
+    assert c.post("/api/fam/card", json={"phone": "9400000001"}, headers={"x-real-ip": "198.51.100.50"}).status_code == 200
+
+
+def test_tracking_code_needs_the_server_secret(monkeypatch):
+    from app import routes
+    real = routes.track_code(7)
+    monkeypatch.setattr(_gs(), "jwt_secret", "")
+    assert routes.track_code(7) != real
+    assert routes.track_code(7) != f"7.{hmac.new(b'latcha-dev', b'track:7', hashlib.sha256).hexdigest()[:10]}"   # old public fallback

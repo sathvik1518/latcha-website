@@ -14,7 +14,9 @@ try:  # one-time, safe upgrade: outlets tables + orders.outlet_id (never blocks 
 except Exception:  # noqa: BLE001
     logging.getLogger("latcha").exception("Outlet schema upgrade failed; will retry on next start")
 
-app = FastAPI(title="LATCHA", version="1.2.0")
+_docs = get_settings().api_docs   # off on the live site: the full API map helps attackers more than anyone else
+app = FastAPI(title="LATCHA", version="1.2.0", docs_url="/docs" if _docs else None, redoc_url="/redoc" if _docs else None,
+              openapi_url="/openapi.json" if _docs else None)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().origins,

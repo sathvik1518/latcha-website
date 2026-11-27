@@ -10,8 +10,10 @@ class Settings(BaseSettings):
     admin_password_hash: str = ""
     jwt_secret: str = ""
     token_minutes: int = 120
+    api_docs: bool = False              # /docs, /redoc and /openapi.json; switch on only on your own computer
     enforce_outlet_hours: bool = True   # refuse delivery requests while an outlet is closed
-    max_orders_per_ip_hour: int = 20    # orders per hour from one network (shared office or college Wi-Fi counts as one)
+    max_orders_per_ip_hour: int = 20
+    lookups_per_hour: int = 60          # Fam card and order tracking, per network: plenty for people, too few to try every number    # orders per hour from one network (shared office or college Wi-Fi counts as one)
     fam_sips_per_reward: int = 8        # Latcha Fam: this many sips (delivered drinks) = 1 free drink
     # UPI payments: "off" (default), "demo" (fake pay screen, no money; must be switched on deliberately),
     # "razorpay" (real checkout, test or live keys)
