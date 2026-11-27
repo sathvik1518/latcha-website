@@ -31,13 +31,14 @@ def test_shared_link_opens_the_tracker_without_a_phone_number(page: Page):
     order_no = place_order(page, unique("E2E Share"), "98333 33333")
     code = page.request.post("/api/orders/track", data={"order_id": int(order_no), "phone": "98333 33333"}).json()["code"]
     page.goto(f"/?track={code}")
-    expect(page.locator("#trk")).to_be_visible()
-    expect(page.locator("#tstat")).to_contain_text(f"Order #{order_no}")
+    # CI machines have no graphics card, so the 3D drink renders in software and can delay the page's timers by seconds
+    expect(page.locator("#trk")).to_be_visible(timeout=15000)
+    expect(page.locator("#tstat")).to_contain_text(f"Order #{order_no}", timeout=15000)
     assert "track=" not in page.url                       # the secret is not left in the address bar
     expect(page.locator("#paynow")).to_have_count(0)      # paying still needs the phone number
 
     page.goto("/?track=1.0000000000")
-    expect(page.locator("#tmsg")).to_contain_text("could not find that order")
+    expect(page.locator("#tmsg")).to_contain_text("could not find that order", timeout=15000)
     expect(page.locator("#tres")).to_be_hidden()
 
 
