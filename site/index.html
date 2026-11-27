@@ -1625,7 +1625,7 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closeOrder()
 function errText(e){var b=e.body||{},d=b.detail;
   if(e.status===429)return typeof d==="string"?d:"Too many requests. Please try again later.";
   if(e.status===422){if(Array.isArray(d)&&d[0]){var f=(d[0].loc||[]).slice(-1)[0],m=d[0].msg||"";m=m.replace(/^Value error, /,"");
-    var nice={phone:"Enter a valid 10 digit mobile number.",customer_name:"Please enter your name.",address:"Please enter your full address."};return nice[f]||m||"Please check the form."}
+    var nice={outlet:"Please choose an outlet.",phone:"Enter a valid 10 digit mobile number.",customer_name:"Please enter your name.",address:"Please enter your full address."};return nice[f]||m||"Please check the form."}
     return typeof d==="string"?d:"Please check the form."}
   return "We could not send that. Please try again, or ask LATCHI."}
 $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#omsg"),btn=$("#osub");

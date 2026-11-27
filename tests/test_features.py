@@ -49,7 +49,7 @@ def telegram(monkeypatch):
 
 
 def order_body(phone="9822222222", **kw):
-    return dict(customer_name="Meera <b>", phone=phone, address="12 MG Road, Indiranagar", city="Bengaluru",
+    return dict(customer_name="Meera <b>", phone=phone, address="12 MG Road, Indiranagar", outlet="jp-nagar",
                 lines=[dict(item_id=1, quantity=2)], **kw)
 
 

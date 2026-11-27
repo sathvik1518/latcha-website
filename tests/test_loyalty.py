@@ -39,7 +39,7 @@ def give(phone, n):
 
 
 def order(items=2, **kw):
-    return dict(customer_name="Asha", phone="9811111111", address="12 MG Road, Indiranagar", city="Bengaluru",
+    return dict(customer_name="Asha", phone="9811111111", address="12 MG Road, Indiranagar", outlet="jp-nagar",
                 lines=[dict(item_id=1, quantity=items)], **kw)
 
 

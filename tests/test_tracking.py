@@ -35,7 +35,7 @@ def admin(c):
 
 def place(c, phone="9200000001", name="Track Person"):
     item = c.get("/api/menu").json()[0]["id"]
-    r = c.post("/api/orders", json={"customer_name": name, "phone": phone, "address": "12 Park Road, Hyderabad", "city": "Hyderabad",
+    r = c.post("/api/orders", json={"customer_name": name, "phone": phone, "address": "12 Park Road, Hyderabad", "outlet": "sattva-knowledge-park",
                                     "lines": [{"item_id": item, "quantity": 1}]})
     assert r.status_code == 201, r.text
     return r.json()

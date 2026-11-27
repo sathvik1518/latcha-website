@@ -65,19 +65,12 @@ class OrderIn(BaseModel):
     customer_name: str = Field(min_length=2, max_length=80)
     phone: str
     address: str = Field(min_length=5, max_length=300)
-    city: Literal["Bengaluru", "Hyderabad"] | None = None   # optional when an outlet is chosen (the outlet knows its city)
-    outlet: str | None = Field(None, max_length=40)           # outlet slug, e.g. "jp-nagar"
+    outlet: str = Field(min_length=1, max_length=40)           # outlet slug, e.g. "jp-nagar"; the outlet knows its city
     notes: str = Field("", max_length=300)
     pay: Literal["cod", "upi"] = "cod"                        # cod = pay at delivery (the old way)
     use_reward: bool = False                                  # spend a Latcha Fam free drink on this order
     use_points: bool = False                                  # spend Latcha points (needs a signed-in customer)
     lines: list[LineIn] = Field(min_length=1, max_length=20)
-
-    @model_validator(mode="after")
-    def city_or_outlet(self):
-        if not self.city and not self.outlet:
-            raise ValueError("Choose an outlet or a city")
-        return self
 
     @field_validator("customer_name", "address", "notes")
     @classmethod

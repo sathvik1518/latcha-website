@@ -321,7 +321,7 @@ def test_owner_can_mark_a_cash_order_as_paid(page: Page, context, admin_password
 def api_order(page: Page, name: str, phone: str):
     """Place an order straight through the API (like a customer on another phone)."""
     r = page.request.post("/api/orders", data={"customer_name": name, "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 1}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": 1}]})
     assert r.ok, r.text()
     return r.json()["id"]
 
@@ -391,7 +391,7 @@ def deliver_sips(page: Page, password: str, phone: str, drinks: int):
     """Order `drinks` drinks on this number and mark the order Delivered, like the owner would."""
     hdr = owner_token(page, password)
     r = page.request.post("/api/orders", data={"customer_name": "Fam E2E", "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": drinks}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": drinks}]})
     assert r.ok, r.text()
     oid = r.json()["id"]
     ok = page.request.patch(f"/api/admin/orders/{oid}", data={"status": "delivered"}, headers=hdr)
@@ -520,7 +520,7 @@ def test_dashboard_counts_a_new_order_and_the_owner_can_switch_period(page: Page
     before = dash_api(page, hdr)["head"]
     phone = "98765 7" + str(uuid.uuid4().int)[:4]
     r = page.request.post("/api/orders", data={"customer_name": unique("E2E Dash"), "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 2}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": 2}]})
     assert r.ok, r.text()
     after = dash_api(page, hdr)["head"]
     assert after["orders"] == before["orders"] + 1
@@ -544,7 +544,7 @@ def test_dashboard_leaves_cancelled_orders_out(page: Page, admin_password):
     hdr = owner_token(page, admin_password)
     phone = "98765 8" + str(uuid.uuid4().int)[:4]
     r = page.request.post("/api/orders", data={"customer_name": "Dash Cancel", "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 1}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": 1}]})
     oid = r.json()["id"]
     live = dash_api(page, hdr)["head"]
     assert page.request.patch(f"/api/admin/orders/{oid}", data={"status": "cancelled"}, headers=hdr).ok

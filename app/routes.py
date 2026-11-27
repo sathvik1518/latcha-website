@@ -69,19 +69,18 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
         it = items.get(l.item_id)
         if it is None or not it.available:
             raise HTTPException(422, f"Item {l.item_id} is not available")
-    outlet = None
-    if body.outlet:
-        outlet = db.scalar(select(m.Outlet).where(m.Outlet.slug == body.outlet))
-        if outlet is None:
-            raise HTTPException(422, "We could not find that outlet. Please choose another.")
-        view = _outlet_view(outlet, _sold_out_map(db), ot.now_ist())
-        if outlet.coming_soon:
-            raise HTTPException(422, f"{outlet.name} is opening soon. Please choose another outlet.")
-        if not view["can_order"]:
-            raise HTTPException(422, f"{outlet.name}: {view['status']}. Please try again later or choose another outlet.")
-        for l in body.lines:
-            if l.item_id in view["sold_out"]:
-                raise HTTPException(422, f"{items[l.item_id].name} is sold out at {outlet.name}. Please remove it or choose another outlet.")
+    # every order goes to one outlet, so its hours, pause switch and sold-out list always apply
+    outlet = db.scalar(select(m.Outlet).where(m.Outlet.slug == body.outlet))
+    if outlet is None:
+        raise HTTPException(422, "We could not find that outlet. Please choose another.")
+    view = _outlet_view(outlet, _sold_out_map(db), ot.now_ist())
+    if outlet.coming_soon:
+        raise HTTPException(422, f"{outlet.name} is opening soon. Please choose another outlet.")
+    if not view["can_order"]:
+        raise HTTPException(422, f"{outlet.name}: {view['status']}. Please try again later or choose another outlet.")
+    for l in body.lines:
+        if l.item_id in view["sold_out"]:
+            raise HTTPException(422, f"{items[l.item_id].name} is sold out at {outlet.name}. Please remove it or choose another outlet.")
     total = pay.order_total([(items[l.item_id], l.quantity) for l in body.lines])
     discount = 0
     if body.use_reward:   # a Latcha Fam free drink: the cheapest drink in the cart is free
@@ -112,7 +111,7 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
         if charge is None:
             raise HTTPException(422, "Online payment is not available for these items yet. Please choose pay at delivery.")
     order = m.Order(customer_name=body.customer_name, phone=body.phone, address=body.address,
-                    city=outlet.city if outlet else body.city, notes=body.notes, outlet_id=outlet.id if outlet else None,
+                    city=outlet.city, notes=body.notes, outlet_id=outlet.id,
                     amount=charge, payment_method=method, payment_status=pstatus, fam_discount=discount,
                     customer_id=cust.id if cust else None, points_used=pts_used, points_discount=pts_disc)
     if free:
@@ -140,7 +139,7 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
     if not start:   # pay-at-delivery (or free) orders ping the owner now; UPI orders ping once the payment is confirmed
         notify.order_placed(order, str(request.base_url))
     msg = "Order saved. Complete the UPI payment to confirm it." if start else "Order request received. LATCHA will confirm it by phone."
-    return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None, message=msg,
+    return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name, message=msg,
                           amount=charge, fam_discount=discount, points_used=pts_used, points_discount=pts_disc,
                           points=cust.points if cust else None, payment=start, track=track_code(order.id))
 

@@ -28,7 +28,7 @@ def tok(c):
 
 
 ORDER = dict(customer_name="Asha", phone="+91 98765 43210", address="12 MG Road, Indiranagar",
-             city="Bengaluru", lines=[dict(item_id=1, quantity=2)])
+             outlet="jp-nagar", lines=[dict(item_id=1, quantity=2)])
 
 
 def test_health(c):
@@ -54,7 +54,7 @@ def test_order_flow(c):
 
 
 @pytest.mark.parametrize("bad", [
-    dict(phone="12345"), dict(city="Mumbai"), dict(lines=[]),
+    dict(phone="12345"), dict(outlet=""), dict(lines=[]),
     dict(lines=[dict(item_id=1, quantity=0)]), dict(lines=[dict(item_id=1, quantity=21)]),
     dict(lines=[dict(item_id=9999, quantity=1)]), dict(customer_name="A"),
 ])
@@ -205,8 +205,7 @@ def test_outlets_list(c, monkeypatch):
 
 def test_order_to_outlet_sets_city_and_shows_in_admin(c, monkeypatch):
     _at(monkeypatch, 15)
-    body = {k: v for k, v in ORDER.items() if k != "city"}
-    r = c.post("/api/orders", json={**body, "phone": "9200000001", "outlet": "sattva-knowledge-park"})
+    r = c.post("/api/orders", json={**ORDER, "phone": "9200000001", "outlet": "sattva-knowledge-park"})
     assert r.status_code == 201 and r.json()["outlet"] == "LATCHA Sattva Knowledge Park"
     o = c.get("/api/admin/orders", headers=tok(c)).json()[0]
     assert o["city"] == "Hyderabad" and o["outlet_name"] == "LATCHA Sattva Knowledge Park"
@@ -214,10 +213,11 @@ def test_order_to_outlet_sets_city_and_shows_in_admin(c, monkeypatch):
     assert mine and all(x["outlet_id"] == o["outlet_id"] for x in mine)
 
 
-def test_old_style_order_with_only_a_city_still_works(c, monkeypatch):
-    _at(monkeypatch, 15)
-    r = c.post("/api/orders", json={**ORDER, "phone": "9200000002"})
-    assert r.status_code == 201 and r.json()["outlet"] is None
+def test_order_with_only_a_city_is_refused(c, monkeypatch):
+    """A city-only order would skip the outlet's hours, pause switch and sold-out list."""
+    _at(monkeypatch, 3)   # every outlet is closed at 3 AM
+    body = {k: v for k, v in ORDER.items() if k != "outlet"}
+    assert c.post("/api/orders", json={**body, "phone": "9200000002", "city": "Bengaluru"}).status_code == 422
 
 
 def test_closed_outlet_refuses_orders(c, monkeypatch):
@@ -238,8 +238,8 @@ def test_bad_outlets_rejected(c, monkeypatch, extra, why):
     assert r.status_code == 422 and why in r.json()["detail"]
 
 
-def test_order_needs_outlet_or_city(c):
-    body = {k: v for k, v in ORDER.items() if k != "city"}
+def test_order_needs_an_outlet(c):
+    body = {k: v for k, v in ORDER.items() if k != "outlet"}
     assert c.post("/api/orders", json={**body, "phone": "9200000006"}).status_code == 422
 
 
@@ -284,7 +284,7 @@ import hashlib, hmac, json as _json
 from app import payments as _pay
 from app.config import get_settings as _gs
 
-UPI = dict(ORDER, pay="upi", phone="9200000001", city="Hyderabad", lines=[dict(item_id=1, quantity=2), dict(item_id=2, quantity=1)])
+UPI = dict(ORDER, pay="upi", phone="9200000001", outlet="sattva-knowledge-park", lines=[dict(item_id=1, quantity=2), dict(item_id=2, quantity=1)])
 
 
 @pytest.fixture
@@ -541,7 +541,7 @@ def _fam(c, phone):
 
 
 def _order(c, phone, lines, **kw):
-    return c.post("/api/orders", json=dict(ORDER, phone=phone, city="Hyderabad", lines=lines, **kw))
+    return c.post("/api/orders", json=dict(ORDER, phone=phone, outlet="sattva-knowledge-park", lines=lines, **kw))
 
 
 def _deliver(c, oid, to="delivered"):
