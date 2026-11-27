@@ -44,7 +44,8 @@ def send(text: str, site_url: str = "") -> tuple[bool, str]:
 def order_text(o) -> str:
     e = html.escape
     lines = "\n".join(f"• {l.quantity} × {e(l.item_name)}" for l in o.lines)
-    pay = {"upi": "Paid by UPI ✅" if o.payment_status == "paid" else "UPI (waiting)", "cod": "Pay at delivery"}.get(o.payment_method, o.payment_method)
+    upi = {"paid": "Paid by UPI ✅", "demo": "⚠️ DEMO payment, no money received. Collect payment."}.get(o.payment_status, "UPI (waiting)")
+    pay = {"upi": upi, "cod": "Pay at delivery"}.get(o.payment_method, o.payment_method)
     total = f"₹{o.amount}" if o.amount is not None else "price not set"
     when = o.created_at.astimezone(IST).strftime("%I:%M %p") if o.created_at else ""
     extra = []

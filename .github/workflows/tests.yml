@@ -9,7 +9,24 @@ jobs:
       - uses: actions/setup-python@v7
         with: { python-version: "3.13" }
       - run: pip install -r requirements-dev.txt
-      - run: python -m pytest tests/test_api.py tests/test_dashboard.py -q
+      - run: python -m pytest tests -q --ignore=tests/e2e   # every API test file, not just two
+
+  postgres:                         # same API tests on Postgres, the database the live site uses (Neon)
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: test, POSTGRES_DB: latcha_test }
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 2s --health-timeout 5s --health-retries 15
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:test@localhost:5432/latcha_test
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.13" }
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest tests -q --ignore=tests/e2e
 
   e2e:
     needs: api                      # the browser test runs only if the API tests are green

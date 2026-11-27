@@ -40,6 +40,9 @@ def live_server(tmp_path_factory):
         "CORS_ORIGINS": f"http://127.0.0.1:{port}",
     }
     subprocess.run([sys.executable, "scripts/init_db.py"], cwd=ROOT, env=env, check=True)
+    import sqlite3   # the browser tests run on the real clock: open every shop all day (same time twice = all day)
+    with sqlite3.connect(db) as con:
+        con.execute("UPDATE outlets SET closes = opens")
     with open(log, "w") as out:
         proc = subprocess.Popen(
             [sys.executable, "-m", "uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", str(port)],

@@ -1,6 +1,6 @@
 import time
 from datetime import datetime, timedelta, timezone
-import csv, hashlib, hmac, io, json, logging
+import csv, hashlib, hmac, io, json, logging, secrets
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -19,10 +19,34 @@ log = logging.getLogger("latcha.pay")
 NOT_FOUND = "We could not find that order. Check the order number and phone number."
 
 
+_SPARE_KEY = secrets.token_bytes(32)   # only when JWT_SECRET is missing: unguessable, but links stop working on restart
+
+
+def _key() -> bytes:
+    return get_settings().jwt_secret.encode() or _SPARE_KEY
+
+
+def ip_hash(request: Request) -> str:
+    """Keyed hash of the caller's network address, so orders can be counted per network without storing addresses.
+    shortcut: trusts x-real-ip, which Vercel sets itself; behind any other host it could be faked, so check it there."""
+    ip = request.headers.get("x-real-ip") or (request.client.host if request.client else "")
+    return hmac.new(_key(), ip.encode(), hashlib.sha256).hexdigest()
+
+
+def rate_limit(db: Session, request: Request, what: str, per_hour: int) -> None:
+    """Refuse after per_hour lookups from one network in the last hour. Stored in the database, not in memory."""
+    key, since = f"{what}:{ip_hash(request)}", datetime.now(timezone.utc) - timedelta(hours=1)
+    db.query(m.Hit).filter(m.Hit.created_at < since).delete(synchronize_session=False)
+    if db.scalar(select(func.count(m.Hit.id)).where(m.Hit.key == key)) >= per_hour:
+        db.commit()
+        raise HTTPException(429, "Too many tries. Please wait a while and try again.")
+    db.add(m.Hit(key=key))
+    db.commit()
+
+
 def track_code(order_id: int) -> str:
     """A private link code for one order: "<number>.<10 secret letters>". Nobody can guess it without the server secret."""
-    key = (get_settings().jwt_secret or "latcha-dev").encode()
-    return f"{order_id}.{hmac.new(key, f'track:{order_id}'.encode(), hashlib.sha256).hexdigest()[:10]}"
+    return f"{order_id}.{hmac.new(_key(), f'track:{order_id}'.encode(), hashlib.sha256).hexdigest()[:10]}"
 
 
 # ---------- public ----------
@@ -63,28 +87,31 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
         m.Order.phone == body.phone, m.Order.created_at >= since))
     if recent >= MAX_ORDERS_PER_PHONE_HOUR:
         raise HTTPException(429, "Too many orders from this number. Please try again later.")
+    ip = ip_hash(request)
+    if db.scalar(select(func.count(m.Order.id)).where(m.Order.ip_hash == ip, m.Order.created_at >= since)) >= get_settings().max_orders_per_ip_hour:
+        raise HTTPException(429, "Too many orders from this network. Please try again later.")
     ids = {l.item_id for l in body.lines}
     items = {i.id: i for i in db.scalars(select(m.MenuItem).where(m.MenuItem.id.in_(ids)))}
     for l in body.lines:
         it = items.get(l.item_id)
         if it is None or not it.available:
             raise HTTPException(422, f"Item {l.item_id} is not available")
-    outlet = None
-    if body.outlet:
-        outlet = db.scalar(select(m.Outlet).where(m.Outlet.slug == body.outlet))
-        if outlet is None:
-            raise HTTPException(422, "We could not find that outlet. Please choose another.")
-        view = _outlet_view(outlet, _sold_out_map(db), ot.now_ist())
-        if outlet.coming_soon:
-            raise HTTPException(422, f"{outlet.name} is opening soon. Please choose another outlet.")
-        if not view["can_order"]:
-            raise HTTPException(422, f"{outlet.name}: {view['status']}. Please try again later or choose another outlet.")
-        for l in body.lines:
-            if l.item_id in view["sold_out"]:
-                raise HTTPException(422, f"{items[l.item_id].name} is sold out at {outlet.name}. Please remove it or choose another outlet.")
+    # every order goes to one outlet, so its hours, pause switch and sold-out list always apply
+    outlet = db.scalar(select(m.Outlet).where(m.Outlet.slug == body.outlet))
+    if outlet is None:
+        raise HTTPException(422, "We could not find that outlet. Please choose another.")
+    view = _outlet_view(outlet, _sold_out_map(db), ot.now_ist())
+    if outlet.coming_soon:
+        raise HTTPException(422, f"{outlet.name} is opening soon. Please choose another outlet.")
+    if not view["can_order"]:
+        raise HTTPException(422, f"{outlet.name}: {view['status']}. Please try again later or choose another outlet.")
+    for l in body.lines:
+        if l.item_id in view["sold_out"]:
+            raise HTTPException(422, f"{items[l.item_id].name} is sold out at {outlet.name}. Please remove it or choose another outlet.")
     total = pay.order_total([(items[l.item_id], l.quantity) for l in body.lines])
     discount = 0
     if body.use_reward:   # a Latcha Fam free drink: the cheapest drink in the cart is free
+        fam.lock_phone(db, body.phone)   # held until commit; the check below then sees any order placed a moment ago
         if fam.card(db, body.phone)["rewards_available"] < 1:
             raise HTTPException(422, "No free drink is waiting on this number yet.")
         discount = fam.reward_discount(items, body.lines)
@@ -111,9 +138,9 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
         if charge is None:
             raise HTTPException(422, "Online payment is not available for these items yet. Please choose pay at delivery.")
     order = m.Order(customer_name=body.customer_name, phone=body.phone, address=body.address,
-                    city=outlet.city if outlet else body.city, notes=body.notes, outlet_id=outlet.id if outlet else None,
+                    city=outlet.city, notes=body.notes, outlet_id=outlet.id,
                     amount=charge, payment_method=method, payment_status=pstatus, fam_discount=discount,
-                    customer_id=cust.id if cust else None, points_used=pts_used, points_discount=pts_disc)
+                    customer_id=cust.id if cust else None, points_used=pts_used, points_discount=pts_disc, ip_hash=ip)
     if free:
         order.payment_id, order.paid_at = "reward", datetime.now(timezone.utc)
     for l in body.lines:
@@ -122,7 +149,9 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
     db.add(order)
     if pts_used:
         db.flush()
-        loyalty.add_tx(db, cust, -pts_used, "redeem", f"Order #{order.id}")
+        if not loyalty.spend(db, cust, pts_used, f"Order #{order.id}"):
+            db.rollback()
+            raise HTTPException(409, "Your points balance just changed. Please check it and place the order again.")
     start = None
     if method == "upi":
         db.flush()  # we need the order number for the provider
@@ -137,7 +166,7 @@ def place_order(body: s.OrderIn, request: Request, db: Session = Depends(get_db)
     if not start:   # pay-at-delivery (or free) orders ping the owner now; UPI orders ping once the payment is confirmed
         notify.order_placed(order, str(request.base_url))
     msg = "Order saved. Complete the UPI payment to confirm it." if start else "Order request received. LATCHA will confirm it by phone."
-    return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name if outlet else None, message=msg,
+    return s.OrderReceipt(id=order.id, status="new", outlet=outlet.name, message=msg,
                           amount=charge, fam_discount=discount, points_used=pts_used, points_discount=pts_disc,
                           points=cust.points if cust else None, payment=start, track=track_code(order.id))
 
@@ -150,8 +179,9 @@ def _own_order(db: Session, order_id: int, phone: str) -> m.Order:
 
 
 @public.post("/fam/card", response_model=s.FamCard)
-def fam_card(body: s.FamIn, db: Session = Depends(get_db)):
+def fam_card(body: s.FamIn, request: Request, db: Session = Depends(get_db)):
     """Sips and free drinks for one mobile number. Shows counts only: no names, addresses or orders."""
+    rate_limit(db, request, "fam", get_settings().lookups_per_hour)
     return fam.card(db, body.phone)
 
 
@@ -166,7 +196,7 @@ def restart_payment(order_id: int, body: s.PayIn, db: Session = Depends(get_db))
     o = _own_order(db, order_id, body.phone)
     if o.payment_method != "upi" or o.status == "cancelled" or pay.mode() == "off":
         raise HTTPException(422, "This order cannot be paid online.")
-    if o.payment_status == "paid":
+    if o.payment_status in ("paid", "demo"):
         raise HTTPException(409, "This order is already paid.")
     if not o.payment_ref or (o.payment_provider or "demo") != ("razorpay" if pay.mode() == "razorpay" else "demo"):
         try:
@@ -184,12 +214,12 @@ def confirm_payment(order_id: int, body: s.PayIn, request: Request, db: Session 
     o = _own_order(db, order_id, body.phone)
     if o.payment_method != "upi" or o.status == "cancelled":
         raise HTTPException(422, "This order cannot be paid online.")
-    if o.payment_status == "paid":   # double click or retry: same answer, nothing changes
-        return s.PayResult(id=o.id, payment_status="paid", amount=o.amount)
+    if o.payment_status in ("paid", "demo"):   # double click or retry: same answer, nothing changes
+        return s.PayResult(id=o.id, payment_status=o.payment_status, amount=o.amount)
     if o.payment_provider == "demo":
         if pay.mode() != "demo":
             raise HTTPException(404, "Not found")   # the pretend screen is switched off once real payments are on
-        if pay.mark_paid(db, o, f"demo_pay_{o.id}"):
+        if pay.mark_paid(db, o, f"demo_pay_{o.id}", status="demo"):
             notify.order_placed(o, str(request.base_url))
     else:
         if not (body.razorpay_payment_id and body.razorpay_order_id and body.razorpay_signature):
@@ -232,7 +262,8 @@ async def razorpay_webhook(request: Request, db: Session = Depends(get_db)):
 
 
 @public.post("/orders/track", response_model=s.TrackOut)
-def track_order(body: s.TrackIn, db: Session = Depends(get_db)):
+def track_order(body: s.TrackIn, request: Request, db: Session = Depends(get_db)):
+    rate_limit(db, request, "track", get_settings().lookups_per_hour)
     o = db.get(m.Order, body.order_id)
     # Same answer for "no such order" and "wrong phone", so nobody can probe which numbers exist.
     if o is None or o.phone != body.phone:
@@ -247,8 +278,9 @@ def _track_out(o: m.Order) -> s.TrackOut:
 
 
 @public.get("/orders/track/{code}", response_model=s.TrackOut)
-def track_by_code(code: str, db: Session = Depends(get_db)):
+def track_by_code(code: str, request: Request, db: Session = Depends(get_db)):
     """The share link: the secret code stands in for the phone number. Same answer for every kind of miss."""
+    rate_limit(db, request, "track", get_settings().lookups_per_hour)
     num, _, _sig = code.partition(".")
     o = db.get(m.Order, int(num)) if num.isdigit() and len(num) <= 10 and int(num) < 2_000_000_000 else None
     if o is None or not hmac.compare_digest(code.encode(), track_code(o.id).encode()):

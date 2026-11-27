@@ -3,17 +3,22 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # .env.local (your computer only, never committed) wins over .env, so local runs use a local database
+    model_config = SettingsConfigDict(env_file=(".env", ".env.local"), extra="ignore")
     database_url: str = "sqlite:///./dev.db"
     cors_origins: str = "http://localhost:8000"
     admin_username: str = "owner"
     admin_password_hash: str = ""
     jwt_secret: str = ""
     token_minutes: int = 120
+    api_docs: bool = False              # /docs, /redoc and /openapi.json; switch on only on your own computer
     enforce_outlet_hours: bool = True   # refuse delivery requests while an outlet is closed
+    max_orders_per_ip_hour: int = 20
+    lookups_per_hour: int = 60          # Fam card and order tracking, per network: plenty for people, too few to try every number    # orders per hour from one network (shared office or college Wi-Fi counts as one)
     fam_sips_per_reward: int = 8        # Latcha Fam: this many sips (delivered drinks) = 1 free drink
-    # UPI payments: "demo" (fake pay screen, no money), "razorpay" (real checkout, test or live keys), "off"
-    payments_mode: str = "demo"
+    # UPI payments: "off" (default), "demo" (fake pay screen, no money; must be switched on deliberately),
+    # "razorpay" (real checkout, test or live keys)
+    payments_mode: str = "off"
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
     razorpay_webhook_secret: str = ""
@@ -26,7 +31,7 @@ class Settings(BaseSettings):
     @property
     def pay_mode(self) -> str:
         """The mode actually used. "razorpay" without keys becomes "off", never a silent fake."""
-        m = (self.payments_mode or "demo").strip().lower()
+        m = (self.payments_mode or "off").strip().lower()
         if m == "razorpay":
             return "razorpay" if (self.razorpay_key_id and self.razorpay_key_secret) else "off"
         return m if m in ("demo", "off") else "off"

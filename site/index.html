@@ -216,6 +216,7 @@ nav .logo img{height:38px}
 .item:hover .mi{transform:translateZ(46px) scale(1.06) rotate(-2deg)}
 .item h4{font-family:var(--serif);font-weight:400;font-size:16px;line-height:1.15}
 .item p{font-size:12px;color:var(--mute);margin:3px 0 6px;line-height:1.4}
+.item .dp{font:700 14px var(--ui);color:var(--berry);margin:0 0 6px}.item .dp small{font-weight:600;font-size:10.5px;color:var(--mute);border:1px dashed var(--rose);border-radius:99px;padding:1px 7px;margin-left:4px;white-space:nowrap}
 .item .m{font-size:11px;display:flex;justify-content:space-between;align-items:center;gap:6px;color:var(--mute)}
 .dots i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--line);margin-right:2px}
 .dots i.on{background:var(--berry)}
@@ -509,6 +510,8 @@ nav .logo img{height:32px;width:auto;border-radius:12px;box-shadow:0 6px 14px rg
 .follow:hover{background:var(--berry)}
 .bag{min-width:0;height:44px;padding:0 18px;border-radius:999px;background:var(--berry);color:var(--blush);font-weight:700;display:none}
 nav.past .bag{display:inline-flex;align-items:center}
+/* phones: Order is always one tap away, and once you scroll the header gets a backing so its logo never sits on the menu boards */
+@media(max-width:900px){.bag{display:inline-flex;align-items:center}nav.past{background:rgba(255,245,248,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 1px 0 var(--line)}}
 .burger{display:inline-flex}
 #mnav{top:76px}
 @media(min-width:1024px){nav{height:calc(var(--r)*6.5);padding:0 calc(var(--r)*4)}nav .logo img{height:calc(var(--r)*2.5)}#mnav{top:calc(var(--r)*6.5)}}
@@ -1200,15 +1203,15 @@ var CLOUD=[["Banana Pudding Cloud","Creamy banana, biscuit bliss",364,4,1],["Coo
 var SOFT=[["Vanilla Silk","Silky smooth vanilla"],["Strawberry Crush","Creamy strawberry swirl"],["Vanilla & Strawberry","Classic vanilla strawberry swirl"],["Uji Matcha","Smooth, umami matcha"],["Filipino Ube","Nutty & creamy Filipino ube"],["Matcha & Ube","Dreamy matcha ube swirl"],["Matcha Swirl","Umami-rich creamy matcha swirl"],["Ube Swirl","Mix matcha with nutty ube"]];
 var FLOAT=[["Vanilla Silk Float","Classic iced matcha latte + our Vanilla Silk"],["Strawberry Crush Float","Classic iced matcha latte + Strawberry Crush"],["Signature Swirl Float","Classic iced matcha latte + Signature Swirl"],["Matcha Swirl Float","Classic iced matcha latte + Matcha Swirl"],["Ube Swirl Float","Classic iced matcha latte + Ube Swirl"],["Uji Matcha Float","Classic iced matcha latte + Uji Matcha"],["Filipino Ube Float","Classic iced matcha latte + Filipino Ube"],["Matcha Ube Float","Classic iced matcha latte + Matcha Ube"]];
 function dots(n){var s="";for(var i=0;i<5;i++)s+='<i class="'+(i<n?"on":"")+'"></i>';return '<span class="dots" aria-label="Sweetness '+n+' of 5">'+s+'</span>'}
-function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+(o.id?'<div class="act"><button type="button" class="minus" data-id="'+o.id+'" aria-label="Remove one '+o.n.replace(/"/g,"")+' from your order" disabled>\u2212</button><button type="button" class="add" data-id="'+o.id+'" aria-label="Add '+o.n.replace(/"/g,"")+' to your order">+ Add</button></div>':'')+'</div>'}
+function card(o){return '<div class="item" data-tilt>'+(o.bs?'<span class="bs">Best<br>Seller</span>':'')+'<img class="mi" src="'+BASE+o.img+'" alt="'+o.n+'" loading="lazy" onerror="this.style.display=\'none\'">'+'<h4>'+o.n+'</h4>'+(o.d?'<p>'+o.d+'</p>':'')+(PAYMODE==="demo"&&o.p?'<div class="dp">₹'+o.p+' <small>demo price</small></div>':'')+(o.k?'<div class="m"><span>'+o.k+' kcal</span>'+dots(o.s)+'</div>':'')+(o.id?'<div class="act"><button type="button" class="minus" data-id="'+o.id+'" aria-label="Remove one '+o.n.replace(/"/g,"")+' from your order" disabled>\u2212</button><button type="button" class="add" data-id="'+o.id+'" aria-label="Add '+o.n.replace(/"/g,"")+' to your order">+ Add</button></div>':'')+'</div>'}
 var LOGO='<span class="logo"><img src="assets/logo.png" alt="LATCHA"></span>';
 function board(title,sub,html,strip,note){return '<article class="board rv"><div class="bh">'+LOGO+'<span class="t2">Speciality Matcha | Soft Serves | Floats</span></div><div class="pillt">'+title+(sub?'<small>'+sub+'</small>':'')+'</div><div class="items" data-n="'+(html.match(/class="item"/g)||[]).length+'">'+html+'</div>'+(note?'<div class="note">'+note+'</div>':'')+(strip?'<div class="strip">'+strip+'</div>':'')+'<div class="addon">MATCHA ADD ON · 1G · 2G · 3G · 4G</div></article>'}
 function renderBoards(){
 var h="";
-h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/classic-"+(r.pos||i+1)+".webp"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,img:"menu/cloud-"+(r.pos||i+1)+".webp"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
-h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/soft-"+(r.pos||i+1)+".webp"})}).join(""),"","Please check for availability with the counter staff");
-h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,img:"menu/float-"+(r.pos||i+1)+".webp"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Classic Iced Matcha Latte","",CLASSIC.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,p:r.price,img:"menu/classic-"+(r.pos||i+1)+".webp"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Cloud Iced Matcha Latte","",CLOUD.map(function(r,i){return card({n:(i+1)+". "+r[0],d:r[1],k:r[2],s:r[3],bs:r[4],id:r.id,p:r.price,img:"menu/cloud-"+(r.pos||i+1)+".webp"})}).join(""),"REGULAR MILK · OAT MILK · ANY 3 BUNDLE");
+h+=board("Premium Soft Serves","Cups",SOFT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,p:r.price,img:"menu/soft-"+(r.pos||i+1)+".webp"})}).join(""),"","Please check for availability with the counter staff");
+h+=board("Make your own Matcha Floats","Pick your latte and soft serve",FLOAT.map(function(r,i){return card({n:r[0],d:r[1],id:r.id,p:r.price,img:"menu/float-"+(r.pos||i+1)+".webp"})}).join(""),"","Please check for availability with the counter staff");
 $("#boards").innerHTML=h;
 }
 renderBoards();
@@ -1552,7 +1555,7 @@ function applyMenu(items){
   chipRow("#pl",CLASSIC.map(function(r){return r[0]}),"l",upd);chipRow("#ps",SOFT.map(function(r){return r[0]}),"s",upd);upd();
   $$("#boards .rv").forEach(function(x){x.classList.add("in")});
   ORDER_OK=true;cartUI();return true}
-function loadMenu(){return jreq("/api/menu").then(applyMenu)}
+function loadMenu(){return Promise.all([jreq("/api/menu"),loadPay()]).then(function(a){return applyMenu(a[0])})}   /* pay mode first: it decides the demo price tags */
 
 /* outlets: the order drawer lets people pick a LATCHA shop (falls back to the old city list if the API is asleep) */
 var OUTLETS=[],outSel=null;
@@ -1625,7 +1628,7 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape")closeOrder()
 function errText(e){var b=e.body||{},d=b.detail;
   if(e.status===429)return typeof d==="string"?d:"Too many requests. Please try again later.";
   if(e.status===422){if(Array.isArray(d)&&d[0]){var f=(d[0].loc||[]).slice(-1)[0],m=d[0].msg||"";m=m.replace(/^Value error, /,"");
-    var nice={phone:"Enter a valid 10 digit mobile number.",customer_name:"Please enter your name.",address:"Please enter your full address."};return nice[f]||m||"Please check the form."}
+    var nice={outlet:"Please choose an outlet.",phone:"Enter a valid 10 digit mobile number.",customer_name:"Please enter your name.",address:"Please enter your full address."};return nice[f]||m||"Please check the form."}
     return typeof d==="string"?d:"Please check the form."}
   return "We could not send that. Please try again, or ask LATCHI."}
 $("#oform").addEventListener("submit",function(e){e.preventDefault();var f=e.target,msg=$("#omsg"),btn=$("#osub");
@@ -1647,9 +1650,9 @@ function startPay(c){payCtx=c;payView(true);var d=c.pay.provider==="demo";
   $("#pbsub").textContent="Order #"+c.id+(c.outlet?" · "+c.outlet:"");
   $("#pbpay").hidden=false;$("#pbpay").textContent="Pay ₹"+c.pay.amount+" with UPI";$("#pbcancel").hidden=false;$("#pbcancel").textContent="Not now";
   $("#pbmsg").className="msg";$("#pbmsg").textContent="";payBusy(false);$("#pbpay").focus()}
-function payDone(){var c=payCtx;$("#pbtag").textContent="Payment received";
+function payDone(){var c=payCtx,d=c.pay.provider==="demo";$("#pbtag").textContent=d?"Demo payment done · no real money moved":"Payment received";
   $("#pbamt").innerHTML='<span class="pbtick" aria-hidden="true">✓</span>';
-  $("#pbsub").textContent="Order #"+c.id+" is paid. LATCHA will call you to confirm. 💗";
+  $("#pbsub").textContent=d?"Order #"+c.id+" is saved. This was a demo, so please pay LATCHA at delivery. 💗":"Order #"+c.id+" is paid. LATCHA will call you to confirm. 💗";
   payBusy(false);$("#pbpay").hidden=true;$("#pbmsg").textContent="";$("#pbcancel").hidden=false;$("#pbcancel").textContent="Close";
   var a=document.createElement("button");a.type="button";a.className="chip";a.textContent="Track this order";a.addEventListener("click",function(){var p={id:c.id,phone:c.phone};closeOrder();showTrack(p)});
   $("#pbmsg").appendChild(a);$("#pbpay").hidden=true}
@@ -1769,8 +1772,8 @@ function trackHtml(o){var st=o.status,steps=TSTEPS,at=st==="cancelled"?-1:steps.
   if(st==="delivered"){var sp=o.lines.reduce(function(a,l){return a+l.quantity},0);h+='<div class="tstat pay ok">+'+sp+' sip'+(sp>1?'s':'')+' added to your Latcha Fam card 🍵</div>'}
   if(o.fam_discount)h+='<div class="tstat pay ok">Free drink used'+(PAYMODE!=="off"?' (−₹'+o.fam_discount+')':'')+'</div>';
   if(o.amount&&(o.payment_method==="upi"||o.payment_status==="paid")){var pd=o.payment_status==="paid";
-    h+='<div class="tstat pay'+(pd?' ok':'')+'">'+(pd?'Paid ₹'+o.amount+(o.payment_method==="upi"?' by UPI ✓':' ✓'):'Payment pending · ₹'+o.amount)+'</div>';
-    if(!pd&&o.payment_method==="upi"&&st!=="cancelled"&&PAYMODE!=="off")h+='<button type="button" class="chip" id="paynow">Pay ₹'+o.amount+' now</button>'}
+    h+=o.payment_status==="demo"?'<div class="tstat pay">Demo payment · no money received · pay ₹'+o.amount+' at delivery</div>':'<div class="tstat pay'+(pd?' ok':'')+'">'+(pd?'Paid ₹'+o.amount+(o.payment_method==="upi"?' by UPI ✓':' ✓'):'Payment pending · ₹'+o.amount)+'</div>';
+    if(!pd&&o.payment_status!=="demo"&&o.payment_method==="upi"&&st!=="cancelled"&&PAYMODE!=="off")h+='<button type="button" class="chip" id="paynow">Pay ₹'+o.amount+' now</button>'}
   var d=new Date(o.created_at);if(!isNaN(d))h+='<p class="tmeta">Placed '+esc(d.toLocaleString("en-IN",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"}))+'</p>';
   var up=utcD(o.status_at||o.created_at);if(!isNaN(up))h+='<p class="tmeta" id="tupd">'+(st==="new"?"Placed ":"Updated ")+agoT(up)+(live?" · refreshes by itself":"")+'</p>';
   h+='<div class="tacts">';

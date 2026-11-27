@@ -617,7 +617,7 @@ function famRow(f){
   return el("div",{class:"card"},[el("div",{class:"fm"},[el("div",{class:"av",html:ic("heart")}),el("div",{class:"bd"},[el("a",{href:"tel:"+f.phone,text:f.phone}),el("div",{class:"mute",text:f.sips+" sips · "+f.delivered_orders+" orders · "+f.rewards_used+" free used"})]),badge]),
     el("div",{style:"margin-top:14px"},[gems])])}
 function payRow(o){
-  var paid=o.payment_status==="paid",lab=paid?"Paid":o.payment_status==="pending"?"Waiting for payment":o.payment_status==="failed"?"Payment failed":"Pay at delivery";
+  var paid=o.payment_status==="paid",lab=paid?"Paid":o.payment_status==="demo"?"DEMO – no money received":o.payment_status==="pending"?"Waiting for payment":o.payment_status==="failed"?"Payment failed":"Pay at delivery";
   var kids=[el("span",{class:"badge "+(paid?"ok":o.payment_status==="unpaid"?"":o.payment_status==="failed"?"bad":"warn"),text:(o.fam_discount?"Fam free drink −₹"+o.fam_discount+" · ":"")+(o.amount!=null?"₹"+o.amount+" · ":"")+(o.payment_method==="upi"?"UPI · ":"")+lab})];
   if(!paid)kids.push(el("button",{class:"o sm",text:"Mark as paid",onclick:function(){api("POST","/api/admin/orders/"+o.id+"/mark-paid").then(function(){return fetchOrders(false)}).catch(fail)}}));
   return el("div",{class:"row payrow",style:"justify-content:flex-start;margin-top:12px"},kids)}

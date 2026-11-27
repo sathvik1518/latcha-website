@@ -338,7 +338,7 @@ flowchart LR
 
 ## 🔌 The API
 
-Try everything in the browser at **`/docs`**.
+Try everything in the browser at **`/docs`** on your own computer (set `API_DOCS=true` in your local `.env`). It is switched off on the live site.
 
 **Public**
 

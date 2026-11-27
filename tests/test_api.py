@@ -28,7 +28,7 @@ def tok(c):
 
 
 ORDER = dict(customer_name="Asha", phone="+91 98765 43210", address="12 MG Road, Indiranagar",
-             city="Bengaluru", lines=[dict(item_id=1, quantity=2)])
+             outlet="jp-nagar", lines=[dict(item_id=1, quantity=2)])
 
 
 def test_health(c):
@@ -54,7 +54,7 @@ def test_order_flow(c):
 
 
 @pytest.mark.parametrize("bad", [
-    dict(phone="12345"), dict(city="Mumbai"), dict(lines=[]),
+    dict(phone="12345"), dict(outlet=""), dict(lines=[]),
     dict(lines=[dict(item_id=1, quantity=0)]), dict(lines=[dict(item_id=1, quantity=21)]),
     dict(lines=[dict(item_id=9999, quantity=1)]), dict(customer_name="A"),
 ])
@@ -205,8 +205,7 @@ def test_outlets_list(c, monkeypatch):
 
 def test_order_to_outlet_sets_city_and_shows_in_admin(c, monkeypatch):
     _at(monkeypatch, 15)
-    body = {k: v for k, v in ORDER.items() if k != "city"}
-    r = c.post("/api/orders", json={**body, "phone": "9200000001", "outlet": "sattva-knowledge-park"})
+    r = c.post("/api/orders", json={**ORDER, "phone": "9200000001", "outlet": "sattva-knowledge-park"})
     assert r.status_code == 201 and r.json()["outlet"] == "LATCHA Sattva Knowledge Park"
     o = c.get("/api/admin/orders", headers=tok(c)).json()[0]
     assert o["city"] == "Hyderabad" and o["outlet_name"] == "LATCHA Sattva Knowledge Park"
@@ -214,10 +213,11 @@ def test_order_to_outlet_sets_city_and_shows_in_admin(c, monkeypatch):
     assert mine and all(x["outlet_id"] == o["outlet_id"] for x in mine)
 
 
-def test_old_style_order_with_only_a_city_still_works(c, monkeypatch):
-    _at(monkeypatch, 15)
-    r = c.post("/api/orders", json={**ORDER, "phone": "9200000002"})
-    assert r.status_code == 201 and r.json()["outlet"] is None
+def test_order_with_only_a_city_is_refused(c, monkeypatch):
+    """A city-only order would skip the outlet's hours, pause switch and sold-out list."""
+    _at(monkeypatch, 3)   # every outlet is closed at 3 AM
+    body = {k: v for k, v in ORDER.items() if k != "outlet"}
+    assert c.post("/api/orders", json={**body, "phone": "9200000002", "city": "Bengaluru"}).status_code == 422
 
 
 def test_closed_outlet_refuses_orders(c, monkeypatch):
@@ -238,8 +238,8 @@ def test_bad_outlets_rejected(c, monkeypatch, extra, why):
     assert r.status_code == 422 and why in r.json()["detail"]
 
 
-def test_order_needs_outlet_or_city(c):
-    body = {k: v for k, v in ORDER.items() if k != "city"}
+def test_order_needs_an_outlet(c):
+    body = {k: v for k, v in ORDER.items() if k != "outlet"}
     assert c.post("/api/orders", json={**body, "phone": "9200000006"}).status_code == 422
 
 
@@ -284,7 +284,7 @@ import hashlib, hmac, json as _json
 from app import payments as _pay
 from app.config import get_settings as _gs
 
-UPI = dict(ORDER, pay="upi", phone="9200000001", city="Hyderabad", lines=[dict(item_id=1, quantity=2), dict(item_id=2, quantity=1)])
+UPI = dict(ORDER, pay="upi", phone="9200000001", outlet="sattva-knowledge-park", lines=[dict(item_id=1, quantity=2), dict(item_id=2, quantity=1)])
 
 
 @pytest.fixture
@@ -334,12 +334,21 @@ def test_demo_upi_order_pays_once(c, paymode):
     tr = lambda: c.post("/api/orders/track", json={"order_id": b["id"], "phone": "9200000001"}).json()
     assert tr()["payment_status"] == "pending"
     ok = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000001"})
-    assert ok.status_code == 200 and ok.json()["payment_status"] == "paid"
+    assert ok.status_code == 200 and ok.json()["payment_status"] == "demo"       # pretend screen: never "paid"
     again = c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9200000001"})   # double click
-    assert again.status_code == 200 and again.json()["payment_status"] == "paid"
-    assert tr()["payment_status"] == "paid"
+    assert again.status_code == 200 and again.json()["payment_status"] == "demo"
+    assert tr()["payment_status"] == "demo"
+    assert c.post(f"/api/orders/{b['id']}/pay", json={"phone": "9200000001"}).status_code == 409
     adm = [o for o in c.get("/api/admin/orders", headers=tok(c)).json() if o["id"] == b["id"]][0]
-    assert adm["payment_status"] == "paid" and adm["amount"] == b["amount"]
+    assert adm["payment_status"] == "demo" and adm["amount"] == b["amount"]
+    # staff collect the money for real and mark it paid
+    assert c.post(f"/api/admin/orders/{b['id']}/mark-paid", headers=tok(c)).json()["payment_status"] == "paid"
+
+
+def test_payments_are_off_unless_switched_on():
+    from app.config import Settings
+    assert Settings.model_fields["payments_mode"].default == "off"
+    assert Settings(payments_mode="").pay_mode == "off" and Settings(payments_mode="nonsense").pay_mode == "off"
 
 
 def test_client_cannot_choose_the_amount(c, paymode):
@@ -513,7 +522,9 @@ def test_stats_count_new_being_made_unpaid_and_todays_money(c, paymode):
     s1 = c.get("/api/admin/stats", headers=h).json()
     assert s1["new_orders"] == s0["new_orders"] + 2 and s1["today_orders"] == s0["today_orders"] + 2
     assert s1["awaiting_payment"] == s0["awaiting_payment"] + 1 and s1["latest_order_id"] == b["id"]
-    c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9300000002"})              # pays
+    c.post(f"/api/orders/{b['id']}/pay/confirm", json={"phone": "9300000002"})              # demo "pays": no money
+    assert c.get("/api/admin/stats", headers=h).json()["today_paid"] == s0["today_paid"]   # demo money is never counted
+    c.post(f"/api/admin/orders/{b['id']}/mark-paid", headers=h)                              # staff collected it
     c.patch(f"/api/admin/orders/{a['id']}", json={"status": "confirmed"}, headers=h)
     s2 = c.get("/api/admin/stats", headers=h).json()
     assert s2["today_paid"] == s0["today_paid"] + b["amount"]
@@ -541,7 +552,7 @@ def _fam(c, phone):
 
 
 def _order(c, phone, lines, **kw):
-    return c.post("/api/orders", json=dict(ORDER, phone=phone, city="Hyderabad", lines=lines, **kw))
+    return c.post("/api/orders", json=dict(ORDER, phone=phone, outlet="sattva-knowledge-park", lines=lines, **kw))
 
 
 def _deliver(c, oid, to="delivered"):
@@ -652,3 +663,42 @@ def test_dashboard_needs_login_and_checks_the_range(c):
     assert d["days"] == 30 and len(d["daily"]) == 30 and len(d["hours"]) == 24
     assert set(d) >= {"head", "daily", "dishes", "outlets", "hours", "payments", "customers", "pending_reviews"}
     assert d["head"]["orders"] >= 1 and d["dishes"]                       # earlier tests placed orders
+
+
+def test_too_many_orders_from_one_network_are_refused(c, monkeypatch):
+    monkeypatch.setattr(_gs(), "max_orders_per_ip_hour", 2)
+    here = {"x-real-ip": "203.0.113.7"}
+    for i in range(2):
+        assert c.post("/api/orders", json={**ORDER, "phone": f"930000000{i}"}, headers=here).status_code == 201
+    r = c.post("/api/orders", json={**ORDER, "phone": "9300000009"}, headers=here)
+    assert r.status_code == 429 and "network" in r.json()["detail"]
+    assert c.post("/api/orders", json={**ORDER, "phone": "9300000008"}, headers={"x-real-ip": "198.51.100.1"}).status_code == 201
+    from app import models as m
+    with SessionLocal() as db:
+        assert "203.0.113.7" not in {o.ip_hash for o in db.query(m.Order)}   # only the hash is stored
+
+
+def test_api_map_is_hidden_on_the_live_site(c):
+    for path in ("/docs", "/redoc", "/openapi.json"):
+        assert c.get(path).status_code == 404
+
+
+def test_fam_and_tracking_lookups_are_limited_per_network(c, monkeypatch):
+    monkeypatch.setattr(_gs(), "lookups_per_hour", 3)
+    here = {"x-real-ip": "203.0.113.50"}
+    for _ in range(3):
+        assert c.post("/api/fam/card", json={"phone": "9400000001"}, headers=here).status_code == 200
+    assert c.post("/api/fam/card", json={"phone": "9400000002"}, headers=here).status_code == 429
+    for _ in range(3):
+        assert c.post("/api/orders/track", json={"order_id": 999999, "phone": "9400000001"}, headers=here).status_code == 404
+    assert c.post("/api/orders/track", json={"order_id": 999999, "phone": "9400000001"}, headers=here).status_code == 429
+    assert c.get("/api/orders/track/1.abc", headers=here).status_code == 429          # the share link counts too
+    assert c.post("/api/fam/card", json={"phone": "9400000001"}, headers={"x-real-ip": "198.51.100.50"}).status_code == 200
+
+
+def test_tracking_code_needs_the_server_secret(monkeypatch):
+    from app import routes
+    real = routes.track_code(7)
+    monkeypatch.setattr(_gs(), "jwt_secret", "")
+    assert routes.track_code(7) != real
+    assert routes.track_code(7) != f"7.{hmac.new(b'latcha-dev', b'track:7', hashlib.sha256).hexdigest()[:10]}"   # old public fallback

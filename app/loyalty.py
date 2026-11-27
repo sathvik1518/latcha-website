@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import inspect, select, text
+from sqlalchemy import inspect, select, text, update
 from sqlalchemy.orm import Session
 
 from . import models as m
@@ -31,7 +31,7 @@ def upgrade_schema(engine) -> None:
     insp = inspect(engine)
     adds = {"orders": [("customer_id", "INTEGER REFERENCES customers(id)"), ("points_used", "INTEGER NOT NULL DEFAULT 0"),
                        ("points_discount", "INTEGER NOT NULL DEFAULT 0"), ("points_refunded", "BOOLEAN NOT NULL DEFAULT FALSE"),
-                       ("status_at", "TIMESTAMP")],
+                       ("status_at", "TIMESTAMP"), ("ip_hash", "VARCHAR(64)")],
             "reviews": [("customer_id", "INTEGER REFERENCES customers(id)")],
             "customers": [("birthday", "VARCHAR(5)")]}
     for table, cols in adds.items():
@@ -77,6 +77,17 @@ def add_tx(db: Session, c: m.Customer, delta: int, reason: str, note: str = "") 
         c.points += delta
         db.add(m.PointTx(customer_id=c.id, delta=delta, reason=reason, note=note[:120]))
     return delta
+
+
+def spend(db: Session, c: m.Customer, n: int, note: str) -> bool:
+    """Take n points only if the balance still holds them. One guarded UPDATE, so two orders at once cannot both spend them."""
+    res = db.execute(update(m.Customer).where(m.Customer.id == c.id, m.Customer.points >= n)
+                     .values(points=m.Customer.points - n).execution_options(synchronize_session=False))
+    if res.rowcount != 1:
+        return False
+    db.expire(c, ["points"])   # reload the real balance on next read
+    db.add(m.PointTx(customer_id=c.id, delta=-n, reason="redeem", note=note[:120]))
+    return True
 
 
 def award_visit(db: Session, c: m.Customer) -> int:

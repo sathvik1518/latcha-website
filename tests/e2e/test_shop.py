@@ -39,6 +39,24 @@ def test_menu_loads_from_the_database(page: Page):
     assert adds.count() >= 30
 
 
+def test_menu_cards_show_prices_labelled_as_demo(page: Page):
+    """The database prices are placeholders, so in demo mode every card says so."""
+    page.goto("/")
+    tags = page.locator(".item .dp")
+    expect(tags.first).to_contain_text("demo price")
+    assert tags.count() >= 30 and all("demo price" in x and "₹" in x for x in tags.all_inner_texts())
+
+
+def test_phone_sees_order_button_on_first_screen(page: Page):
+    page.set_viewport_size({"width": 375, "height": 812})
+    page.goto("/")
+    btn = page.locator("#orderbtn")
+    expect(btn).to_be_visible()
+    box = btn.bounding_box()
+    assert box["y"] + box["height"] <= 812 and box["x"] + box["width"] <= 375
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")      # no sideways scroll
+
+
 def test_plus_and_minus_buttons(page: Page):
     page.goto("/")
     card = page.locator(".item:has(.add)").nth(1)
@@ -259,7 +277,7 @@ def fill_order(page: Page, name: str, phone: str):
     expect(page.locator("#paychoice")).to_be_visible()
 
 
-def test_customer_pays_by_upi_in_demo_mode_and_owner_sees_paid(page: Page, context, admin_password):
+def test_demo_upi_payment_is_labelled_demo_for_customer_and_owner(page: Page, context, admin_password):
     name = unique("E2E Payer")
     fill_order(page, name, "98765 43211")
     expect(page.locator("#osub")).to_contain_text("with UPI")       # UPI is the default choice
@@ -271,13 +289,14 @@ def test_customer_pays_by_upi_in_demo_mode_and_owner_sees_paid(page: Page, conte
     assert amount.startswith("₹") and int(amount[1:]) > 0
     page.click("#pbpay")
     expect(page.locator(".pbtick")).to_be_visible(timeout=8000)
-    expect(page.locator("#pbsub")).to_contain_text("is paid")
+    expect(page.locator("#pbtag")).to_contain_text("no real money moved")
+    expect(page.locator("#pbsub")).to_contain_text("pay LATCHA at delivery")
     order_no = re.search(r"#(\d+)", page.locator("#pbsub").inner_text()).group(1)
 
     owner = context.new_page()
     admin_login(owner, admin_password)
     card = owner.locator("#list .card", has_text=name).filter(has_text=f"#{order_no}")
-    expect(card).to_contain_text(f"{amount} · UPI · Paid")
+    expect(card).to_contain_text(f"{amount} · UPI · DEMO – no money received")
 
 
 def test_unpaid_upi_order_can_be_paid_later_from_tracking(page: Page):
@@ -301,7 +320,8 @@ def test_unpaid_upi_order_can_be_paid_later_from_tracking(page: Page):
 
     page.click("#pbmsg .chip")                                       # Track this order
     page.click("#tsub")
-    expect(page.locator("#tres")).to_contain_text("Paid")
+    expect(page.locator("#tres")).to_contain_text("Demo payment · no money received")
+    expect(page.locator("#paynow")).to_have_count(0)
 
 
 def test_owner_can_mark_a_cash_order_as_paid(page: Page, context, admin_password):
@@ -321,7 +341,7 @@ def test_owner_can_mark_a_cash_order_as_paid(page: Page, context, admin_password
 def api_order(page: Page, name: str, phone: str):
     """Place an order straight through the API (like a customer on another phone)."""
     r = page.request.post("/api/orders", data={"customer_name": name, "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 1}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": 1}]})
     assert r.ok, r.text()
     return r.json()["id"]
 
@@ -391,7 +411,7 @@ def deliver_sips(page: Page, password: str, phone: str, drinks: int):
     """Order `drinks` drinks on this number and mark the order Delivered, like the owner would."""
     hdr = owner_token(page, password)
     r = page.request.post("/api/orders", data={"customer_name": "Fam E2E", "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": drinks}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": drinks}]})
     assert r.ok, r.text()
     oid = r.json()["id"]
     ok = page.request.patch(f"/api/admin/orders/{oid}", data={"status": "delivered"}, headers=hdr)
@@ -520,7 +540,7 @@ def test_dashboard_counts_a_new_order_and_the_owner_can_switch_period(page: Page
     before = dash_api(page, hdr)["head"]
     phone = "98765 7" + str(uuid.uuid4().int)[:4]
     r = page.request.post("/api/orders", data={"customer_name": unique("E2E Dash"), "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 2}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": 2}]})
     assert r.ok, r.text()
     after = dash_api(page, hdr)["head"]
     assert after["orders"] == before["orders"] + 1
@@ -544,7 +564,7 @@ def test_dashboard_leaves_cancelled_orders_out(page: Page, admin_password):
     hdr = owner_token(page, admin_password)
     phone = "98765 8" + str(uuid.uuid4().int)[:4]
     r = page.request.post("/api/orders", data={"customer_name": "Dash Cancel", "phone": phone, "address": "12 MG Road, Indiranagar",
-                                                 "city": "Bengaluru", "lines": [{"item_id": 1, "quantity": 1}]})
+                                                 "outlet": "jp-nagar", "lines": [{"item_id": 1, "quantity": 1}]})
     oid = r.json()["id"]
     live = dash_api(page, hdr)["head"]
     assert page.request.patch(f"/api/admin/orders/{oid}", data={"status": "cancelled"}, headers=hdr).ok

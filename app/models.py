@@ -63,6 +63,7 @@ class Order(Base):
     notes: Mapped[str] = mapped_column(String(300), default="")
     status: Mapped[str] = mapped_column(String(20), default="new", index=True)
     outlet_id: Mapped[int | None] = mapped_column(ForeignKey("outlets.id"), nullable=True, index=True)
+    ip_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)   # keyed hash of the network address, never the address itself
     outlet: Mapped["Outlet | None"] = relationship()
     payment_method: Mapped[str] = mapped_column(String(10), default="cod", server_default="cod")      # cod | upi
     payment_status: Mapped[str] = mapped_column(String(10), default="unpaid", server_default="unpaid")  # unpaid | pending | paid | failed
@@ -134,6 +135,14 @@ class PointTx(Base):
     delta: Mapped[int] = mapped_column(Integer)
     reason: Mapped[str] = mapped_column(String(12))      # welcome | visit | redeem | refund | adjust
     note: Mapped[str] = mapped_column(String(120), default="")
+
+
+class Hit(Base):
+    """One request to a rate-limited lookup, so limits hold across serverless instances. Rows older than an hour are cleared."""
+    __tablename__ = "hits"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    key: Mapped[str] = mapped_column(String(100), index=True)   # "<what>:<keyed hash of the network>"
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, index=True)
 
 
 class Setting(Base):
